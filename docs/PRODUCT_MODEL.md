@@ -1,52 +1,209 @@
-# ProofMiner Product Model
+# ProofMiner — Product Model v3
 
-## Purpose
+## Authority
 
-This document defines the current conceptual and data model derived from `PRODUCT_DOCTRINE.md`.
+This model is subordinate to:
 
-It is intentionally implementation-agnostic. UI and storage choices may change; these semantic distinctions should not collapse without an explicit architecture decision.
+1. `docs/TELOS_GOVERNANCE.md`
+2. `PRODUCT_DOCTRINE.md`
+
+It supersedes the v2 assumption that `DecisionMoment` is the top-level product object.
 
 ---
 
-## Core objects
+# Canonical system graph
 
-### DecisionMoment
+```text
+Person
+  |
+  +--> AuthorityProject
+          |
+          +--> AuthorityGoal
+          |
+          +--> AudiencePathCandidate(s)
+          |        |
+          |        +--> selected TargetAudience
+          |
+          +--> PersonState <--- SourceAsset(s)
+          |        |
+          |        +--> AuthorityAsset(s)
+          |
+          +--> FieldModel
+          |
+          +--> StrategicDiagnosis
+          |
+          +--> AuthorityMap
+          |        |
+          |        +--> AuthorityAction(s)
+          |                 |
+          |                 +--> DecisionMoment (when relevant)
+          |                 +--> ProofMove (when evidence is needed)
+          |                 +--> AuthorityArtifact / RealWorldAction
+          |
+          +--> MarketSignal / Outcome
+          |
+          +--> LearningUpdate
+                   |
+                   +----> updates PersonState / FieldModel / AuthorityMap
+```
 
-Represents one concrete decision the user wants to make easier for another person or audience.
+The product's persistent memory belongs primarily to the Authority Project and Person, not to isolated content sessions.
+
+---
+
+# Core objects
+
+## Person
+
+Represents the professional using the system.
 
 Suggested fields:
 
 - `id`
-- `actor`
-- `stage`
-- `desired_next_action`
-- `offer_context`
-- `target_uncertainty`
-- `disclosure_constraints`
+- `name`
+- `professional_context`
+- `consent_state`
+- `data_retention_preferences`
 - `created_at`
 
-### SourceAsset
+Person-level information may be reused across Authority Projects only when semantically relevant and allowed by the user's privacy settings.
 
-A container supplied or discovered by the user.
+---
 
-Examples: PDF, CV, testimonial, transcript, proposal, article, webpage, email export, case study, pasted text.
+## AuthorityProject
+
+One desired authority position in one field for one meaningful audience strategy.
 
 Suggested fields:
 
 - `id`
+- `person_id`
+- `authority_domain`
+- `desired_perceived_identity`
+- `desired_business_or_career_outcomes[]`
+- `selected_audience_path_id`
+- `status`
+- `created_at`
+- `updated_at`
+
+Possible status values:
+
+- discovery
+- diagnosing
+- mapped
+- executing
+- learning
+- paused
+- achieved_for_now
+- abandoned
+
+`achieved_for_now` does not imply objective permanent authority. It means the project's current operational success criteria have been met strongly enough to stop active execution.
+
+---
+
+## AuthorityGoal
+
+Operationalizes what "becoming an authority" means for this project.
+
+Suggested fields:
+
+- `project_id`
+- `domain`
+- `desired_association`
+- `target_audience_definition`
+- `desired_audience_actions[]`
+- `observable_authority_signals[]`
+- `time_horizon` optional
+- `constraints[]`
+
+The system must distinguish desired perception from observable signals and from downstream business outcomes.
+
+---
+
+## AudiencePathCandidate
+
+A candidate strategic audience generated after the user names the authority domain.
+
+Suggested fields:
+
+- `id`
+- `project_id`
+- `audience_definition`
+- `path_role[]` such as `natural`, `commercial`, `fast`
+- `existing_asset_fit`
+- `market_need_rationale`
+- `commercial_or_career_potential`
+- `credible_distance_rationale`
+- `competitive_context`
+- `uncertainties[]`
+- `recommendation_state`
+
+These dimensions do not require universal numeric weights.
+
+The system compares paths contextually.
+
+If two candidates are genuinely close and one missing answer can change the choice, create a `DiscriminatingQuestion` rather than presenting false certainty.
+
+---
+
+## DiscriminatingQuestion
+
+A question justified only because its answer can change a material recommendation.
+
+Suggested fields:
+
+- `id`
+- `project_id`
+- `question`
+- `decision_affected`
+- `candidate_outcomes[]`
+- `answer`
+
+The system should minimize these questions.
+
+---
+
+## SourceAsset
+
+A source supplied by the user or discovered with permission / appropriate public access.
+
+Examples:
+
+- LinkedIn profile
+- CV
+- website
+- article
+- public mention
+- testimonial
+- proposal
+- client transcript
+- sales transcript
+- post
+- podcast / interview transcript
+- user interview
+- referral history
+
+Suggested fields:
+
+- `id`
+- `person_id`
+- `project_ids[]`
 - `source_type`
-- `title`
 - `origin`
-- `owner / author`
+- `title`
+- `author_or_speaker`
 - `captured_at`
 - `content_hash`
 - `privacy_state`
+- `permission_state`
 
-A SourceAsset is not itself proof.
+---
 
-### EvidenceUnit
+## EvidenceUnit
 
-An attributable factual observation or statement extracted from a SourceAsset.
+Stable attributable observation extracted from a SourceAsset.
+
+This object survives from v2.
 
 Suggested fields:
 
@@ -61,331 +218,443 @@ Suggested fields:
 - `disclosure_state`
 - `source_fidelity_state`
 
-Possible evidence types include:
+EvidenceUnit is evidence about what a source says or records. It is not automatically proof of a broader claim.
 
-- self-report
-- client report
-- third-party mention
-- observed result
-- credential
-- publication / professional output
-- public stage / speaking evidence
-- testimonial
-- process evidence
+---
 
-Evidence type is descriptive, not a universal rank.
+## AuthorityAsset
 
-### CandidateClaim
+A reusable asset that may help the user become legible as an authority.
 
-A contextual proposition that would reduce uncertainty in a DecisionMoment if sufficiently supported.
+An AuthorityAsset may be source-derived, inferred from multiple sources, or intentionally developed through an AuthorityAction.
 
 Suggested fields:
 
 - `id`
-- `decision_moment_id`
+- `person_id`
+- `project_ids[]`
+- `asset_class`
+- `description`
+- `supporting_evidence_unit_ids[]`
+- `confidence_state`
+- `disclosure_state`
+- `maturity_state`
+- `strategic_uses[]`
+
+Initial asset classes:
+
+### Evidence
+
+Outcomes, testimonials, credentials, third-party validation, visible work and other support for claims.
+
+### Methodology
+
+Recurring diagnostic, decision or execution patterns that can be reconstructed from experience.
+
+### Experience
+
+Roles, exposures, responsibilities and situations that create legitimate perspective.
+
+### Perspective
+
+Distinctive concepts, interpretations, frameworks, questions or mechanisms the user can teach.
+
+### Relationship / distribution
+
+Communities, partners, clients, institutions, platforms, stages and information intermediaries that can carry or validate authority.
+
+### Market-response
+
+Observed prior events where content, referrals, talks, relationships or other actions preceded meaningful opportunity.
+
+Asset classes are descriptive. Do not impose a universal total score.
+
+---
+
+## PersonState
+
+The current working model of the person's authority-relevant position.
+
+Suggested fields:
+
+- `project_id`
+- `known_assets[]`
+- `known_gaps[]`
+- `current_public_associations[]`
+- `existing_audiences[]`
+- `existing_distribution[]`
+- `existing_external_validation[]`
+- `client_acquisition_patterns[]`
+- `unresolved_uncertainties[]`
+- `last_updated_at`
+
+PersonState is derived and revisable.
+
+It must never overwrite immutable source truth.
+
+---
+
+## FieldModel
+
+A working model of the authority field and selected audience.
+
+Suggested fields:
+
+- `project_id`
+- `target_audience`
+- `recognized_authorities[]`
+- `known_for_associations[]`
+- `points_of_parity[]`
+- `points_of_difference[]`
+- `audience_needs[]`
+- `category_norms[]`
+- `important_channels[]`
+- `information_intermediaries[]`
+- `comparable_journeys[]`
+- `under_served_positions[]`
+- `source_references[]`
+- `uncertainties[]`
+
+The FieldModel must preserve the difference between observation and inferred mechanism.
+
+---
+
+## ComparableAuthorityJourney
+
+A public or researched sequence describing how another person appears to have built recognition in a relevant field.
+
+Suggested fields:
+
+- `id`
+- `subject`
+- `relevance_rationale`
+- `observed_events[]`
+- `public_claimed_mechanisms[]`
+- `inferred_mechanisms[]`
+- `source_references[]`
+- `transferability_limits[]`
+
+A ComparableAuthorityJourney is a benchmark, not a recipe and not causal proof.
+
+---
+
+## StrategicDiagnosis
+
+The system's current explanation of the highest-leverage authority gap.
+
+Suggested fields:
+
+- `id`
+- `project_id`
+- `primary_gap`
+- `secondary_gaps[]`
+- `selected_lenses[]`
+- `key_findings[]`
+- `assumptions[]`
+- `evidence_refs[]`
+- `uncertainties[]`
+- `why_this_model`
+
+`selected_lenses` may include SWOT or other strategic frameworks, but the user should not have to choose a framework.
+
+The model is chosen because it helps resolve the actual gap.
+
+---
+
+## AuthorityMap
+
+Dependency-aware route from current state to desired authority state.
+
+Suggested fields:
+
+- `id`
+- `project_id`
+- `current_state_summary`
+- `target_state_summary`
+- `nodes[]`
+- `highest_leverage_action_id`
+- `blocked_nodes[]`
+- `parallel_groups[]`
+- `last_recomputed_at`
+
+Each node should be an `AuthorityAction` or a meaningful milestone.
+
+---
+
+## AuthorityAction
+
+One action on the strategic route.
+
+Suggested fields:
+
+- `id`
+- `authority_map_id`
+- `action_type`
 - `statement`
-- `target_uncertainty`
-- `claim_type`
-- `inference_risk`
-
-CandidateClaims are contextual and may be temporary.
-
-### EvidenceRelation
-
-Connects an EvidenceUnit to a CandidateClaim.
-
-Relation types:
-
-- `SUPPORTS`
-- `QUALIFIES`
-- `CONTRADICTS`
-
-Suggested fields:
-
-- `evidence_unit_id`
-- `candidate_claim_id`
-- `relation_type`
-- `reason`
-- `claim_support_state`
-
-This is many-to-many.
-
-### ProofMove
-
-A contextual recommendation for one DecisionMoment.
-
-Suggested fields:
-
-- `id`
-- `decision_moment_id`
-- `candidate_claim_id`
-- `leading_evidence_ids[]`
-- `corroborating_evidence_ids[]`
-- `qualifying_evidence_ids[]`
-- `contradicting_evidence_ids[]`
-- `inference_boundary`
-- `decision_relevance_rationale`
-- `recommended_action`
+- `rationale`
+- `prerequisite_ids[]`
+- `unlocks_ids[]`
+- `can_run_in_parallel_with_ids[]`
+- `premature_until_ids[]`
+- `required_information[]`
+- `expected_learning`
+- `expected_authority_mechanism`
 - `status`
 
 Possible status values:
 
-- proposed
-- accepted
+- available_now
+- in_progress
+- blocked
+- premature
+- completed
 - rejected
-- private
-- needs_more_evidence
-- deployed
+- invalidated
 
-### Correction
+The dashboard's dominant recommendation is usually one `available_now` AuthorityAction chosen for highest expected leverage.
 
-A durable user correction to an extraction, relation, recommendation, disclosure state, or representation.
+---
 
-Suggested fields:
+## AuthorityArtifact
 
-- `id`
-- `target_type`
-- `target_id`
-- `reason_code`
-- `user_explanation`
-- `created_at`
-
-Corrections should affect future recommendations where semantically relevant.
-
-### Representation
-
-A concrete outward expression of a ProofMove.
+An external or internal artifact produced as part of an AuthorityAction.
 
 Possible types:
 
+- profile positioning
+- methodology document
+- public framework
 - LinkedIn post
-- proposal section
-- DM
-- follow-up message
-- About / bio
 - case study
-- landing-page block
-- pitch slide
+- original research
+- talk / webinar
+- podcast appearance
+- proposal proof block
+- article
+- guide
+- landing page
+- outreach message
 
 Suggested fields:
 
 - `id`
-- `proof_move_id`
+- `authority_action_id`
 - `type`
-- `content`
-- `grounding_check_state`
-- `disclosure_check_state`
+- `content_or_reference`
+- `grounding_state`
+- `disclosure_state`
+- `deployed_at`
 
-### PublicationOrUse
-
-Records that a Representation was actually deployed.
-
-Suggested fields:
-
-- `id`
-- `representation_id`
-- `channel`
-- `url_or_reference`
-- `used_at`
-
-### ObservedOutcome
-
-A user-recorded signal after use.
-
-Suggested fields:
-
-- `id`
-- `publication_or_use_id`
-- `outcome_type`
-- `description`
-- `observed_at`
-- `attribution_confidence`
-
-Outcome is not automatically causal evidence.
+Artifacts are means, not top-level success units.
 
 ---
 
-## Canonical graph
+# Evidence / trust subsystem
+
+The following v2 objects remain valid beneath an AuthorityAction when evidence is needed.
+
+## DecisionMoment
+
+A specific moment where another person or audience is deciding something relevant.
+
+## CandidateClaim
+
+A claim that may reduce uncertainty in that DecisionMoment.
+
+## EvidenceRelation
+
+`SUPPORTS / QUALIFIES / CONTRADICTS` relation between EvidenceUnit and CandidateClaim.
+
+## ProofMove
+
+A contextual recommendation combining a claim, supporting evidence, qualifiers, inference boundary and recommended representation/action.
+
+Canonical subgraph:
 
 ```text
-DecisionMoment
-    |
-    v
-CandidateClaim
-    ^
-    | SUPPORTS / QUALIFIES / CONTRADICTS
-    |
-EvidenceUnit <--- SourceAsset
-    |
-    +----------------------+
-                           |
-                           v
-                       ProofMove
-                           |
-                           v
-                    Representation
-                           |
-                           v
-                    PublicationOrUse
-                           |
-                           v
-                    ObservedOutcome
-
-Correction may target extraction, relation, proof move, disclosure, or representation.
+AuthorityAction
+   |
+   +--> DecisionMoment
+            |
+            v
+      CandidateClaim
+            ^
+            | SUPPORTS / QUALIFIES / CONTRADICTS
+            |
+      EvidenceUnit
+            |
+            v
+         ProofMove
+            |
+            v
+      AuthorityArtifact
 ```
+
+ProofMove is invoked when it serves the Authority Map. It is not the product's top-level unit.
 
 ---
 
-## Three independent uncertainty states
+## MarketSignal
 
-These concepts must remain separate in implementation.
+Observable response after an AuthorityAction or AuthorityArtifact.
+
+Suggested types:
+
+- no observable response
+- relevant engagement
+- profile visit
+- follow / subscription
+- inbound message
+- referral
+- invitation
+- qualified conversation
+- proposal movement
+- deal
+- career opportunity
+- third-party mention
+- repeated association with target expertise
+
+Suggested fields:
+
+- `id`
+- `project_id`
+- `action_or_artifact_id`
+- `signal_type`
+- `description`
+- `observed_at`
+- `source`
+- `audience_match_state`
+- `attribution_state`
+
+---
+
+## LearningUpdate
+
+Records how new evidence changes the model.
+
+Suggested fields:
+
+- `id`
+- `project_id`
+- `trigger`
+- `prior_assumption`
+- `new_evidence`
+- `updated_belief`
+- `objects_changed[]`
+- `map_change`
+- `created_at`
+
+The product's compounding value depends on LearningUpdates changing future recommendations when warranted.
+
+---
+
+# Independent uncertainty dimensions
+
+Do not collapse these into one universal authority score.
+
+At minimum preserve:
 
 ### Source fidelity
 
-Question: Did we correctly understand what the source says?
+Did the system correctly understand the source?
 
-Failure examples:
+### Asset support
 
-- wrong speaker attribution
-- OCR / parsing mistake
-- sentence removed from essential context
-- wrong numeric extraction
+Is the inferred AuthorityAsset actually supported by source material or repeated evidence?
 
-### Claim support
+### Strategic relevance
 
-Question: Given what the source says, does it justify the proposed claim?
+Does this asset/action matter for the selected audience and current authority gap?
 
-Failure examples:
+### Market-model confidence
 
-- treating chronology as causality
-- turning a self-report into third-party validation
-- generalizing one case beyond what it supports
+How well supported is the FieldModel or comparable-journey inference?
 
-### Decision relevance
+### Outcome attribution
 
-Question: Even if the claim is supported, does it matter for this DecisionMoment?
+How confidently can a market signal be associated with an action, without overstating causality?
 
-Failure examples:
+### Route dependency confidence
 
-- prestigious credential when buyer uncertainty is about implementation ability
-- old result in a market where current relevance matters
-- strong evidence of a different capability than the offer being considered
+How certain is the claim that action A must precede action B rather than merely being preferable?
 
-No single confidence score may substitute for these distinctions.
+These states may be qualitative or comparative.
 
 ---
 
-## Comparative recommendation logic
+# Progressive knowledge acquisition
 
-The system should compare candidate ProofMoves rather than compute a universal truth score.
+The system should request new data only when it can explain what capability or decision the data will unlock.
 
-A recommendation may prefer A over B because:
-
-- A more directly addresses the target uncertainty.
-- A has stronger or more independent support.
-- A requires fewer unsafe inferences.
-- A is more publishable under current disclosure constraints.
-- A is closer to the current offer or decision stage.
-- B has contradicting or qualifying evidence that materially weakens it.
-
-The explanation should be human-readable and inspectable.
-
----
-
-## Progressive evidence acquisition
-
-The system should not require a complete evidence library before value.
-
-Canonical loop:
+Canonical pattern:
 
 ```text
-Decision Moment
--> one Source Asset
--> extract Evidence Units
--> attempt candidate ProofMove
--> identify exact evidence gap
--> request one additional source only when useful
--> revise ProofMove
+Authority goal
+-> minimal person / public footprint
+-> first strategic model
+-> identify highest-value uncertainty
+-> request one source / answer
+-> unlock or revise map
 ```
-
-The gap request itself is a product output.
 
 Examples:
 
-- "I can support expertise, but not outcome. A client result would resolve the gap."
-- "I can support the result, but attribution is weak. A client quote or external source would strengthen it."
-- "This evidence is strong but private. We need a publishable equivalent or anonymized representation."
+- "If we see how your last five clients found you, we can test whether your existing reputation is already strongest around a specific problem."
+- "Two audiences remain equally plausible. One answer about the type of work you want more of will change which path I recommend."
+- "We can describe your approach, but we do not yet know whether it repeats across cases. One more client story would test that."
 
 ---
 
-## Safe failure states
+# UX projection of the model
 
-The system must explicitly support:
+The user should not see this ontology by default.
 
-### Not enough evidence
+Primary UI concepts should be ordinary-language projections of:
 
-No adequate ProofMove can be justified.
+- Where you want to become known
+- Who you want to be known by
+- What you already have
+- What is missing
+- The route
+- What to do now
+- What this unlocks
+- What happened
+- What changed because we learned it
 
-### Evidence conflict
-
-Sources materially disagree.
-
-### Evidence available but private
-
-The best evidence cannot be disclosed in the current representation.
-
-### Decision context unclear
-
-Evidence exists, but the system cannot rank relevance without one additional contextual answer.
-
-### Claim too strong
-
-Evidence supports a narrower claim than the user or system initially proposed.
-
-These are valid product outcomes, not model failures.
+Internal model detail belongs behind progressive disclosure.
 
 ---
 
-## Representation grounding
+# Safe failure states
 
-Before a Representation is considered ready:
+Valid outcomes include:
 
-1. Every material factual statement maps to one or more Evidence Units.
-2. Generated causal language must have explicit support.
-3. Names, organizations, amounts, dates, and outcomes must match provenance.
-4. Private evidence must not leak.
-5. Qualifiers required by the evidence must survive rewriting.
-6. The representation must still provide value to the reader / buyer beyond self-promotion.
+- target authority field too broad to map usefully
+- no credible audience path yet
+- insufficient information to distinguish paths
+- no evidence for a proposed claim
+- methodology hypothesis not yet supported across cases
+- best authority asset cannot be disclosed
+- benchmark journey is not transferable
+- market response is ambiguous
+- current action produced no meaningful signal
+- current strategic model is contradicted by new evidence
 
----
-
-## Product memory
-
-What should compound across sessions:
-
-- SourceAssets already ingested
-- EvidenceUnits and provenance
-- user corrections
-- disclosure restrictions
-- DecisionMoments
-- EvidenceRelations
-- accepted/rejected ProofMoves
-- deployed Representations
-- ObservedOutcomes
-
-The product should not force the user to reconstruct this map each session.
+The correct response is to expose the gap and update the route, not manufacture certainty.
 
 ---
 
-## What remains non-canonical
+# Non-canonical implementation choices
 
-The following are implementation choices, not doctrine:
+The following remain implementation choices unless field evidence makes them product doctrine:
 
 - database vendor
-- embedding model
 - LLM provider
-- exact ranking algorithm
-- visual layout
-- whether internal states are numeric, categorical, or model-generated
+- exact retrieval stack
+- exact strategic-model selection algorithm
+- exact visual representation of dependency graph
+- numeric versus categorical internal states
+- framework library implementation
+- external search provider
 
-They may change as long as the semantic boundaries above and the Definition of Done remain intact.
+Implementation must preserve the semantic boundaries and telos governance above.
