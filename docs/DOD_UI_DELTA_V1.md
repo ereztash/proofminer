@@ -1,181 +1,291 @@
-# DOD UI Delta — v1 / effective DOD v5.1
+# DOD UI Delta — v2 / effective DOD v5.2
 
 Date: 2026-08-16
 
 ## Authority
 
-This delta is subordinate to `TELOS_GOVERNANCE.md` and augments `DEFINITION_OF_DONE.md` v5.0.
+This delta is subordinate to `TELOS_GOVERNANCE.md` v1.5 and augments `DEFINITION_OF_DONE.md` v5.0.
 
-For interface / first-session work, the effective DOD is **v5.1**.
+For interface / first-session work, the effective DOD is **v5.2**.
 
-Read with `UX_STRATEGIC_WIND_TUNNEL_V1.md`.
+Read with:
+
+- `RECURSIVE_UI_DOD_PRESSURE_V1.md`
+- `UX_STRATEGIC_WIND_TUNNEL_V1.md`
 
 ---
 
 # UI telos
 
-The interface exists to help the user form and own a better consequential professional decision — not to expose the internal architecture, maximize interaction, display sophistication, or collect every field the data model can represent.
+> **Help the user move from professional ambiguity to grounded action with the least unnecessary cognitive work, while keeping commitments, trade-offs, evidence and reasons visible and manipulable enough to challenge and revise without starting over.**
 
-It must also preserve the validity of the FIELD experiment by keeping the user's pre-intervention representation / allocation uncontaminated until frozen.
+The interface is not required to be minimal in clicks. It is required to avoid **unnecessary cognitive reconstruction**.
+
+The current design class is:
+
+> **Progressively revealed manipulable decision workspace.**
 
 ---
 
-# UX gates
+# DOD Agent — observable target state
 
-## UI1 — The first screen uses buyer language, not system language
+The interface succeeds only when the user can, without reconstructing the session from prose:
 
-The first prompt must allow unprompted description of the professional transition.
+1. see the target professional change;
+2. see the actions currently competing for resources;
+3. change their order / state directly;
+4. allocate a real scarce resource when a quantity is known;
+5. see what is unallocated / displaced when resources move;
+6. expose a dependency only where sequence matters;
+7. distinguish their model from system inference / external evidence;
+8. inspect why the system challenges an action;
+9. change the plan without losing the rationale / evidence linked to it;
+10. leave with a user-owned current plan + unresolved test / reversal condition.
 
-**Hard fail:** first-use copy requires understanding `authority`, `Personal Decision Intelligence`, `characterization`, `FIELD_DEBT`, decision frameworks or internal taxonomy.
+---
 
-## UI2 — Baseline is visibly frozen before advice
+# Core interaction gates
 
-The interface captures the plan the user would otherwise execute, its rationale and material resource commitment before recommendation / self-application output.
+## UI1 — Objects before fields
 
-**Hard fail:** any recommendation contaminates this baseline.
+Persistent state is represented as explicit objects where possible:
 
-## UI3 — One dominant task per screen
+- target;
+- action;
+- resource allocation;
+- action state;
+- dependency;
+- evidence / unknown;
+- reversal trigger.
 
-A screen exists around one user-state transition, not around the number of fields available in the model.
+Free text may create / edit these objects. The text itself is not the only state store.
 
-## UI4 — Characterization is routed, not ceremonial
+## UI2 — Minimum model first
 
-The professional mirror / self-application step can be skipped and must not imply that the user's profession is the true frame of the problem.
+Default first-use surface exposes only the smallest useful model:
 
-The UI states that it is an **עדשה, לא תשובה**.
+```text
+target
++ action candidates
++ scarce resource / reserve
+```
 
-## UI5 — No fake field evidence
+Dependencies, evidence traces, professional mirror, scenario and uncertainty detail appear only when they can change action.
 
-User-facing source classes remain visibly distinct:
+**Fail:** showing a complete strategy canvas merely because the data model can support it.
 
-- `ממך`;
-- `מהשטח`;
-- `מסקנה`;
-- `השערה לבדיקה`.
+## UI3 — Direct manipulation must be semantic
 
-**Hard fail:** synthetic / inferred content appears as buyer or market observation.
+A gesture survives only when the gesture itself changes the represented decision.
 
-## UI6 — Decision output is action-oriented, not report-oriented
+Examples:
 
-Primary decision view must distinguish at least:
+- reorder actions because sequence matters;
+- move an action between `NOW / LATER / LEARN` because status matters;
+- allocate hours / budget because scarcity matters;
+- connect prerequisite because dependency matters.
 
-- `לעשות עכשיו`;
-- `לא עכשיו`;
-- `לברר לפני שמחליטים`.
+**Hard fail:** draggable / animated controls added only to increase delight or engagement.
 
-The interface may later expand to the canonical allocation states, but it must not require the user to parse a consulting report before knowing what changes.
+## UI4 — Conserved-resource controls
 
-## UI7 — KEEP is a valid result
+When hours / money / another finite resource is allocated, the interface preserves conservation visibly.
 
-The interface must not manufacture novelty or a larger delta to demonstrate value.
+Increasing one action's allocation must reduce:
 
-If the prior plan survives the available evidence, preserving it with clearer conditions is a valid output.
+- another action; or
+- the visible unallocated reserve.
 
-## UI8 — Uncertainty has a first-class visual state
+**Hard fail:** every action can independently receive `9/10 importance` or arbitrary hours without showing opportunity cost.
 
-`לברר לפני שמחליטים` is not an error or missing feature.
+## UI5 — Slider legitimacy
 
-Every research request shown there must be capable of changing a live decision.
+Sliders are allowed only for genuine continuous quantities with meaningful endpoints, such as:
 
-## UI9 — Reversal condition is available at action level
+- hours;
+- money;
+- planning horizon;
+- bounded numeric capacity.
 
-A material recommendation can reveal what evidence would change / reverse it.
+Generic importance, confidence, attractiveness, strategic correctness or priority do not become sliders by default.
 
-## UI10 — User authorship closes the episode
+If a slider requires precision, display the numeric value and provide an accessible non-drag alternative.
 
-The system's recommendation is not the final record.
+## UI6 — Reorderability where sequence matters
 
-The user must be able to state:
+Actions can be reordered directly when order changes execution / dependency meaning.
 
-- what they will actually do;
-- what they reject / change;
-- what evidence would make them change course.
+Drag is optional; keyboard / button alternatives must exist.
 
-**Hard fail:** `Accept recommendation` is treated as authorship.
+## UI7 — User model and system model remain separable
 
-## UI11 — Progressive disclosure protects cognitive load
+The system may propose a different order, status, dependency or allocation.
 
-Rationale, evidence trace and reversal detail may be hidden behind disclosure controls until requested.
+It may not silently overwrite the user's arrangement.
 
-The action consequence must remain visible without opening them.
+A disagreement should be inspectable as:
 
-## UI12 — Dashboard is not first-session default
+```text
+YOU
+vs
+SYSTEM CHALLENGE
+```
 
-Persistent dashboards may become useful after longitudinal state exists.
+with the reason / evidence class attached.
 
-**Fail for current FIELD:** first-use experience opens into an empty / fabricated dashboard requiring historical state the product does not yet possess.
+## UI8 — Baseline integrity
 
-## UI13 — Chat is not the canonical state model
+Where before/after evidence matters, the user's pre-intervention arrangement must be frozen before the system challenge appears.
 
-Conversation may support bounded steps, but the system must preserve explicit decision objects / baseline / actions / evidence conditions outside free-form chat history.
+The frozen baseline is stored as object state, not reconstructed from memory after recommendation.
 
-## UI14 — Mobile preserves decision hierarchy
+## UI9 — Progressive model growth
 
-On small screens:
+Adding another object / layer requires an explicit reason:
 
-1. current decision headline;
-2. NOW;
-3. NOT YET;
-4. LEARN FIRST;
-5. rationale / evidence details.
+> **Which action or allocation can change if this structure becomes visible?**
 
-Decorative elements may collapse before decision meaning does.
+If none, do not add it.
 
-## UI15 — Preview does not overclaim intelligence
+## UI10 — Dependencies are conditional UI
 
-Until automated research / decision intelligence exists, the UI must disclose that the current prototype is experimental / illustrative.
+Dependency edges / prerequisite controls appear only when a dependency can:
 
-It must not imply that a scripted heuristic is validated market analysis.
+- block;
+- reorder;
+- delay;
+- unlock
+
+a current action.
+
+Do not turn the workspace into a generic graph editor.
+
+## UI11 — Uncertainty is actionable
+
+Uncertainty appears as:
+
+- unresolved decision-relevant question;
+- missing evidence;
+- conflicting evidence;
+- reversal / test condition.
+
+It is not a decorative confidence percentage.
+
+## UI12 — Text is an alternative interaction
+
+Any manipulable object can be created / edited through simple text when direct manipulation is difficult or undesired.
+
+The user is never forced to drag.
+
+## UI13 — One manipulation, immediate feedback
+
+After a resource, order or state change, show the consequence immediately:
+
+- remaining hours / money;
+- changed sequence;
+- newly blocked / unlocked action;
+- changed next action;
+- unresolved contradiction.
+
+Avoid hidden recomputation that changes the plan with no visible trace.
+
+## UI14 — No recommendation report before action consequence
+
+The primary view is the working plan, not a consulting report.
+
+Rationale and provenance use progressive disclosure.
+
+## UI15 — KEEP remains valid
+
+If the user's arrangement survives evidence / challenge, preserving it is a valid outcome.
+
+Do not manufacture movement to demonstrate product value.
+
+## UI16 — User authorship is structural
+
+The session ends with the user's current arrangement, not an `Accept recommendation` action.
+
+The system records:
+
+- what the user actually kept / moved / delayed / added;
+- where resources now go;
+- any unresolved disagreement;
+- what evidence should trigger another change.
+
+## UI17 — Mobile preserves the model
+
+On mobile, semantic order survives even when drag / spatial layout collapses.
+
+Accessible controls must preserve:
+
+- action order;
+- state;
+- allocation;
+- rationale;
+- reversal condition.
+
+## UI18 — Preview honesty
+
+Until automated research / decision intelligence exists, the UI labels prototype inference correctly and does not imply validated market observation.
+
+---
+
+# Pressure Agent kill conditions
+
+The richer workspace must be collapsed toward a strong guided interface if FIELD repeatedly shows any of:
+
+- users spend more effort arranging objects without improving a material decision;
+- manipulation feels satisfying but does not improve explanation / authorship / action;
+- allocation controls create fake precision;
+- drag/reorder mechanics bias choices in ways users cannot explain;
+- users cannot tell what object to manipulate first;
+- the workspace requires more coaching than a strong guided flow;
+- system/user overlays create confusion rather than contestability;
+- users rebuild the model in conversation because the objects are not expressive enough;
+- a simpler guided flow yields comparable decisions at lower cognitive cost.
 
 ---
 
 # Structural acceptance tests
 
-The current prototype passes implementation-level DOD only when all are true:
+A current implementation passes implementation-level DOD only when:
 
-1. no legacy `ראיה לפני ניסוח` / proof-mining first-session flow remains as the canonical UI;
-2. transition input exists before system interpretation;
-3. baseline plan exists before recommendation;
-4. baseline includes user rationale and at least one resource field;
-5. professional mirror is optional;
-6. mirror explicitly includes a transferability / lens warning;
-7. decision board contains NOW / NOT YET / LEARN FIRST;
-8. evidence classes shown in the UI cannot imply synthetic field evidence;
-9. action rationale and reversal condition are inspectable;
-10. a final authorship step records the user's own commitment / challenge / reversal condition;
-11. page metadata no longer describes the obsolete proof-selection product;
-12. responsive CSS retains semantic order on mobile;
-13. CI/build succeeds;
-14. a Vercel Preview exists for the exact implementation commit.
+1. the legacy five-step wizard is no longer the canonical state architecture;
+2. action candidates exist as independent editable objects;
+3. action order can change without rewriting a textarea;
+4. a finite resource can be allocated across actions with visible reserve / conservation;
+5. allocation has a non-drag accessible control;
+6. action state can change directly (`NOW / LATER / LEARN` or equivalent);
+7. user's baseline arrangement can be frozen before system challenge;
+8. system challenge does not overwrite the user's arrangement;
+9. rationale / evidence / reversal condition can attach to an action;
+10. optional advanced structure is progressively revealed;
+11. no generic confidence / importance slider is used;
+12. page metadata reflects the current transition / decision product;
+13. responsive behavior preserves action semantics;
+14. CI syntax + production build succeed;
+15. exact deployed commit is verified before claiming Vercel deployment.
 
 ---
 
 # UX FIELD_DEBT
 
-Do not close these with internal review:
+The internal DOD / Pressure / Telos loop can no longer resolve:
 
-1. first-question comprehension / struggling-moment language;
-2. baseline completion friction;
-3. professional-mirror unique contribution;
-4. perceived value of NOT YET;
-5. perceived trustworthiness of LEARN FIRST;
-6. ability to explain the decision board without coaching;
-7. authorship-step value versus friction;
-8. value perception strong enough to support the commercial test.
+1. whether the manipulable workspace reduces or increases cognitive burden versus a strong guided flow;
+2. whether conserved-resource allocation reveals real trade-offs users would not otherwise articulate;
+3. whether direct reordering improves sequence reasoning or merely creates interaction bias;
+4. whether users understand system-vs-user disagreement without coaching;
+5. whether progressive model growth reveals enough structure without feeling hidden / unpredictable;
+6. whether users prefer text fallback or manipulation for each object type;
+7. whether the richer model improves actual execution / reversal behavior at follow-up.
 
----
+Compare:
 
-# Collapse / replan conditions
+- **Arm G — Strong Guided**: concise progressive prompts producing the same semantic objects.
+- **Arm M — Manipulable Workspace**: direct manipulation of the same objects.
 
-Replan the UI when real FIELD shows any repeated pattern:
-
-- users cannot state what decision the product is helping with after the first two screens;
-- baseline completion feels disproportionate to expected value;
-- professional mirror is described as clever but does not change decision / research;
-- users interpret `לא עכשיו` as arbitrary AI veto;
-- `לברר` feels like the product refusing to help;
-- users simply copy the system commitment rather than authoring one;
-- most relevant users actually want execution and the decision workflow adds avoidable friction.
+The richer interface survives only if it produces material improvement in decision understanding, trade-off quality, authorship, research targeting or execution that justifies its complexity.
 
 ---
 
@@ -183,4 +293,4 @@ Replan the UI when real FIELD shows any repeated pattern:
 
 `REPLAN → IMPLEMENT → FIELD`
 
-The legacy v2 proof-selection UI is invalid for the current telos. One progressive-decision prototype is authorized. Additional visual variants are not authorized until this version receives real comprehension / decision evidence.
+The previous progressive wizard is now a historical implementation hypothesis. It is not protected by prior work.
