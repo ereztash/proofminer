@@ -1,24 +1,26 @@
-# Commercial FIELD Protocol — v1
+# Commercial FIELD Protocol — v2
 
 Date: 2026-08-15
 
 ## Purpose
 
-Test the commercial hypotheses introduced by `CATEGORY_BUSINESS_MODEL_ITERATION_V1.md` without confusing expressed interest with willingness to pay or one-session usefulness with retention.
+Test the commercial hypotheses from `CATEGORY_BUSINESS_MODEL_ITERATION_V2.md` without confusing expressed interest with willingness to pay, one-session usefulness with retention, or memory with compounding value.
 
 ---
 
 # Hypotheses
 
-H1. Independent experts / consultants / fractional leaders in a professional transition experience enough recurring decision pain to support a paid product.
+H1. Independent experts / consultants / fractional leaders at a **professional inflection point** experience a dense enough cluster of consequential market-position decisions to support a paid active episode.
 
-H2. The product can create more value than generic $5–$30/month decision apps because it changes commercially meaningful professional allocation decisions using domain + field evidence.
+H2. The product can command materially more than generic decision-app pricing because it changes commercially meaningful professional representation / allocation decisions using person + field evidence.
 
-H3. A personalized, outcome-linked decision lineage materially improves future recommendations.
+H3. A versioned, outcome-linked decision lineage materially improves at least some later decisions **when prior history is transferable**.
 
-H4. Event-driven re-engagement is sufficient for retention; daily engagement is unnecessary.
+H4. Natural trigger / reactivation can support long-term customer value even if continuous monthly usage is unnecessary.
 
-H5. The assisted / human-in-loop version can command materially higher willingness to pay than software-only generic decision support.
+H5. The healthiest commercial model may be active-episode / episodic rather than permanent subscription.
+
+H6. Human-in-loop professional intelligence can support a higher early price than software-only generic decision support.
 
 ---
 
@@ -26,11 +28,12 @@ H5. The assisted / human-in-loop version can command materially higher willingne
 
 Prefer participants who meet all of:
 
-- professional reputation materially affects income / opportunity;
-- an active market-position / authority transition exists now;
+- professional market position materially affects income / opportunity;
+- an active transition / inflection point exists now;
 - at least two plausible actions compete for scarce resources;
-- one wrong sequencing / allocation decision would have a meaningful cost;
-- participant controls or materially influences the budget/time being allocated.
+- one wrong sequencing / allocation decision would have meaningful cost;
+- participant controls or materially influences the budget/time being allocated;
+- another related decision is plausibly expected within the next 60–180 days.
 
 Record exclusions instead of relaxing the ICP silently.
 
@@ -40,53 +43,70 @@ Record exclusions instead of relaxing the ICP silently.
 
 Before revealing any offer:
 
-1. capture trigger / struggling moment;
-2. capture current substitutes and spend;
-3. freeze representation + allocation baseline;
-4. run personalized Wizard-of-Oz analysis;
-5. capture revised representation + allocation + authorship;
-6. ask what consequence the change has if acted on;
-7. only then present a real paid continuation.
+1. capture trigger / struggling moment in the participant's own language;
+2. capture current substitutes and actual spend;
+3. capture what outcome they are trying to create, without forcing `authority` vocabulary;
+4. freeze decision boundary + representation + allocation baseline;
+5. run personalized Wizard-of-Oz analysis;
+6. capture revised representation + allocation + authorship / contestability;
+7. ask what consequence the change has if acted on;
+8. only then present a real paid continuation.
 
 Do not lead with "what would you pay?".
 
 ---
 
-# Real offer tests
+# Primary real offer — Active Transition Episode
 
-Do not test tiny price differences. Test distinct business models.
+Current priority offer to test:
 
-## Offer A — Assisted 90-day Decision Intelligence engagement
+## 90-day Professional Market Position Decision Intelligence
 
-Hypothesis range: $900–$2,400 total.
+Hypothesis band: **$900–$2,400 total**.
+
+Human-in-loop is explicit.
 
 Includes:
 
-- initial authority / market-position decision model;
-- recurring decision events;
-- field/evidence updates;
-- monthly allocation review;
-- outcome / signal review;
-- human-in-loop research/judgment where required.
+- initial versioned decision state;
+- person + field research;
+- initial representation / allocation decision;
+- multiple material decision reviews during the transition;
+- evidence / outcome review;
+- transferability check when prior history is reused;
+- persistent lineage at close.
 
-Purpose: test whether users pay for ongoing decision value before automation exists.
+Do not promise autonomous monitoring if no real signal feed exists.
 
-## Offer B — Setup + ongoing intelligence
+---
+
+# Alternative commercial models
+
+Test only when participant behavior makes the distinction decision-relevant.
+
+## A — Setup + active mode
 
 Hypothesis:
 
-- $500–$1,500 initial setup;
-- $99–$249/month ongoing.
+- $500–$1,500 setup;
+- $99–$249/month while an active episode exists;
+- explicit pause when the episode becomes quiet.
 
-Purpose: test whether users distinguish durable project/model construction from recurring monitoring/replanning.
+## B — Episodic Decision Review
 
-## Offer C — Lower-touch software-like continuation
+Use if decision density is low.
 
-Hypothesis: $39–$79/month.
+- persistent history between decisions;
+- paid consequential review when a natural trigger appears;
+- optional new paid transition episode.
 
-Use only where the participant has already experienced the core value and the lower-touch product could plausibly deliver it.
+Do not invent recurring billing merely to create SaaS MRR.
 
-Do not sell vaporware as existing automation.
+## C — Ongoing concierge / adviser substitute
+
+Use when the user is clearly buying human judgment / research continuity.
+
+Competes economically with professional mentoring / coaching / strategy support, not with $5–$30 decision apps.
 
 ---
 
@@ -94,113 +114,171 @@ Do not sell vaporware as existing automation.
 
 Strongest to weakest:
 
-1. actual paid continuation;
-2. signed / committed pilot with payment date;
-3. card / deposit authorization;
+1. actual payment;
+2. deposit / card authorization;
+3. signed committed pilot with payment date;
 4. explicit refusal at a specific real price with reason;
-5. choice between real offers;
-6. stated maximum price after experienced value;
+5. choice between real commercial models after experienced value;
+6. stated maximum price;
 7. generic survey response;
 8. "sounds valuable" / "I would use this".
 
-Only 1–4 should materially update pricing confidence.
+Only 1–4 materially update pricing confidence.
 
 ---
 
-# Retention test
+# Decision-density test
 
-Track the participant until at least a second material decision event where feasible.
+For every suitable participant record naturally occurring consequential decisions during the transition.
 
-At each new event ask:
+Measure:
 
-1. what changed since the prior decision?
-2. which prior state/history is actually used?
-3. would the recommendation materially degrade without prior history?
-4. did the user return because of a real trigger or because we prompted artificially?
-5. did the system catch a prior assumption / pattern that the user would otherwise have reconstructed manually?
+- days from decision #1 to #2;
+- days from #2 to #3;
+- whether decisions belong to the same professional-transition episode;
+- whether the product's prior state is actually reused;
+- whether a fresh one-off adviser could cheaply reconstruct the needed context.
 
----
+This determines whether the natural billing unit is:
 
-# Event-driven retention triggers
+- month;
+- 90-day episode;
+- decision event;
+- annual / quarterly adviser relationship.
 
-Record the trigger class:
-
-- `NEW_DECISION`
-- `NEW_EVIDENCE`
-- `OUTCOME_RETURNED`
-- `DEPENDENCY_UNLOCKED`
-- `BOUNDARY_CHANGED`
-- `SCHEDULED_REVIEW`
-
-If repeated sessions are mostly `SCHEDULED_REVIEW` with no decision consequence, subscription retention is weak.
+Do not choose cadence before observing event density.
 
 ---
 
-# Longitudinal compounding test
+# Longitudinal compounding test v2
 
-At the second+ decision event, run a counterfactual shadow analysis using only information that would have been available to a fresh generic advisor / model.
+At decision #2+ produce two shadow analyses where feasible:
 
-Compare with the longitudinal version.
+## Longitudinal arm
 
-Evidence for compounding exists only if prior decision lineage changes a material part of:
+May use relevant prior decision / action / outcome lineage.
+
+## Fresh arm
+
+May use only what a competent fresh adviser / model could learn from a new intake today.
+
+Compare whether history materially changes:
 
 - representation;
 - evidence selection;
 - information request;
-- allocation;
-- confidence / uncertainty boundary;
-- trigger / reversal condition.
+- action ordering;
+- resource allocation;
+- uncertainty boundary;
+- reversal / trigger condition.
 
-A personalized writing style or remembered biography does not count.
+### Transferability gate
 
----
+For every prior item used by the longitudinal arm, state:
 
-# Retention kill conditions
+- why it is relevant to the current decision;
+- what boundary conditions remain the same;
+- what changed;
+- transferability state;
+- what would invalidate the analogy.
 
-Revise subscription if:
-
-- median useful decision interval is too long relative to billing cadence;
-- second-cycle recommendations do not benefit materially from history;
-- users prefer one-off strategic reviews;
-- ongoing field monitoring rarely changes a decision;
-- users need execution services rather than decision support to continue paying;
-- cancellation reasons cluster around "nothing to decide right now" and no event-based / pause model solves it.
-
-Possible alternative business model if this happens:
-
-> one-off / episodic paid Decision Review with persistent free/low-cost history between decisions.
+If history helps only when used indiscriminately, that is not compounding intelligence.
 
 ---
 
-# Relevance-in-one-year test
+# Version-drift test
 
-At every longitudinal follow-up ask:
+At later decisions explicitly check whether any prior:
 
-> **What can the product do now because it was present for the earlier decisions that it could not do from a fresh intake today?**
+- goal;
+- audience;
+- constraint;
+- preference;
+- risk posture;
+- desired identity;
+- economic assumption;
 
-If the answer is only "it remembers context," that is weak.
+has changed.
 
-Strong answers include:
+A stale remembered preference may not silently govern the new recommendation.
 
-- calibrated estimate error;
-- repeated bottleneck pattern supported by multiple events;
-- known audience/surface response pattern;
-- known constraint dominance;
-- outcome-linked mechanism history;
-- known reversal condition;
-- better choice of which evidence to request.
+The system must be able to say:
+
+> `This prior state is historical, not current.`
+
+---
+
+# Monitoring-value test
+
+Do not count `monitoring` as ongoing value unless the product actually receives new information.
+
+Record the source of every reactivation:
+
+- user-reported evidence;
+- connected external signal;
+- outcome return;
+- dependency completion;
+- market research update;
+- scheduled human review;
+- artificial product prompt.
+
+Artificial prompts without new decision-relevant information do not count as retention evidence.
+
+---
+
+# Retention / reactivation metrics
+
+Do not optimize DAU.
+
+Track separately:
+
+- `SECOND_DECISION_RATE` within active episode;
+- `THIRD_DECISION_RATE`;
+- `NATURAL_TRIGGER_RETURN_RATE`;
+- `PAID_CONTINUATION_RATE`;
+- `PAID_REACTIVATION_RATE`;
+- `HISTORY_MATERIALITY_RATE` — fraction of later decisions materially changed by transferable prior history;
+- `STALE_HISTORY_REJECTION_RATE` — how often correct reasoning requires ignoring old state;
+- `OUTCOME_CAPTURE_RATE`;
+- `PAUSE_RATE` and reason;
+- `CANCEL_REASON`.
+
+These are observational metrics, not recommendation objectives.
+
+---
+
+# Job-language test
+
+After value is experienced, ask:
+
+> **What would you tell a peer this helped you do?**
+
+Code language without forcing taxonomy.
+
+Compare naturally occurring descriptions such as:
+
+- build authority;
+- reposition myself;
+- decide where to focus;
+- get better clients;
+- move upmarket;
+- figure out what to build first;
+- professional strategy;
+- personal decision intelligence.
+
+External positioning should follow the language with the strongest recognition + WTP, not the internal architecture label.
 
 ---
 
 # Commercial Stop Rule
 
-After each 3–5 suitable participants, re-run Telos Governance.
-
-Do not continue a price cell merely to increase sample size if the business-model decision is already unchanged.
+After each 3–5 suitable participants or after one materially new second-decision cycle, re-run Telos Governance + Business Telos.
 
 Possible outcomes:
 
-- `CONTINUE` — another price / retention case can change the commercial decision;
-- `REPLAN` — ICP, paid job, business model or retention mechanism is wrong;
-- `FIELD-NEXT-CYCLE` — wait for naturally occurring second decision/outcome event;
-- `STOP-CELL` — additional equivalent offers have no expected decision value.
+- `CONTINUE` — another participant / price / second-cycle case can change the commercial decision;
+- `REPLAN` — ICP, paid job, episode boundary, price model or retention mechanism is wrong;
+- `FIELD-NEXT-EVENT` — wait for a natural decision / outcome trigger;
+- `STOP-CELL` — additional equivalent tests have low information value.
+
+Do not keep selling the same price cell merely to grow sample size when the business-model decision is already unchanged.
