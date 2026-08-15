@@ -56,7 +56,7 @@ function header() {
         <div><b>ProofMiner</b><span>להחליט מה עכשיו</span></div>
       </div>
       <div class="header-actions">
-        <span class="preview-badge">Decision Preview · v5</span>
+        <span class="preview-badge">Preview ניסויי</span>
         <button class="text-btn" data-action="reset">התחל מחדש</button>
       </div>
     </header>
@@ -110,7 +110,7 @@ function baselineScreen() {
         <h1>אם לא היינו כאן — מה היית עושה ב־30 הימים הקרובים?</h1>
         <p class="lead">זה לא מבחן. אנחנו מקפיאים את התוכנית שלך לפני שהמערכת משנה אותה.</p>
 
-        <div class="baseline-banner"><b>לפני ההמלצה</b><span>המידע במסך הזה נשמר כ־before state. הוא לא יתוקן בדיעבד.</span></div>
+        <div class="baseline-banner"><b>לפני ההמלצה</b><span>נשמור את זה כנקודת ההתחלה, כדי שלא נכתוב בדיעבד סיפור נוח יותר.</span></div>
 
         <section class="paper primary-card">
           <label class="big-field">
@@ -124,7 +124,7 @@ function baselineScreen() {
           <label class="big-field compact-field"><span>למה אתה חושב שזה יעבוד?</span><textarea id="why" rows="3" placeholder="מה ההנחה שמחברת בין הפעולות לבין התוצאה שאתה רוצה?">${esc(state.why)}</textarea></label>
           <label class="big-field compact-field"><span>מה לדעתך מעכב אותך כרגע?</span><textarea id="bottleneck" rows="3" placeholder="גם “אני לא יודע” זו תשובה טובה.">${esc(state.bottleneck)}</textarea></label>
           <div class="card-actions">
-            <button class="primary" data-action="baseline-next" ${state.baselinePlan.trim()?'':'disabled'}>שמור את ה־before state <span>←</span></button>
+            <button class="primary" data-action="baseline-next" ${state.baselinePlan.trim()?'':'disabled'}>שמור את נקודת ההתחלה <span>←</span></button>
           </div>
         </section>
       </section>
@@ -320,14 +320,14 @@ function commitScreen() {
 
       <div class="commit-grid">
         <section class="paper commit-form">
-          <label class="big-field"><span>הפעולה הראשונה שלך</span><textarea id="commitment" rows="4" placeholder="כתוב במילים שלך — גם אם זה שונה מההמלצה.">${esc(state.commitment || d.now?.title || '')}</textarea></label>
+          <label class="big-field"><span>הפעולה הראשונה שלך</span><textarea id="commitment" rows="4" placeholder="כתוב במילים שלך — גם אם זה שונה מההמלצה.">${esc(state.commitment)}</textarea></label>
           <label class="big-field compact-field"><span>מה בהמלצה אתה לא מקבל או רוצה לשנות?</span><textarea id="challenge" rows="4" placeholder="אפשר גם לכתוב: כרגע אני מקבל הכול, אבל אני לא בטוח לגבי...">${esc(state.challenge)}</textarea></label>
-          <label class="big-field compact-field"><span>איזו ראיה תגרום לך לשנות כיוון?</span><textarea id="reversal" rows="4" placeholder="למשל: אם 5 שיחות יראו ש...">${esc(state.reversal || d.now?.reverse || '')}</textarea></label>
+          <label class="big-field compact-field"><span>איזו ראיה תגרום לך לשנות כיוון?</span><textarea id="reversal" rows="4" placeholder="למשל: אם 5 שיחות יראו ש...">${esc(state.reversal)}</textarea></label>
           <div class="card-actions"><button class="primary" data-action="finish" ${state.commitment.trim()?'':'disabled'}>שמור כהחלטה שלי <span>✓</span></button></div>
         </section>
 
         <aside class="paper authorship-card">
-          <span>Decision authorship</span>
+          <span>ההחלטה נשארת שלך</span>
           <h3>המערכת לא מקבלת בעלות על ההחלטה.</h3>
           <p>אם אתה לא יכול להסביר למה בחרת, לערער על הנחה, או לומר מה ישנה את דעתך — עוד לא סיימנו.</p>
           <div class="mini-summary"><span>המלצת המערכת</span><b>${esc(d.now?.title || '')}</b></div>
@@ -365,7 +365,6 @@ function render() {
   bind();
 }
 
-function val(id) { return document.querySelector(`#${id}`)?.value ?? ''; }
 function persistInputs() {
   ['transition','profession','desiredState','baselinePlan','hours','budget','why','bottleneck','mirror','commitment','challenge','reversal'].forEach(k => {
     const el = document.querySelector(`#${k}`); if (el) state[k] = el.value;
