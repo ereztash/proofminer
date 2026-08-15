@@ -1,24 +1,46 @@
 # ProofMiner
 
-ProofMiner is being rebuilt around a broader job than proof selection or authority planning.
+ProofMiner is currently being rebuilt as a **Personal Decision Intelligence** architecture with a deliberately narrow first commercial vertical:
 
-The current conscious problem hypothesis is:
+> **Professional Authority / Market Position for independent experts, consultants and fractional leaders in transition.**
 
-> **I know I need to build authority / professional standing, but I do not know where my limited time, money and attention should go first — or what I should not do yet.**
+The product is not being broadened to generic life decisions at this stage.
 
-The product-value hypothesis is now:
+---
 
-> **Help the user form a better-grounded model of the authority problem and allocate scarce resources toward the strongest grounded path — without replacing the user's authorship of the decision.**
+## Current conscious problem hypothesis
 
-The product therefore has to change more than a task list.
+> **I know I need to change how the market sees / chooses me, I have many plausible things I could do, but I do not know which move deserves my limited time, money and attention now — or what should wait.**
 
-It must be able to explain:
+The product must help the user improve both:
 
-- what the user believed before;
-- what evidence changed that representation;
-- what allocation changed because of it;
-- what remains contestable;
-- what evidence should change the decision again.
+1. **representation** — how they understand the bottleneck, dependencies and change conditions;
+2. **allocation** — what actually receives scarce resources.
+
+It must do this without replacing the user's authorship of the decision.
+
+---
+
+## Category hierarchy
+
+```text
+ARCHITECTURAL CATEGORY
+Personal Decision Intelligence
+        ↓
+FIRST VERTICAL
+Professional Authority / Market Position
+        ↓
+INITIAL ICP
+Independent experts / consultants / fractional leaders in a professional transition
+        ↓
+PAID JOB
+Continuous strategic representation + resource allocation + learning
+        ↓
+RETENTION
+Decision / evidence / outcome / dependency triggers + compounding decision lineage
+```
+
+`Personalized Decision Intelligence`, decision profiles, specialized frameworks, scenario comparison and decision history already exist in the market. These are not defensible differentiation by themselves.
 
 ---
 
@@ -41,57 +63,13 @@ D  — revised representation / allocation / next best action
   ↺
 ```
 
-The **Authority Map is an explanation/navigation artifact supporting B**. It is not sufficient evidence of value by itself.
+The Authority Map is an explanation/navigation artifact supporting B. It is not sufficient evidence of value by itself.
 
 User agreement is not sufficient evidence of decision authorship.
 
 ---
 
-## Measurement and metric governance
-
-Before advice, capture:
-
-> **If this product did not exist, what would you actually do over the next relevant planning window?**
-
-Also capture the minimum useful version of:
-
-> **Why do you currently think those actions will work, what is the bottleneck, and what would change your mind?**
-
-This creates two frozen baselines:
-
-- stated counterfactual **representation**;
-- stated counterfactual **allocation**.
-
-After recommendation, compare them with the revised representation and allocation.
-
-Current evaluation constructs include:
-
-- Representation Delta;
-- Decision Delta;
-- Priority Delta;
-- Resource Allocation Delta;
-- Premature-Work Reallocation;
-- New-Leverage Allocation;
-- Decision Authorship / Contestability;
-- Reversal / Regret.
-
-**Counterfactual Resource Allocation Delta is not a North Star or routing objective.**
-
-Until prospective field evidence establishes a justified use:
-
-```text
-measurement_use: observational / evaluation
-routing_use: prohibited
-governance_use_as_optimization_target: prohibited
-```
-
-A large delta is not success. A zero delta is not failure.
-
-See `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
-
----
-
-## Meta-decision architecture
+## Decision intelligence architecture
 
 Before choosing a framework or algorithm, the system frames the live decision and uses the least-complex reasoning process sufficient for it.
 
@@ -117,58 +95,132 @@ future signals can justify changing course
 
 At every escalation:
 
-> **What material decision or resource allocation could this additional analytical layer change?**
+> **What material representation, decision or resource allocation could this additional analytical layer change?**
 
 If none, analytical escalation stops.
 
-See `docs/META_DECISION_GOVERNANCE.md`.
+---
+
+## Measurement and metric governance
+
+Before advice, freeze:
+
+- the user's stated decision representation;
+- the user's stated counterfactual allocation.
+
+After advice, observe separately:
+
+- Representation Delta;
+- Decision Authorship / Contestability;
+- Decision Delta;
+- Priority Delta;
+- Resource Allocation Delta;
+- Premature-Work Reallocation;
+- New-Leverage Allocation;
+- Reversal / Regret.
+
+`Counterfactual Resource Allocation Delta` is **not** a North Star or routing objective.
+
+Until prospectively validated:
+
+```text
+measurement_use: observational / evaluation
+routing_use: prohibited
+governance_use_as_optimization_target: prohibited
+```
+
+A large delta is not success. A zero delta is not failure.
+
+---
+
+## Business model hypothesis
+
+Generic personal decision tools publicly cluster around low-cost productivity pricing. Professional authority / mentoring substitutes demonstrate materially higher spend when the decision is tied to income, career, reputation or commercial opportunity.
+
+Current price hypotheses to FIELD-test rather than assume:
+
+```text
+Self-serve decision layer        $39–$79 / month
+Professional Intelligence       $99–$249 / month
+Assisted / human-in-loop         $300–$1,000+ / month
+or setup + subscription          $500–$1,500 setup + $99–$249 / month
+```
+
+Subscription itself is not an invariant. If useful decision events are too episodic, a paid episodic Decision Review / 90-day engagement may be a better model.
+
+Do not use revenue-share / outcome pricing yet: attribution is too weak and it could corrupt recommendation incentives.
+
+---
+
+## Retention thesis
+
+### Reject
+
+Daily engagement as a product goal.
+
+### Retain
+
+Event-driven retention:
+
+- `NEW_DECISION`
+- `NEW_EVIDENCE`
+- `OUTCOME_RETURNED`
+- `DEPENDENCY_UNLOCKED`
+- `BOUNDARY_CHANGED`
+- justified `SCHEDULED_REVIEW`
+
+The product should remain relevant because the decision state changes, not because it manufactures work.
+
+---
+
+## Why the product should be more valuable in one year
+
+The compounding asset is provisionally called the **Personal Decision Model**.
+
+It is a provenance-bearing longitudinal record of:
+
+```text
+what the user wanted
+what they believed
+what they planned
+what they chose
+what they actually did
+what resources were consumed
+what happened
+which audiences / authority surfaces responded
+which assumptions survived
+which recommendations were reversed
+where estimates are repeatedly miscalibrated
+which mechanisms repeatedly create useful signal
+which constraints repeatedly dominate
+```
+
+Strong retention test:
+
+> **Would the next recommendation materially degrade if the user's first 11 months of real decision / action / outcome history disappeared?**
+
+If no, the product has not built a compounding retention asset.
+
+Retention must come from accumulated usefulness, not learned helplessness or dependence on system authority.
 
 ---
 
 ## COR-SYS graph audit
 
-The current architecture has been audited through the COR-SYS System Grammar:
+The architecture has been audited through the COR-SYS System Grammar:
 
 `BND / ACT / REL / GOAL / REP / RES / RULE / MEM / OUT + EVT`
 
-with orthogonal `Structure / Phenomenon / Intervention / Epistemic / Governance` lenses.
+The audit exposed material requirements around:
 
-The audit exposed five material gaps:
+- Representation Delta;
+- decision authorship / contestability;
+- metric-governance / gaming risk;
+- explicit project / decision boundaries;
+- one event affecting multiple authority surfaces;
+- anti-self-loop / router discriminative-power tests.
 
-1. `REP` — allocation change was measured more strongly than change in the user's decision representation;
-2. `ACT / Governance` — acceptance could be mistaken for authorship; recommendations need first-class contestability;
-3. `metric_governance` — Allocation Delta must not become the objective that recommendations optimize;
-4. `BND` — project/field/surface boundaries need to be inspectable;
-5. `EVT / MEM` — one real-world event may update multiple authority surfaces and should be recorded once.
-
-The graph is used here as a falsification / representation instrument, **not as an empirical truth oracle**.
-
-See `docs/COR_SYS_GRAPH_AUDIT_V1.md`.
-
----
-
-## Current product model
-
-The top-level unit remains an **Authority Project**.
-
-```text
-Authority goal
-→ project / decision boundary
-→ stated counterfactual representation + allocation
-→ live decision frame
-→ requisite method selection
-→ person + field model
-→ strategic diagnosis
-→ representation + allocation decision
-→ contestable dependency-aware Authority Map
-→ user commitment / real-world action
-→ one event linked to affected authority surfaces
-→ market signal / outcome
-→ learning
-→ revised representation / allocation / map
-```
-
-Stopping is not inherently good. Evidence may later reverse a prior `STOP` or `DELAY`.
+COR-SYS is used here as a falsification / representation instrument, not as an empirical truth oracle.
 
 ---
 
@@ -182,47 +234,41 @@ Good targets include:
 - project/decision boundary recorded;
 - hard constraint represented;
 - method invoked without required preconditions;
-- prohibited metric used as a routing input;
+- prohibited metric used as routing/optimization input;
 - refuted assumption still feeds an active recommendation;
 - route/allocation change has no evidence trigger;
-- blocked action recommended as executable.
+- one event incorrectly duplicated across authority surfaces.
 
 Deterministic guards, mutation/contract tests, refutation propagation and provenance checks are appropriate here.
 
-Blind-review agreement, model confidence and cross-model consensus can test reproducibility or ambiguity, but are **not** >95% evidence that a strategic recommendation is true unless independently calibrated for that exact claim class.
-
----
-
-## Governing rule
-
-The repository is governed by a telos-first recursive stop rule.
-
-Every meaningful phase ends with one of:
-
-- `CONTINUE` — a material internal gap remains and is resolvable now;
-- `REPLAN` — the current framing / architecture / metric / decision process blocks O;
-- `FIELD` — reality is now the highest-value information source;
-- `STOP` — no further justified action, reallocation, information request or analytical escalation is currently expected to materially improve O.
-
-A completed checklist, improving metric or more sophisticated model cannot authorize `STOP`.
+Blind-review agreement, model confidence and cross-model consensus are not >95% evidence that a strategic recommendation is true unless independently calibrated for that exact claim class.
 
 ---
 
 ## Current lifecycle state
 
-**FIELD — representation + allocation + authorship validation**
+**FIELD — paid authority-wedge + longitudinal retention validation**
 
-The latest COR-SYS graph iteration reopened `REPLAN` and closed it after changing the contracts for representation, contestability, metric authority, boundaries and multi-surface events.
+The latest full iteration produced:
 
-The next material questions are empirical:
+- category research against enterprise and personal Decision Intelligence products;
+- business-model / pricing hypotheses;
+- an event-driven retention thesis;
+- a longitudinal compounding-value test;
+- a commercial FIELD protocol;
+- an additive business-model DOD extension.
 
-> **Does personalized analysis create a useful change in the user's decision representation and resource allocation without replacing the user's authorship?**
+The next justified evidence is not broader product build.
 
-and, only where it can discriminate:
+It is:
 
-> **Does context-sensitive selection of the reasoning process materially improve that result versus a simpler fixed process?**
+1. real suitable ICP participants;
+2. personalized Wizard-of-Oz value;
+3. real paid continuation / refusal evidence;
+4. a second material decision event where possible;
+5. evidence that prior decision lineage materially improves the next decision.
 
-Do not build a full MCDA / optimization / VOI stack or polished production UI before these survive FIELD.
+Only then should the product broaden beyond the authority vertical or invest in a full autonomous decision engine.
 
 ---
 
@@ -231,16 +277,17 @@ Do not build a full MCDA / optimization / VOI stack or polished production UI be
 Read these before changing product behavior:
 
 1. `docs/TELOS_GOVERNANCE.md` — highest-authority governing rule.
-2. `docs/COR_SYS_GRAPH_AUDIT_V1.md` — graph-based system audit and current structural findings.
-3. `docs/META_DECISION_GOVERNANCE.md` — how the system decides how to decide.
-4. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — representation/counterfactual baseline and allocation validation contract.
-5. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates.
-6. `docs/FIELD_PROTOCOL_V3.md` — personalized representation/allocation/authorship tests.
-7. `docs/UX_TRANSITION_CONTRACT.md` — user-state transitions.
-8. `docs/FIRST_SESSION_FLOW_V3.md` — current first-session flow.
-9. `PRODUCT_DOCTRINE.md` — broader product doctrine and mechanism hypotheses.
-10. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
-11. `docs/ARCHITECTURE_DECISION_LOG.md` — invalidated assumptions and architecture decisions.
+2. `docs/CATEGORY_BUSINESS_MODEL_ITERATION_V1.md` — current category, ICP, pricing and retention iteration.
+3. `docs/CATEGORY_RESEARCH_SOURCE_LEDGER_V1.md` — public research ledger.
+4. `docs/COMMERCIAL_FIELD_PROTOCOL_V1.md` — paid / longitudinal commercial FIELD test.
+5. `docs/DOD_BUSINESS_MODEL_DELTA_V1.md` — additive commercial/retention DOD gates.
+6. `docs/COR_SYS_GRAPH_AUDIT_V1.md` — graph-based system audit.
+7. `docs/META_DECISION_GOVERNANCE.md` — how the system decides how to decide.
+8. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — representation/counterfactual allocation validation contract.
+9. `docs/DEFINITION_OF_DONE.md` — core product / epistemic gates.
+10. `docs/FIELD_PROTOCOL_V3.md` — personalized representation/allocation/authorship tests.
+11. `docs/PRODUCT_MODEL_GRAPH_DELTA_V3_1.md` — additive graph-audit model corrections.
+12. `docs/PRODUCT_MODEL.md` — base Authority Project model.
 
 ---
 
@@ -250,11 +297,11 @@ Current UI FIELD instrument:
 
 `public/authority-prototype-v3-2.html`
 
-It is intentionally low fidelity and its strategic recommendation is scripted.
+It is intentionally low fidelity and scripted.
 
-It is **not production UI** and **not validated intelligence**.
+It is not production UI and not validated strategic intelligence.
 
-The personalized Wizard-of-Oz test is the next evidence gate.
+Do not invest in polished production UI, broad life-decision coverage, a full MCDA/optimization/VOI stack or full refutation infrastructure before the current FIELD gates survive.
 
 ## Run locally
 
