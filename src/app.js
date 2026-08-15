@@ -1,407 +1,397 @@
-const STORAGE_KEY = 'proofminer-product-v2-preview';
+const STORAGE_KEY = 'proofminer-transition-v5-preview';
 
-const demoMoment = 'אני רוצה שמנכ״לית שכבר דיברה איתי תרגיש מספיק בטוחה לקבוע שיחת המשך על תהליך הייעוץ.';
-const demoSource = `במשך ארבעה חודשים בעל העסק לא ייצר הכנסה חדשה. אחרי שמיפינו יחד את צוואר הבקבוק והעברנו את הפוקוס מתוכן לשיחות מכירה, בתוך חודש נסגרו עסקאות בהיקף 5,500 ש״ח. בהמשך נסגרו עשר עסקאות בהיקף כולל של 27,000 ש״ח. הלקוח כתב: "הצלחתי סוף סוף לראות מה באמת מעכב את העסק ולא רק מה מרגיש דחוף".`;
-
-const initialState = {
-  step: 'moment',
-  moment: '',
-  actor: '',
-  nextAction: '',
-  sourceName: '',
-  sourceText: '',
-  sourcePrivate: false,
-  result: null,
-  alternativeIndex: 0,
-  correctionOpen: false,
-  draft: '',
-  truthChecks: { grounded: false, inference: false, permission: false, useful: false },
-  published: false,
+const demo = {
+  transition: 'אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים, בלי לבזבז חודשים על מיתוג מחדש שלא יזיז את העסק.',
+  profession: 'יועץ עסקי',
+  desiredState: 'שמנהלים בארגונים יראו בי אופציה לגיטימית ויקבעו שיחות על תהליכי ייעוץ.',
+  baselinePlan: 'לשכתב את האתר\nלהתחיל לפרסם יותר בלינקדאין\nלבנות וובינר למנהלים',
+  hours: '50',
+  budget: '5000',
+  why: 'כי כרגע אני נראה כמו מישהו שעובד עם עצמאים, ואני מניח שצריך לשנות את הנראות לפני שאפנה לארגונים.',
+  bottleneck: 'אני לא יודע אם הבעיה האמיתית היא מיצוב, הוכחה, גישה למקבלי החלטות או פשוט חוסר עקביות.',
+  mirror: 'אם לקוח היה מגיע אליי במצב הזה, לא הייתי מתחיל מערוץ או אתר. הייתי מגדיר קודם מי צריך לבחור בו, לפי מה הוא בוחר, ומה חסר כדי שהבחירה תהיה סבירה.',
 };
 
-const state = { ...initialState, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}) };
+const blank = {
+  step: 'transition',
+  transition: '',
+  profession: '',
+  desiredState: '',
+  baselinePlan: '',
+  hours: '',
+  budget: '',
+  why: '',
+  bottleneck: '',
+  mirror: '',
+  mirrorChoice: null,
+  decision: null,
+  commitment: '',
+  challenge: '',
+  reversal: '',
+};
+
+const state = { ...blank, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}) };
 const app = document.querySelector('#app');
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function esc(v = '') { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+function lines(v='') { return String(v).split(/\n+/).map(x => x.trim()).filter(Boolean); }
+function firstLine(v='') { return lines(v)[0] || ''; }
 
-function esc(value = '') {
-  return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
-}
+function go(step) { state.step = step; save(); render(); window.scrollTo({top:0, behavior:'smooth'}); }
+function reset() { Object.assign(state, blank); save(); render(); }
+function loadDemo() { Object.assign(state, blank, demo); save(); render(); }
 
-function splitEvidence(text) {
-  return String(text)
-    .split(/(?<=[.!?])\s+|\n+/u)
-    .map(s => s.trim())
-    .filter(s => s.length > 24);
-}
-
-function evidenceSignal(sentence) {
-  const x = sentence.toLowerCase();
-  let score = 0;
-  if (/\d/.test(sentence)) score += 3;
-  if (/לקוח|לקוחה|כתב|כתבה|ראיון|המלצ|ציטט|אמר/.test(x)) score += 3;
-  if (/הכנס|הכנסות|מכירות|עסקאות|חסך|הפחית|הגדיל|נסגר|תוצאה|בתוך|אחרי|לפני/.test(x)) score += 4;
-  if (/תואר|פרס|כנס|הרצאה|מחקר|פרסום/.test(x)) score += 2;
-  if (/יצירתי|סקרן|מקצועי מאוד|אסטרטגי מאוד|שנים של ניסיון/.test(x)) score -= 3;
-  return score;
-}
-
-function inferClaim(sentence) {
-  const x = sentence.toLowerCase();
-  if (/הכנס|הכנסות|מכירות|עסקאות|נסגר|הגדיל|חסך|הפחית/.test(x)) {
-    return {
-      claim: 'יש כאן יכולת שמגיעה עד לתוצאה עסקית נצפית — לא רק לאבחון או לרעיון.',
-      support: 'המקור מתאר שינוי ותוצאה קונקרטית במסגרת זמן, ולכן הוא יכול להקטין ספק לגבי היכולת להגיע לביצוע.',
-      limit: 'הראיה לא מוכיחה לבדה שהעבודה היא הסיבה היחידה לתוצאה, ולא מבטיחה שאותה תוצאה תחזור אצל כל לקוח.',
-      missing: 'אם קיימת עדות ישירה של הלקוח על תרומת העבודה לתוצאה, היא תחזק במיוחד את הקשר בין העבודה לבין השינוי.',
-    };
-  }
-  if (/לקוח|לקוחה|המלצ|כתב|אמר|ציטט/.test(x)) {
-    return {
-      claim: 'אנשים שעבדו איתך מתארים ערך שהם חוו בפועל, ולא רק הבטחה שאתה מנסח על עצמך.',
-      support: 'המקור מכיל קול של לקוח או צד אחר ולכן הוא מוסיף נקודת מבט שאינה רק תיאור עצמי.',
-      limit: 'עדות אחת אינה אומרת שהחוויה מייצגת את כל הלקוחות, והיא לא מוכיחה בהכרח תוצאה עסקית מדידה.',
-      missing: 'תוצאה ספציפית, מספר או לפני/אחרי מאותו מקרה יהפכו את העדות לראיה שלמה יותר.',
-    };
-  }
-  if (/כתבה|ראיון|כנס|הרצאה|פאנל|מחקר|מאמר/.test(x)) {
-    return {
-      claim: 'יש כאן מומחיות שקיבלה במה או הכרה מחוץ לערוצים שאתה שולט בהם בעצמך.',
-      support: 'המקור מצביע על בחירה חיצונית להציג, להזמין או לצטט את המומחיות.',
-      limit: 'במה מקצועית היא אות אמון, אבל אינה מוכיחה לבדה שהעבודה שלך מייצרת את התוצאה שהקונה רוצה.',
-      missing: 'מקרה לקוח קרוב להצעה שאתה מוכר יחבר את הסמכות המקצועית לתוצאה מסחרית.',
-    };
-  }
-  if (/תואר|הסמכה|פרס|ציון/.test(x)) {
-    return {
-      claim: 'יש לך בסיס מקצועי שאפשר להצביע עליו במקום לבקש מהקונה פשוט להאמין לך.',
-      support: 'המקור מכיל הישג או הסמכה שניתן לייחס לגוף או מסגרת מוגדרים.',
-      limit: 'הסמכה מוכיחה הכשרה או הישג, לא בהכרח יכולת לייצר את התוצאה המסחרית שהקונה מחפש.',
-      missing: 'ראיה מהשטח תראה כיצד הבסיס המקצועי מתורגם לעבודה ולתוצאה.',
-    };
-  }
-  return {
-    claim: 'יש כאן ניסיון שאפשר להפוך לראיה, אבל כרגע חסרה עקבה חזקה מספיק כדי להישען עליה בהחלטת קנייה.',
-    support: 'המקור מתאר ניסיון או יכולת, אך רוב התמיכה עדיין מגיעה מתיאור עצמי.',
-    limit: 'אי אפשר להסיק מהטקסט לבדו שהיכולת נצפתה על ידי אדם אחר או שיצרה תוצאה מדידה.',
-    missing: 'חפש המלצה, תוצאה, מספר, לפני/אחרי או מקור חיצוני שנוגע לאותה יכולת.',
-  };
-}
-
-function analyze() {
-  const units = splitEvidence(state.sourceText)
-    .map((text, index) => ({ text, index, signal: evidenceSignal(text) }))
-    .sort((a, b) => b.signal - a.signal);
-
-  if (!units.length) return;
-  const candidates = units.slice(0, Math.min(3, units.length)).map(unit => ({ ...unit, ...inferClaim(unit.text) }));
-  state.result = { candidates };
-  state.alternativeIndex = 0;
-  state.step = 'result';
-  state.correctionOpen = false;
-  state.draft = '';
-  state.truthChecks = { grounded: false, inference: false, permission: false, useful: false };
-  state.published = false;
-  save();
-  render();
-}
-
-function currentCandidate() {
-  return state.result?.candidates?.[state.alternativeIndex] || null;
-}
-
-function momentSummary() {
-  const parts = [state.actor, state.nextAction].filter(Boolean);
-  return parts.length ? parts.join(' · ') : state.moment;
-}
-
-function generateDraft() {
-  const c = currentCandidate();
-  if (!c) return;
-  const moment = state.moment || 'להקטין אי־ודאות אצל האדם שמולי';
-  state.draft = `${c.text}\n\nמה שמעניין כאן הוא לא המספר או האירוע בפני עצמם. העניין הוא מה השתנה בדרך: במקום להוסיף עוד פעילות, עצרנו לזהות מה באמת חוסם את התוצאה ורק אז בחרנו פעולה.\n\nזו הבחנה שאני חוזר אליה הרבה בעבודה מקצועית: לפעמים הבעיה היא לא שאין מספיק מאמץ — אלא שהמאמץ יושב במקום שלא מזיז את המערכת.\n\nבהקשר של ${moment}, זו בדיוק הראיה שהייתי מעדיף להראות: לא הבטחה גדולה, אלא עקבה שאפשר לבדוק.`;
-  state.step = 'draft';
-  save();
-  render();
-}
-
-function allTruthChecksPassed() {
-  return Object.values(state.truthChecks).every(Boolean);
-}
-
-function progressIndex() {
-  return ({ moment: 1, source: 2, result: 3, draft: 4 }[state.step] || 1);
+function stepIndex() {
+  return ({transition:1, baseline:2, mirror:3, decision:4, commit:5}[state.step] || 1);
 }
 
 function header() {
-  const p = progressIndex();
+  const labels = ['המעבר','לפני ההמלצה','העדשה שלך','מה עכשיו','ההכרעה שלך'];
+  const current = stepIndex();
   return `
     <header class="site-header">
       <div class="brand-lockup">
         <div class="logo-mark">P</div>
-        <div><b>ProofMiner</b><span>ראיה לפני ניסוח</span></div>
+        <div><b>ProofMiner</b><span>להחליט מה עכשיו</span></div>
       </div>
       <div class="header-actions">
-        <span class="preview-badge">Product v2 · Preview</span>
+        <span class="preview-badge">Decision Preview · v5</span>
         <button class="text-btn" data-action="reset">התחל מחדש</button>
       </div>
     </header>
-    <div class="progress-wrap" aria-label="התקדמות">
-      ${['רגע ההחלטה', 'ראיה אחת', 'המהלך', 'בדיקת אמת'].map((label, i) => `
-        <div class="progress-step ${i + 1 <= p ? 'done' : ''} ${i + 1 === p ? 'active' : ''}">
-          <span>${i + 1}</span><b>${label}</b>
-        </div>`).join('')}
-    </div>`;
+    <nav class="episode-progress" aria-label="שלבי התהליך">
+      ${labels.map((x,i)=>`<div class="episode-step ${i+1<current?'done':''} ${i+1===current?'active':''}"><span>${i+1}</span><b>${x}</b></div>`).join('')}
+    </nav>`;
 }
 
-function momentScreen() {
+function transitionScreen() {
   return `
-    <main class="stage stage-narrow">
-      <div class="eyebrow">01 · מתחילים בהחלטה, לא בתוכן</div>
-      <h1>מה אתה מנסה לגרום לקרות עכשיו?</h1>
-      <p class="lead">תאר אדם ורגע אמיתי. ProofMiner יחפש מה שכבר עשית ויכול להקטין את אי־הוודאות שלו עכשיו.</p>
+    <main class="stage focus-stage">
+      <div class="screen-kicker">מתחילים במה שקורה אצלך — לא בקטגוריה שלנו</div>
+      <h1>מה משתנה אצלך מקצועית עכשיו?</h1>
+      <p class="lead">ספר על שינוי אמיתי שאתה מנסה לייצר: לקוחות אחרים, תפקיד אחר, הצעה חדשה, קהל חדש או שלב חדש בעסק.</p>
 
-      <section class="paper input-card">
+      <section class="paper primary-card">
         <label class="big-field">
-          <span>תאר את הרגע במילים שלך</span>
-          <textarea id="moment" rows="5" placeholder="לדוגמה: אני רוצה שמנכ״לית שכבר דיברה איתי תרגיש מספיק בטוחה לקבוע שיחת המשך...">${esc(state.moment)}</textarea>
+          <span>מה קורה עכשיו?</span>
+          <textarea id="transition" rows="5" placeholder="לדוגמה: אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים, אבל לא ברור לי במה להשקיע קודם.">${esc(state.transition)}</textarea>
         </label>
         <div class="two-fields">
-          <label><span>מי צריך להחליט? <small>אופציונלי</small></span><input id="actor" value="${esc(state.actor)}" placeholder="מנכ״לית בחברת שירותים" /></label>
-          <label><span>מה הפעולה הבאה? <small>אופציונלי</small></span><input id="nextAction" value="${esc(state.nextAction)}" placeholder="לקבוע שיחת המשך" /></label>
+          <label><span>מה אתה עושה מקצועית? <small>אופציונלי</small></span><input id="profession" value="${esc(state.profession)}" placeholder="יועץ, מנהל פרויקטים, משווק..." /></label>
+          <label><span>מה היית רוצה שיהיה נכון במקום? <small>אופציונלי</small></span><input id="desiredState" value="${esc(state.desiredState)}" placeholder="למשל: שמנהלים בארגונים יפנו אליי..." /></label>
         </div>
         <div class="card-actions">
-          <button class="primary" data-action="moment-next">זה הרגע שלי <span>←</span></button>
-          <button class="secondary" data-action="demo-moment">טען דוגמה</button>
+          <button class="primary" data-action="transition-next" ${state.transition.trim()?'':'disabled'}>המשך <span>←</span></button>
+          <button class="secondary" data-action="demo">טען מקרה לדוגמה</button>
         </div>
       </section>
 
-      <div class="principle-row">
-        <div><b>לא צריך לדעת מה “הספק” של הקונה</b><span>תן לנו את המצב. המודל הוא העבודה שלנו, לא שלך.</span></div>
-        <div><b>לא בונים מאגר לפני ערך</b><span>מתחילים מרגע אחד וממקור אחד.</span></div>
-        <div><b>אין ציון קסם</b><span>נראה מה הראיה מאפשרת לטעון — וגם מה לא.</span></div>
-      </div>
+      <section class="quiet-principles">
+        <div><b>לא צריך לדעת מה הבעיה “באמת”</b><span>אנחנו שומרים את הניסוח שלך לפני שנשפיע עליו.</span></div>
+        <div><b>לא מתחילים במחקר רחב</b><span>נחפש רק מידע שיכול לשנות החלטה.</span></div>
+        <div><b>לא מחפשים תשובה מפתיעה</b><span>גם KEEP יכול להיות תוצאה טובה אם התוכנית שלך שורדת.</span></div>
+      </section>
     </main>`;
 }
 
-function sourceScreen() {
+function baselineScreen() {
   return `
-    <main class="stage source-stage">
-      <aside class="context-strip">
-        <span>רגע ההחלטה</span>
-        <b>${esc(momentSummary())}</b>
-        <button class="text-btn" data-action="back-moment">ערוך</button>
+    <main class="stage split-stage">
+      <aside class="context-rail">
+        <span>המעבר שלך</span>
+        <b>${esc(state.transition)}</b>
+        ${state.desiredState ? `<small>מצב רצוי: ${esc(state.desiredState)}</small>` : ''}
+        <button class="text-btn" data-action="back-transition">ערוך</button>
       </aside>
 
-      <div class="source-content">
-        <div class="eyebrow">02 · תן לנו דבר אחד שכבר קיים</div>
-        <h1>לא צריך למיין. תן מקור אחד.</h1>
-        <p class="lead">תמלול, המלצה, מקרה לקוח, הצעה, קורות חיים או טקסט. אם חסר משהו, נבקש רק את הדבר הבא שיכול לשנות את ההכרעה.</p>
+      <section class="content-column">
+        <div class="screen-kicker">לפני ההמלצה</div>
+        <h1>אם לא היינו כאן — מה היית עושה ב־30 הימים הקרובים?</h1>
+        <p class="lead">זה לא מבחן. אנחנו מקפיאים את התוכנית שלך לפני שהמערכת משנה אותה.</p>
 
-        <section class="paper input-card">
-          <div class="source-tabs">
-            <button class="source-tab active">הדבק טקסט</button>
-            <label class="source-tab file-tab">קובץ TXT / MD<input id="fileInput" type="file" accept=".txt,.md,text/plain,text/markdown" /></label>
+        <div class="baseline-banner"><b>לפני ההמלצה</b><span>המידע במסך הזה נשמר כ־before state. הוא לא יתוקן בדיעבד.</span></div>
+
+        <section class="paper primary-card">
+          <label class="big-field">
+            <span>הפעולות שאתה מתכוון לעשות</span>
+            <textarea id="baselinePlan" rows="7" placeholder="כל פעולה בשורה חדשה\nלמשל: לשכתב אתר\nלהתחיל לפרסם יותר\nלקבוע 5 שיחות">${esc(state.baselinePlan)}</textarea>
+          </label>
+          <div class="two-fields resource-fields">
+            <label><span>כמה שעות בערך?</span><input id="hours" inputmode="numeric" value="${esc(state.hours)}" placeholder="30" /></label>
+            <label><span>כמה כסף בערך? <small>אם רלוונטי</small></span><input id="budget" inputmode="numeric" value="${esc(state.budget)}" placeholder="3000" /></label>
           </div>
-          <label class="field"><span>שם המקור <small>אופציונלי</small></span><input id="sourceName" value="${esc(state.sourceName)}" placeholder="למשל: סיכום שיחת לקוח — יוני 2026" /></label>
-          <label class="big-field"><span>התוכן</span><textarea id="sourceText" rows="12" placeholder="הדבק כאן את החומר כמו שהוא. אין צורך לנקות או לסכם.">${esc(state.sourceText)}</textarea></label>
-          <label class="privacy-check"><input id="sourcePrivate" type="checkbox" ${state.sourcePrivate ? 'checked' : ''}/><span><b>המקור הזה פרטי / רגיש</b><small>ב־Preview הסימון משפיע על ההמלצה בלבד. במוצר המלא הוא ישלוט בהרשאות ובאנונימיזציה.</small></span></label>
+          <label class="big-field compact-field"><span>למה אתה חושב שזה יעבוד?</span><textarea id="why" rows="3" placeholder="מה ההנחה שמחברת בין הפעולות לבין התוצאה שאתה רוצה?">${esc(state.why)}</textarea></label>
+          <label class="big-field compact-field"><span>מה לדעתך מעכב אותך כרגע?</span><textarea id="bottleneck" rows="3" placeholder="גם “אני לא יודע” זו תשובה טובה.">${esc(state.bottleneck)}</textarea></label>
           <div class="card-actions">
-            <button class="primary" data-action="analyze">מצא את המהלך הכי חזק <span>←</span></button>
-            <button class="secondary" data-action="demo-source">טען מקור לדוגמה</button>
+            <button class="primary" data-action="baseline-next" ${state.baselinePlan.trim()?'':'disabled'}>שמור את ה־before state <span>←</span></button>
           </div>
         </section>
-      </div>
+      </section>
     </main>`;
 }
 
-function resultScreen() {
-  const c = currentCandidate();
-  if (!c) return sourceScreen();
-  const candidates = state.result?.candidates || [];
+function mirrorScreen() {
+  const profession = state.profession || 'המקצוע שלך';
   return `
-    <main class="stage result-stage">
-      <aside class="context-strip">
-        <span>רגע ההחלטה</span><b>${esc(momentSummary())}</b>
-        <span class="source-chip">מקור: ${esc(state.sourceName || 'הטקסט שהדבקת')}${state.sourcePrivate ? ' · פרטי' : ''}</span>
+    <main class="stage split-stage">
+      <aside class="context-rail compact-rail">
+        <span>התוכנית שלך בלי המערכת</span>
+        <div class="baseline-list">${lines(state.baselinePlan).map(x=>`<em>${esc(x)}</em>`).join('')}</div>
+        <small>${state.hours ? `${esc(state.hours)} שעות` : ''}${state.hours && state.budget ? ' · ' : ''}${state.budget ? `₪${esc(state.budget)}` : ''}</small>
       </aside>
 
-      <section class="recommendation paper">
-        <div class="recommendation-head">
-          <div><div class="eyebrow">03 · המהלך שהייתי עושה עכשיו</div><h1>הייתי מתחיל דווקא מזה.</h1></div>
-          <span class="fit-label">התאמה גבוהה לרגע</span>
-        </div>
+      <section class="content-column">
+        <div class="screen-kicker">עדשה אופציונלית</div>
+        <h1>בוא נבדוק רגע דרך העיניים המקצועיות שלך.</h1>
+        <p class="lead">לפעמים יש אצלך כלי אבחון שאתה מפעיל על אחרים אבל לא על עצמך. אם הוא לא מוסיף להחלטה — נדלג עליו.</p>
 
-        <div class="claim-block">
-          <span>הטענה שכדאי לבסס</span>
-          <h2>${esc(c.claim)}</h2>
-        </div>
+        <section class="paper mirror-card">
+          <div class="lens-note"><span>עדשה, לא תשובה</span><p>אנחנו בודקים אם הדרך שבה אתה עובד כ־${esc(profession)} חושפת משהו שימושי. אחר כך נבדוק גם איפה האנלוגיה נשברת.</p></div>
 
-        <div class="proof-trace">
-          <div class="trace-node evidence-node"><span>המקור אומר</span><blockquote>“${esc(c.text)}”</blockquote><small>${esc(state.sourceName || 'המקור שהוזן')}</small></div>
-          <div class="trace-arrow">↓</div>
-          <div class="trace-node relation-node"><span>למה זה תומך בטענה</span><p>${esc(c.support)}</p></div>
-          <div class="trace-arrow">↓</div>
-          <div class="trace-node limit-node"><span>מה זה עדיין לא מאפשר לטעון</span><p>${esc(c.limit)}</p></div>
-        </div>
+          <label class="big-field">
+            <span>אם אדם במצב שלך היה מגיע אליך כלקוח — מה היית בודק קודם?</span>
+            <textarea id="mirror" rows="6" placeholder="אל תספר את כל המתודולוגיה. כתוב רק מה היית בודק לפני שאתה ממליץ לו על פעולה.">${esc(state.mirror)}</textarea>
+          </label>
 
-        <div class="decision-actions">
-          <button class="primary" data-action="use-proof">השתמש בזה <span>←</span></button>
-          <button class="secondary" data-action="correction">זה לא מדויק</button>
-          <button class="secondary" data-action="private-proof">אי אפשר לפרסם את זה</button>
-          ${candidates.length > 1 ? '<button class="text-btn" data-action="alternative">תראה לי חלופה</button>' : ''}
-        </div>
+          <div class="mirror-boundary">
+            <b>לפני שמשתמשים בעדשה</b>
+            <span>המקצוע שלך יכול לעזור לראות את הבעיה — והוא גם יכול להסתיר דברים. המערכת לא תתייחס למה שכתבת כעובדה על השוק.</span>
+          </div>
 
-        ${state.correctionOpen ? correctionPanel() : ''}
-      </section>
-
-      <section class="gap-card">
-        <div><span>הדבר היחיד שהייתי מחפש אחר כך</span><b>${esc(c.missing)}</b></div>
-        <button class="secondary" data-action="add-source">יש לי משהו כזה</button>
-      </section>
-
-      <section class="why-section">
-        <div class="eyebrow">העיקרון</div>
-        <h3>ProofMiner לא אומר “זה נכון”. הוא מראה מי טען מה, איפה, ומה מותר להסיק מזה.</h3>
+          <div class="card-actions">
+            <button class="primary" data-action="use-mirror" ${state.mirror.trim()?'':'disabled'}>השתמש בעדשה הזאת <span>←</span></button>
+            <button class="secondary" data-action="skip-mirror">דלג — זה לא מוסיף כרגע</button>
+          </div>
+        </section>
       </section>
     </main>`;
 }
 
-function correctionPanel() {
-  return `
-    <div class="correction-panel">
-      <b>מה לא מדויק?</b>
-      <p>התיקון הזה אמור ללמד את המערכת איך לפרש את הראיות שלך בפעם הבאה.</p>
-      <div class="correction-options">
-        ${['זה לא באמת נובע ממני', 'חסר כאן הקשר', 'לא מתאים לאדם הזה', 'הניסוח חזק מדי', 'המקור עצמו לא אמין מספיק'].map(x => `<button class="correction-chip" data-correction="${esc(x)}">${esc(x)}</button>`).join('')}
-      </div>
-    </div>`;
+function makeDecision() {
+  const planned = lines(state.baselinePlan);
+  const first = planned[0] || 'הפעולה הראשונה שתכננת';
+  const rest = planned.slice(1);
+  const mirrorUsed = state.mirrorChoice === 'use' && state.mirror.trim();
+  const transitionText = `${state.transition} ${state.desiredState} ${state.bottleneck}`.toLowerCase();
+  const demoLike = /ארגונ|מנהלים|עצמאים/.test(transitionText);
+
+  let now;
+  let later;
+  let learn;
+
+  if (demoLike) {
+    now = {
+      status:'ADD',
+      title:'לברר איך ההחלטה באמת מתקבלת לפני שבונים את כל המעטפת',
+      detail:'לקבוע 5 שיחות קצרות עם מנהלים / בעלי תפקידים רלוונטיים ולחלץ: מי מחזיק את הבעיה, לפי מה נבחר ספק, ואיזה proof מוריד סיכון.',
+      resource:'כ־8–10 שעות',
+      source:'מסקנה',
+      reason: mirrorUsed ? 'העדשה המקצועית שלך מצביעה על כך שאתה עצמך לא היית מתחיל מערוץ לפני שהגדרת buyer + criterion. זה משנה את סדר הפעולות.' : 'התוכנית הנוכחית משקיעה בנראות לפני שהוגדר מספיק טוב מי צריך לבחור ובאיזה קריטריון.',
+      reverse:'אם כבר קיימת אצלך ראיה ישירה ועדכנית שמגדירה buyer, criterion ו־proof נדרש — הצעד הזה יכול להתקצר או להיעלם.'
+    };
+    later = {
+      status:'DELAY',
+      title: rest.length ? rest.join(' · ') : first,
+      detail:'לא מבטלים. דוחים עד שנדע מה המסר וה־proof צריכים לעשות עבור הקונה הרלוונטי.',
+      resource: state.hours ? `מתוך ${esc(state.hours)} השעות שתכננת` : 'המשאב שתכננת',
+      source:'ממך',
+      reason:'אלה פעולות סבירות, אבל כרגע הן יוצרות lock-in לפני שהנחות הקנייה נבדקו.',
+      reverse:'אם השיחות מראות שהבעיה אינה buyer/criterion אלא רק distribution — מחזירים את פעולות הנראות קדימה.'
+    };
+    learn = {
+      status:'LEARN',
+      title:'מה באמת מונע את המעבר לשוק הארגוני?',
+      detail:'להבדיל בין ארבע השערות: מיצוב, proof, access למקבלי החלטות, או עקביות / capacity.',
+      resource:'שאלה שמסוגלת לשנות את ההקצאה',
+      source:'השערה לבדיקה',
+      reason:'כל אחת מהשערות מובילה לתוכנית אחרת. כרגע אין הצדקה לבחור אחת רק כי היא נשמעת סבירה.',
+      reverse:'הסיגנל הראשון שמבדיל בין ההשערות צריך לשנות את התוכנית — לא לחזק אותה בכוח.'
+    };
+  } else {
+    now = {
+      status:'KEEP',
+      title:first,
+      detail:'ב־Preview אין כרגע ראיה חיצונית שמצדיקה להפוך את הפעולה הראשונה שלך. לכן היא נשארת — אבל עם תנאי עצירה ברור.',
+      resource: state.hours ? `חלק מתוך ${esc(state.hours)} השעות שתכננת` : 'משאב מוגבל',
+      source:'ממך',
+      reason: mirrorUsed ? `העדשה שהבאת מוסיפה קריטריון: ${firstLine(state.mirror) || 'בדיקה מקצועית משלך'}. היא לא מספיקה לבדה כדי לבטל את התוכנית.` : 'המערכת לא מייצרת שינוי רק כדי להראות ערך.',
+      reverse:'ראיה חדשה שמראה שהפעולה תלויה ב־prerequisite אחר או שהקהל אינו מגיב למנגנון הזה.'
+    };
+    later = {
+      status: rest.length ? 'DELAY' : 'REDUCE',
+      title: rest.length ? rest.join(' · ') : 'להרחיב את התוכנית לפני שיש signal ראשון',
+      detail:'שמור את שאר המשאבים עד שהפעולה הראשונה מחזירה מידע שמצדיק הרחבה.',
+      resource: state.budget ? `הגן כרגע על ₪${esc(state.budget)}` : 'הגן על הזמן והקשב שנותרו',
+      source:'מסקנה',
+      reason:'כאשר אי־הוודאות גבוהה, staged commitment שומר option value ומקטין lock-in.',
+      reverse:'signal מוקדם וחזק שמאשר שהמנגנון עובד יכול להצדיק האצה.'
+    };
+    learn = {
+      status:'LEARN',
+      title: state.bottleneck || 'מהו צוואר הבקבוק שבאמת משנה את סדר הפעולות?',
+      detail:'נדרש מידע חיצוני רק אם התשובה יכולה להפוך את הפעולה הראשונה או לשנות את המשאב שמוקצה לה.',
+      resource:'לא לחקור מעבר למה שמשנה החלטה',
+      source:'השערה לבדיקה',
+      reason:'זהו החוב שנותר לפני שאפשר לתת המלצה חזקה יותר בלי להמציא ודאות.',
+      reverse:'כאשר מתקבלת ראיה שמבדילה בין החלופות, החוב נסגר ונדרשת הקצאה מחדש.'
+    };
+  }
+
+  state.decision = { now, later, learn, mirrorUsed };
+  save();
 }
 
-function draftScreen() {
-  const c = currentCandidate();
-  if (!c) return resultScreen();
-  const passed = allTruthChecksPassed();
-  return `
-    <main class="stage draft-stage">
-      <aside class="context-strip"><span>ה־Proof Move</span><b>${esc(c.claim)}</b><button class="text-btn" data-action="back-result">חזור לראיה</button></aside>
+function evidenceBadge(source) {
+  const cls = source === 'ממך' ? 'from-user' : source === 'מהשטח' ? 'from-field' : source === 'מסקנה' ? 'inference' : 'hypothesis';
+  return `<span class="evidence-badge ${cls}">${esc(source)}</span>`;
+}
 
-      <div class="draft-grid">
-        <section class="paper draft-editor">
-          <div class="eyebrow">04 · הופכים ראיה לתקשורת שימושית</div>
-          <h1>הקורא צריך לקבל ערך גם אם הוא לא מכיר אותך.</h1>
-          <textarea id="draftText" class="draft-text" rows="18">${esc(state.draft)}</textarea>
-          <div class="draft-footer"><span>הראיה נשארת העוגן. מותר לערוך את המסר — אסור להמציא עובדות.</span><button class="text-btn" data-action="regenerate">נסח מחדש</button></div>
+function decisionCard(type, card) {
+  return `
+    <article class="decision-card ${type}">
+      <div class="decision-card-head">
+        <span class="status-pill">${esc(card.status)}</span>
+        ${evidenceBadge(card.source)}
+      </div>
+      <h3>${esc(card.title)}</h3>
+      <p>${esc(card.detail)}</p>
+      <div class="resource-line"><span>משאב</span><b>${card.resource}</b></div>
+      <details>
+        <summary>למה?</summary>
+        <p>${esc(card.reason)}</p>
+      </details>
+      <details>
+        <summary>מה יגרום לנו לשנות כיוון?</summary>
+        <p>${esc(card.reverse)}</p>
+      </details>
+    </article>`;
+}
+
+function decisionScreen() {
+  if (!state.decision) makeDecision();
+  const d = state.decision;
+  return `
+    <main class="stage decision-stage">
+      <section class="decision-intro">
+        <div class="screen-kicker">זו לא תוכנית עבודה מלאה</div>
+        <h1>ההחלטה עכשיו היא איפה לשים את המשאב הבא.</h1>
+        <p class="lead">ה־Preview מפריד בין מה שכדאי לעשות, מה סביר אבל מוקדם מדי, ומה צריך לברר לפני שמתחייבים.</p>
+      </section>
+
+      <section class="before-after paper">
+        <div>
+          <span>לפני</span>
+          <b>${lines(state.baselinePlan).map(x=>esc(x)).join(' · ') || 'לא הוגדרה תוכנית'}</b>
+        </div>
+        <div class="ba-arrow">←</div>
+        <div>
+          <span>אחרי</span>
+          <b>${esc(d.now.title)}</b>
+        </div>
+      </section>
+
+      <section class="decision-board">
+        <div class="lane lane-now"><div class="lane-title"><span>01</span><b>לעשות עכשיו</b></div>${decisionCard('now', d.now)}</div>
+        <div class="lane lane-later"><div class="lane-title"><span>02</span><b>לא עכשיו</b></div>${decisionCard('later', d.later)}</div>
+        <div class="lane lane-learn"><div class="lane-title"><span>03</span><b>לברר לפני שמחליטים</b></div>${decisionCard('learn', d.learn)}</div>
+      </section>
+
+      <section class="trust-strip">
+        <div><span class="dot from-user-dot"></span><b>ממך</b><small>מה שאמרת או תכננת</small></div>
+        <div><span class="dot inference-dot"></span><b>מסקנה</b><small>פירוש של המערכת</small></div>
+        <div><span class="dot hypothesis-dot"></span><b>השערה לבדיקה</b><small>עדיין לא ראיה מהשוק</small></div>
+      </section>
+
+      <div class="decision-footer">
+        <button class="primary" data-action="decision-next">אני רוצה להכריע בעצמי <span>←</span></button>
+        <button class="secondary" data-action="back-mirror">חזור ושנה את העדשה</button>
+      </div>
+    </main>`;
+}
+
+function commitScreen() {
+  const d = state.decision || {};
+  return `
+    <main class="stage commit-stage">
+      <div class="screen-kicker">המערכת המליצה. עכשיו ההכרעה חוזרת אליך.</div>
+      <h1>מה אתה באמת הולך לעשות?</h1>
+      <p class="lead">אנחנו לא מסמנים “המלצה התקבלה”. אנחנו שומרים מה אתה בוחר, מה אתה משנה, ומה יגרום לך להפוך את ההחלטה.</p>
+
+      <div class="commit-grid">
+        <section class="paper commit-form">
+          <label class="big-field"><span>הפעולה הראשונה שלך</span><textarea id="commitment" rows="4" placeholder="כתוב במילים שלך — גם אם זה שונה מההמלצה.">${esc(state.commitment || d.now?.title || '')}</textarea></label>
+          <label class="big-field compact-field"><span>מה בהמלצה אתה לא מקבל או רוצה לשנות?</span><textarea id="challenge" rows="4" placeholder="אפשר גם לכתוב: כרגע אני מקבל הכול, אבל אני לא בטוח לגבי...">${esc(state.challenge)}</textarea></label>
+          <label class="big-field compact-field"><span>איזו ראיה תגרום לך לשנות כיוון?</span><textarea id="reversal" rows="4" placeholder="למשל: אם 5 שיחות יראו ש...">${esc(state.reversal || d.now?.reverse || '')}</textarea></label>
+          <div class="card-actions"><button class="primary" data-action="finish" ${state.commitment.trim()?'':'disabled'}>שמור כהחלטה שלי <span>✓</span></button></div>
         </section>
 
-        <aside class="paper truth-card">
-          <div class="eyebrow">Truth Check</div>
-          <h2>לפני שמוציאים החוצה</h2>
-          ${[
-            ['grounded', 'כל שם, מספר ותוצאה בטקסט קיימים במקור'],
-            ['inference', 'אין מסקנה שמוצגת כעובדה בלי תמיכה'],
-            ['permission', state.sourcePrivate ? 'בדקתי שמותר לחשוף / אנונימתי את המקור' : 'אין כאן מידע שאין לי רשות לפרסם'],
-            ['useful', 'יש כאן משהו שימושי לקורא מעבר להישג שלי'],
-          ].map(([key, label]) => `<label class="truth-item ${state.truthChecks[key] ? 'checked' : ''}"><input type="checkbox" data-truth="${key}" ${state.truthChecks[key] ? 'checked' : ''}/><span>${esc(label)}</span></label>`).join('')}
-          <div class="truth-source"><span>העוגן העובדתי</span><blockquote>“${esc(c.text)}”</blockquote></div>
-          <button class="primary full" data-action="mark-published" ${passed ? '' : 'disabled'}>${state.published ? 'סומן כפורסם ✓' : 'מוכן לשימוש'}</button>
-          ${!passed ? '<small class="blocking-note">הפעולה נפתחת רק אחרי שכל בדיקות האמת עברו.</small>' : ''}
+        <aside class="paper authorship-card">
+          <span>Decision authorship</span>
+          <h3>המערכת לא מקבלת בעלות על ההחלטה.</h3>
+          <p>אם אתה לא יכול להסביר למה בחרת, לערער על הנחה, או לומר מה ישנה את דעתך — עוד לא סיימנו.</p>
+          <div class="mini-summary"><span>המלצת המערכת</span><b>${esc(d.now?.title || '')}</b></div>
         </aside>
       </div>
+    </main>`;
+}
 
-      ${state.published ? `
-        <section class="outcome-card">
-          <div><span>הלולאה לא נגמרת בפרסום</span><h3>בביקור הבא נשאל: מה קרה אחרי שהשתמשת בזה?</h3><p>שום דבר · תגובה משמעותית · ביקור בפרופיל · DM · שיחה מתאימה · עסקה. Outcome הוא evidence ללמידה — לא הוכחת סיבתיות.</p></div>
-          <button class="secondary" data-action="reset">פתח Decision Moment חדש</button>
-        </section>` : ''}
+function doneScreen() {
+  return `
+    <main class="stage done-stage">
+      <div class="done-mark">✓</div>
+      <div class="screen-kicker">החלטה נשמרה</div>
+      <h1>עכשיו יש למה לחזור כשהעולם יענה.</h1>
+      <p class="lead">השווי העתידי של המערכת יגיע רק אם נוכל להשוות בין מה שחשבת, מה שבחרת, מה שביצעת ומה שקרה — ולדעת מה עדיין רלוונטי בהחלטה הבאה.</p>
+      <section class="paper decision-record">
+        <div><span>המעבר</span><b>${esc(state.transition)}</b></div>
+        <div><span>מה בחרת לעשות</span><b>${esc(state.commitment)}</b></div>
+        <div><span>מה אתה מערער עליו</span><b>${esc(state.challenge || 'לא נרשם ערעור')}</b></div>
+        <div><span>מה ישנה את ההחלטה</span><b>${esc(state.reversal)}</b></div>
+      </section>
+      <div class="done-actions"><button class="primary" data-action="reset">פתח החלטה חדשה</button></div>
     </main>`;
 }
 
 function render() {
-  const screen = state.step === 'source' ? sourceScreen() : state.step === 'result' ? resultScreen() : state.step === 'draft' ? draftScreen() : momentScreen();
-  app.innerHTML = `<div class="app-shell">${header()}${screen}<footer>ProofMiner · Product architecture v2 · interactive preview</footer></div>`;
+  const body = state.step === 'transition' ? transitionScreen()
+    : state.step === 'baseline' ? baselineScreen()
+    : state.step === 'mirror' ? mirrorScreen()
+    : state.step === 'decision' ? decisionScreen()
+    : state.step === 'commit' ? commitScreen()
+    : doneScreen();
+
+  app.innerHTML = `<div class="app-shell" dir="rtl">${header()}${body}<footer>Preview ניסויי · אין כאן עדיין מחקר שוק אוטונומי או המלצה אסטרטגית מאומתת</footer></div>`;
   bind();
 }
 
-function syncInputs() {
-  const map = { moment: 'moment', actor: 'actor', nextAction: 'nextAction', sourceName: 'sourceName', sourceText: 'sourceText', draftText: 'draft' };
-  Object.entries(map).forEach(([id, key]) => {
-    const el = document.querySelector(`#${id}`);
-    if (el) el.addEventListener('input', e => { state[key] = e.target.value; save(); });
+function val(id) { return document.querySelector(`#${id}`)?.value ?? ''; }
+function persistInputs() {
+  ['transition','profession','desiredState','baselinePlan','hours','budget','why','bottleneck','mirror','commitment','challenge','reversal'].forEach(k => {
+    const el = document.querySelector(`#${k}`); if (el) state[k] = el.value;
   });
-  const priv = document.querySelector('#sourcePrivate');
-  if (priv) priv.addEventListener('change', e => { state.sourcePrivate = e.target.checked; save(); });
-  const file = document.querySelector('#fileInput');
-  if (file) file.addEventListener('change', e => {
-    const chosen = e.target.files?.[0];
-    if (!chosen) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      state.sourceName = chosen.name;
-      state.sourceText = String(reader.result || '');
-      save(); render();
-    };
-    reader.readAsText(chosen, 'utf-8');
-  });
+  save();
 }
 
 function bind() {
-  syncInputs();
-  document.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', () => handleAction(btn.dataset.action)));
-  document.querySelectorAll('[data-correction]').forEach(btn => btn.addEventListener('click', () => {
-    state.correctionOpen = false;
-    state.lastCorrection = btn.dataset.correction;
-    save();
-    btn.closest('.correction-panel')?.remove();
+  document.querySelectorAll('textarea,input').forEach(el => el.addEventListener('input', () => {
+    persistInputs();
+    document.querySelectorAll('[data-action="transition-next"]').forEach(b=>b.disabled=!state.transition.trim());
+    document.querySelectorAll('[data-action="baseline-next"]').forEach(b=>b.disabled=!state.baselinePlan.trim());
+    document.querySelectorAll('[data-action="use-mirror"]').forEach(b=>b.disabled=!state.mirror.trim());
+    document.querySelectorAll('[data-action="finish"]').forEach(b=>b.disabled=!state.commitment.trim());
   }));
-  document.querySelectorAll('[data-truth]').forEach(input => input.addEventListener('change', e => {
-    state.truthChecks[e.target.dataset.truth] = e.target.checked;
-    save(); render();
-  }));
-}
 
-function handleAction(action) {
-  if (action === 'reset') {
-    Object.keys(state).forEach(k => delete state[k]);
-    Object.assign(state, structuredClone(initialState));
-  }
-  if (action === 'demo-moment') {
-    state.moment = demoMoment;
-    state.actor = 'מנכ״לית שכבר מכירה אותי';
-    state.nextAction = 'לקבוע שיחת המשך';
-  }
-  if (action === 'moment-next') {
-    if (!state.moment.trim()) return;
-    state.step = 'source';
-  }
-  if (action === 'back-moment') state.step = 'moment';
-  if (action === 'demo-source') {
-    state.sourceName = 'סיכום מקרה לקוח · 2026';
-    state.sourceText = demoSource;
-  }
-  if (action === 'analyze') {
-    if (!state.sourceText.trim()) return;
-    analyze(); return;
-  }
-  if (action === 'alternative') {
-    const count = state.result?.candidates?.length || 1;
-    state.alternativeIndex = (state.alternativeIndex + 1) % count;
-    state.correctionOpen = false;
-  }
-  if (action === 'correction') state.correctionOpen = !state.correctionOpen;
-  if (action === 'private-proof') {
-    state.sourcePrivate = true;
-    state.correctionOpen = false;
-  }
-  if (action === 'add-source') state.step = 'source';
-  if (action === 'use-proof') { generateDraft(); return; }
-  if (action === 'back-result') state.step = 'result';
-  if (action === 'regenerate') { generateDraft(); return; }
-  if (action === 'mark-published' && allTruthChecksPassed()) state.published = true;
-  save();
-  render();
+  document.querySelector('[data-action="reset"]')?.addEventListener('click', reset);
+  document.querySelector('[data-action="demo"]')?.addEventListener('click', () => { loadDemo(); go('transition'); });
+  document.querySelector('[data-action="transition-next"]')?.addEventListener('click', () => { persistInputs(); go('baseline'); });
+  document.querySelector('[data-action="back-transition"]')?.addEventListener('click', () => go('transition'));
+  document.querySelector('[data-action="baseline-next"]')?.addEventListener('click', () => { persistInputs(); go('mirror'); });
+  document.querySelector('[data-action="use-mirror"]')?.addEventListener('click', () => { persistInputs(); state.mirrorChoice='use'; state.decision=null; save(); makeDecision(); go('decision'); });
+  document.querySelector('[data-action="skip-mirror"]')?.addEventListener('click', () => { persistInputs(); state.mirrorChoice='skip'; state.decision=null; save(); makeDecision(); go('decision'); });
+  document.querySelector('[data-action="back-mirror"]')?.addEventListener('click', () => go('mirror'));
+  document.querySelector('[data-action="decision-next"]')?.addEventListener('click', () => go('commit'));
+  document.querySelector('[data-action="finish"]')?.addEventListener('click', () => { persistInputs(); state.step='done'; save(); render(); window.scrollTo({top:0,behavior:'smooth'}); });
 }
 
 render();
