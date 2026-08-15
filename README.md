@@ -6,19 +6,19 @@ The current conscious problem hypothesis is:
 
 > **I know I need to build authority / professional standing, but I do not know where my limited time, money and attention should go first — or what I should not do yet.**
 
-The current product-value hypothesis is not "give the user an Authority Map".
+The product-value hypothesis is now:
 
-It is:
+> **Help the user form a better-grounded model of the authority problem and allocate scarce resources toward the strongest grounded path — without replacing the user's authorship of the decision.**
 
-> **Improve the user's allocation of scarce resources toward the strongest grounded path to the authority position they want.**
+The product therefore has to change more than a task list.
 
-That requires measuring what the user would have done without the product before showing any recommendation.
+It must be able to explain:
 
-A second governing insight now sits above the analytical stack:
-
-> **The system must also decide how to decide — and use the least-complex reasoning process sufficient for the live allocation decision.**
-
-MCDA, optimization, Value of Information, robust analysis, adaptive pathways and simple rules are tools. None has default authority.
+- what the user believed before;
+- what evidence changed that representation;
+- what allocation changed because of it;
+- what remains contestable;
+- what evidence should change the decision again.
 
 ---
 
@@ -27,51 +27,65 @@ MCDA, optimization, Value of Information, robust analysis, adaptive pathways and
 ```text
 A0 — capability / market-response mismatch
   ↓ recognition
-A1 — authority need + plausible actions + uncertain allocation
-  ↓ counterfactual capture + decision framing
+A1 — authority need + plausible actions + uncertain representation/allocation
+  ↓ project boundary + frozen counterfactual representation/allocation
 META — decide how this decision should be decided
   ↓ requisite reasoning
-B  — grounded allocation decision
-     KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD
-  ↓ execution
+B  — grounded, contestable allocation decision
+     + explicit Representation Delta
+     + KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD
+  ↓ user commitment + execution
 C  — actual resource allocation + action in the world
-  ↓ market evidence + learning
-D  — revised allocation / next best action
+  ↓ market evidence across affected authority surfaces
+D  — revised representation / allocation / next best action
   ↺
 ```
 
-The **Authority Map is the explanation/navigation artifact supporting B**. It is not sufficient evidence of value by itself.
+The **Authority Map is an explanation/navigation artifact supporting B**. It is not sufficient evidence of value by itself.
+
+User agreement is not sufficient evidence of decision authorship.
 
 ---
 
-## Measurement primitive
+## Measurement and metric governance
 
 Before advice, capture:
 
 > **If this product did not exist, what would you actually do over the next relevant planning window?**
 
-That stated counterfactual becomes the before-state.
+Also capture the minimum useful version of:
 
-After recommendation, compare action by action:
+> **Why do you currently think those actions will work, what is the bottleneck, and what would change your mind?**
 
-- `KEEP`
-- `ACCELERATE`
-- `REORDER`
-- `REDUCE`
-- `DELAY`
-- `STOP`
-- `REPLACE`
-- `ADD`
+This creates two frozen baselines:
 
-Track time, cash and other scarce commitments separately when material.
+- stated counterfactual **representation**;
+- stated counterfactual **allocation**.
 
-Do **not** call stopped or delayed work "saved" merely because the system recommended stopping it.
+After recommendation, compare them with the revised representation and allocation.
 
-The current North-Star candidate is the construct:
+Current evaluation constructs include:
 
-> **Counterfactual Resource Allocation Delta toward O**
+- Representation Delta;
+- Decision Delta;
+- Priority Delta;
+- Resource Allocation Delta;
+- Premature-Work Reallocation;
+- New-Leverage Allocation;
+- Decision Authorship / Contestability;
+- Reversal / Regret.
 
-It is intentionally not one universal composite score.
+**Counterfactual Resource Allocation Delta is not a North Star or routing objective.**
+
+Until prospective field evidence establishes a justified use:
+
+```text
+measurement_use: observational / evaluation
+routing_use: prohibited
+governance_use_as_optimization_target: prohibited
+```
+
+A large delta is not success. A zero delta is not failure.
 
 See `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
 
@@ -79,9 +93,7 @@ See `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
 
 ## Meta-decision architecture
 
-Before choosing a framework or algorithm, the system frames the live decision and characterizes only what is needed to select a sufficient reasoning mode.
-
-Examples:
+Before choosing a framework or algorithm, the system frames the live decision and uses the least-complex reasoning process sufficient for it.
 
 ```text
 hard prerequisite / dominance
@@ -103,15 +115,35 @@ future signals can justify changing course
 → adaptive pathways / triggers
 ```
 
-At every escalation the system asks:
+At every escalation:
 
-> **What material allocation decision could this additional analytical layer change?**
+> **What material decision or resource allocation could this additional analytical layer change?**
 
 If none, analytical escalation stops.
 
-This is the Stop Rule applied to reasoning itself.
-
 See `docs/META_DECISION_GOVERNANCE.md`.
+
+---
+
+## COR-SYS graph audit
+
+The current architecture has been audited through the COR-SYS System Grammar:
+
+`BND / ACT / REL / GOAL / REP / RES / RULE / MEM / OUT + EVT`
+
+with orthogonal `Structure / Phenomenon / Intervention / Epistemic / Governance` lenses.
+
+The audit exposed five material gaps:
+
+1. `REP` — allocation change was measured more strongly than change in the user's decision representation;
+2. `ACT / Governance` — acceptance could be mistaken for authorship; recommendations need first-class contestability;
+3. `metric_governance` — Allocation Delta must not become the objective that recommendations optimize;
+4. `BND` — project/field/surface boundaries need to be inspectable;
+5. `EVT / MEM` — one real-world event may update multiple authority surfaces and should be recorded once.
+
+The graph is used here as a falsification / representation instrument, **not as an empirical truth oracle**.
+
+See `docs/COR_SYS_GRAPH_AUDIT_V1.md`.
 
 ---
 
@@ -121,28 +153,20 @@ The top-level unit remains an **Authority Project**.
 
 ```text
 Authority goal
-→ stated counterfactual allocation
+→ project / decision boundary
+→ stated counterfactual representation + allocation
 → live decision frame
 → requisite method selection
 → person + field model
-→ audience path
 → strategic diagnosis
-→ allocation decision
-→ dependency-aware Authority Map
-→ real-world action
+→ representation + allocation decision
+→ contestable dependency-aware Authority Map
+→ user commitment / real-world action
+→ one event linked to affected authority surfaces
 → market signal / outcome
 → learning
-→ revised allocation / map / method if needed
+→ revised representation / allocation / map
 ```
-
-The system should be able to say not only "do X", but also:
-
-- keep doing X;
-- move Y earlier;
-- reduce Z;
-- delay a reasonable action until a prerequisite exists;
-- stop an action when the opportunity cost is no longer justified;
-- add a higher-leverage action the user had not planned.
 
 Stopping is not inherently good. Evidence may later reverse a prior `STOP` or `DELAY`.
 
@@ -150,31 +174,22 @@ Stopping is not inherently good. Evidence may later reverse a prior `STOP` or `D
 
 ## 95% assurance boundary
 
-Behind-the-scenes systems are not allowed to vote on strategic truth merely because they are sophisticated or agree with each other.
-
-They may be treated as high-confidence assurance only for claim classes they can directly observe or deterministically test in a defined scope.
+Behind-the-scenes systems may be treated as high-confidence assurance only for claim classes they can directly observe or deterministically test in a defined scope.
 
 Good targets include:
 
-- baseline was captured before recommendation;
-- a hard constraint was represented;
-- a method was invoked without its required preconditions;
-- a refuted assumption still feeds an active recommendation;
-- a map/allocation change has no recorded evidence trigger.
+- baseline captured before recommendation;
+- project/decision boundary recorded;
+- hard constraint represented;
+- method invoked without required preconditions;
+- prohibited metric used as a routing input;
+- refuted assumption still feeds an active recommendation;
+- route/allocation change has no evidence trigger;
+- blocked action recommended as executable.
 
 Deterministic guards, mutation/contract tests, refutation propagation and provenance checks are appropriate here.
 
 Blind-review agreement, model confidence and cross-model consensus can test reproducibility or ambiguity, but are **not** >95% evidence that a strategic recommendation is true unless independently calibrated for that exact claim class.
-
----
-
-## ProofMiner remains as a trust subsystem
-
-The v2 evidence architecture remains useful beneath Authority Actions when a claim needs grounding.
-
-`DecisionMoment`, `EvidenceUnit`, `CandidateClaim`, `EvidenceRelation` and `ProofMove` support provenance, contradiction handling, privacy and inference discipline.
-
-Proof is one authority-building mechanism, not the product's top-level telos.
 
 ---
 
@@ -195,17 +210,19 @@ A completed checklist, improving metric or more sophisticated model cannot autho
 
 ## Current lifecycle state
 
-**FIELD — adaptive meta-decision value**
+**FIELD — representation + allocation + authorship validation**
 
-The latest Telos Governance iteration found that the prior resource-allocation architecture still left method choice implicit.
+The latest COR-SYS graph iteration reopened `REPLAN` and closed it after changing the contracts for representation, contestability, metric authority, boundaries and multi-surface events.
 
-The current architecture now treats method selection as a governed meta-decision and adopts a requisite principle: use the least-complex process sufficient for the live problem.
+The next material questions are empirical:
 
-The next material question is empirical:
+> **Does personalized analysis create a useful change in the user's decision representation and resource allocation without replacing the user's authorship?**
 
-> **Does context-sensitive selection of the reasoning process materially improve allocation decisions versus a simpler fixed advisory process?**
+and, only where it can discriminate:
 
-Do not build a full MCDA / optimization / VOI stack before that survives FIELD.
+> **Does context-sensitive selection of the reasoning process materially improve that result versus a simpler fixed process?**
+
+Do not build a full MCDA / optimization / VOI stack or polished production UI before these survive FIELD.
 
 ---
 
@@ -214,17 +231,16 @@ Do not build a full MCDA / optimization / VOI stack before that survives FIELD.
 Read these before changing product behavior:
 
 1. `docs/TELOS_GOVERNANCE.md` — highest-authority governing rule.
-2. `docs/META_DECISION_GOVERNANCE.md` — how the system decides how to decide.
-3. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — counterfactual baseline, allocation delta and validation contract.
-4. `docs/UX_TRANSITION_CONTRACT.md` — A0→A1→B→C→D user-state transitions.
+2. `docs/COR_SYS_GRAPH_AUDIT_V1.md` — graph-based system audit and current structural findings.
+3. `docs/META_DECISION_GOVERNANCE.md` — how the system decides how to decide.
+4. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — representation/counterfactual baseline and allocation validation contract.
 5. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates.
-6. `docs/FIRST_SESSION_FLOW_V3.md` — current counterfactual-first session flow.
-7. `docs/FIELD_PROTOCOL_V3.md` — preregistered comprehension + personalized allocation-value tests.
-8. `PRODUCT_DOCTRINE.md` — broader product doctrine and mechanism hypotheses.
-9. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
-10. `docs/ARCHITECTURE_DECISION_LOG.md` — invalidated assumptions and architecture decisions.
-
-Deployment/orchestration contracts live under `skills/`.
+6. `docs/FIELD_PROTOCOL_V3.md` — personalized representation/allocation/authorship tests.
+7. `docs/UX_TRANSITION_CONTRACT.md` — user-state transitions.
+8. `docs/FIRST_SESSION_FLOW_V3.md` — current first-session flow.
+9. `PRODUCT_DOCTRINE.md` — broader product doctrine and mechanism hypotheses.
+10. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
+11. `docs/ARCHITECTURE_DECISION_LOG.md` — invalidated assumptions and architecture decisions.
 
 ---
 
@@ -238,17 +254,7 @@ It is intentionally low fidelity and its strategic recommendation is scripted.
 
 It is **not production UI** and **not validated intelligence**.
 
-Its job is to test whether users understand:
-
-```text
-what I planned to do without the product
-→ what changed
-→ where resources moved
-→ why
-→ what evidence should change the allocation again
-```
-
-The personalized Wizard-of-Oz test remains the evidence gate for strategic value; structural router fixtures are the evidence gate for method-selection implementation rules.
+The personalized Wizard-of-Oz test is the next evidence gate.
 
 ## Run locally
 
