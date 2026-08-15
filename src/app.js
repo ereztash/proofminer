@@ -1,27 +1,418 @@
-const weights={external:20,icp:20,strength:15,specificity:15,scarcity:10,recency:5,narrative:5,conversion:10};
-const labels={external:'אימות חיצוני',icp:'רלוונטיות ל-ICP',strength:'עוצמת הטענה',specificity:'ספציפיות',scarcity:'בידול/נדירות',recency:'עדכניות',narrative:'פוטנציאל סיפורי',conversion:'קרבה להמרה'};
-const state=JSON.parse(localStorage.getItem('proofminer-state')||'null')||{context:{icp:'בעלי עסקים קטנים ויועצים',goal:'שיראו בי סמכות שאפשר לסמוך עליה וירצו לדבר איתי',offer:'תהליך ייעוץ עסקי'},sources:[],proofs:[],tab:'paste',filter:'all',selected:null,angle:'direct'};
-const save=()=>localStorage.setItem('proofminer-state',JSON.stringify(state));
-const esc=s=>(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
-const clamp=n=>Math.max(0,Math.min(100,Math.round(n)));
-const scoreClass=n=>n>=75?'high':n>=55?'mid':'low';
-const sampleText=`ב-2026 ליוויתי בעל עסק שבמשך ארבעה חודשים לא ייצר הכנסה חדשה. בתוך חודש מהעבודה המשותפת נסגרו עסקאות בהיקף 5,500 ש״ח, ובהמשך 27,000 ש״ח מעשר עסקאות. התראיינתי בכתבה מקצועית על שימוש ב-AI בעסקים קטנים. העברתי הרצאה על הנדסת פרומפטים לקהל של מנהלים ובעלי עסקים. סיימתי תואר בעבודה סוציאלית בציון ממוצע 93.24. יש לי שנים של ניסיון בליווי אנשים ותהליכים. אני אדם יצירתי, סקרן ואסטרטגי מאוד.`;
-const demoWeb=`[דמו בלבד] אתר מקצועי מציין הרצאה שהועברה לכ-80 משתתפים בנושא AI ועסקים. [דמו בלבד] עמוד כנס מציג את הדובר כמומחה לחיבור בין עבודה סוציאלית, אסטרטגיה ובינה מלאכותית. [דמו בלבד] כתבה חיצונית מצטטת תוצאה של לקוח שהגדיל הכנסות לאחר שינוי תהליך המכירה.`;
-function tokenize(t){return t.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x=>x.length>2)}
-function overlap(a,b){const A=new Set(tokenize(a)),B=new Set(tokenize(b));if(!A.size||!B.size)return 0;let n=0;A.forEach(x=>B.has(x)&&n++);return n/Math.min(A.size,B.size)}
-function tagsFor(t){const x=t.toLowerCase(),tags=[];if(/לקוח|עסק|הכנס|הכנסה|מכירות|עסקאות/.test(x))tags.push('תוצאה');if(/כתבה|ראיון|ציטט|עיתון|אתר מקצועי|כנס/.test(x))tags.push('אימות חיצוני');if(/הרצא|כנס|וובינר/.test(x))tags.push('הרצאה');if(/תואר|ציון|הסמכ|לימוד/.test(x))tags.push('הסמכה');if(/\d/.test(x))tags.push('מספרים');if(/דמו בלבד/.test(x))tags.push('דמו');if(!tags.length)tags.push('ניסיון');return tags}
-function components(text){const x=text.toLowerCase(),ctx=(state.context.icp+' '+state.context.goal+' '+state.context.offer).toLowerCase();const nums=(text.match(/\d+[\d,.]*/g)||[]).length;const ext=/כתבה|ראיון|עיתון|כנס|ציטט|המלצ|לקוח|אתר מקצועי/.test(x);const result=/הגדיל|הפחית|חסך|נסגר|הכנסה|הכנסות|מכירות|תוצאה|עסקאות|בתוך חודש|לפני|אחרי/.test(x);const cred=/תואר|הסמכה|ציון|פרס/.test(x);const generic=/יצירתי|סקרן|אסטרטגי|מקצועי מאוד|שנים של ניסיון/.test(x)&&!nums;const rec=/2026|2025|השנה|בחודש|לאחרונה/.test(x);const icp=Math.min(100,42+overlap(text,ctx)*55+(result?18:0));return {external:clamp(28+(ext?48:0)+(result&&/לקוח/.test(x)?12:0)-(generic?15:0)),icp:clamp(icp),strength:clamp(35+(result?40:0)+(nums?15:0)+(cred?8:0)-(generic?20:0)),specificity:clamp(28+nums*18+(/חודש|ש״ח|משתתפים|ציון/.test(x)?15:0)-(generic?18:0)),scarcity:clamp(35+(/93\.24|עבודה סוציאלית|הנדסת פרומפטים|27,000|5,500/.test(x)?32:0)+(result?12:0)-(generic?18:0)),recency:clamp(35+(rec?45:0)),narrative:clamp(38+(result?35:0)+(/במשך|בתוך|לאחר|לפני|אחרי/.test(x)?15:0)),conversion:clamp(30+(result?42:0)+(overlap(text,state.context.offer)>0?20:0)+(ext?8:0)-(generic?12:0))};}
-function total(c){return clamp(Object.entries(weights).reduce((s,[k,w])=>s+c[k]*w/100,0))}
-function explain(p){const strongest=Object.entries(p.breakdown).sort((a,b)=>b[1]-a[1])[0][0];return `הנכס חזק בעיקר ב${labels[strongest]}, ובהקשר של ${state.context.icp||'הקהל שבחרת'} הוא ${p.score>=75?'מסוגל לשנות תפיסה מהר':'שווה שימוש, אך דורש חיזוק'}.`;}
-function missing(p){const weak=Object.entries(p.breakdown).sort((a,b)=>a[1]-b[1])[0][0];const m={external:'הוסף מקור צד שלישי, ציטוט או שם לקוח.',icp:'חבר במפורש בין ההוכחה לבעיה של הקהל.',strength:'הוסף תוצאה או שינוי שנוצר.',specificity:'הוסף מספר, מסגרת זמן או שם.',scarcity:'הבהר מה כאן קשה לחיקוי.',recency:'הוסף תאריך או הקשר עדכני.',narrative:'הוסף לפני/אחרי או מתח.',conversion:'קשר את ההוכחה להצעה שאתה מוכר.'};return m[weak]}
-function mine(){const chunks=state.sources.flatMap(s=>s.text.split(/(?<=[.!?])\s+|\n+/).map(t=>({text:t.trim(),source:s.name}))).filter(x=>x.text.length>28);const ranked=chunks.map((x,i)=>{const b=components(x.text);return{id:`p-${Date.now()}-${i}`,claim:x.text,source:x.source,tags:tagsFor(x.text),breakdown:b,score:total(b),dismissed:false,pinned:false}}).sort((a,b)=>b.score-a.score);const dedup=[];for(const p of ranked){if(!dedup.some(d=>overlap(d.claim,p.claim)>.72))dedup.push(p)}state.proofs=dedup.slice(0,30);save();render()}
-function addSource(name,text){if(!text.trim())return;state.sources.push({id:crypto.randomUUID(),name,text:text.trim()});save();render()}
-function postFor(p,angle){const proof=p.claim.replace(/^\[דמו בלבד\]\s*/,'');const goal=state.context.goal||'לבנות אמון';const cta={none:'',discussion:'\n\nמעניין אותי לשמוע — איפה אתם רואים את זה אצלכם?',dm:'\n\nאם זה פוגש אתכם, אפשר לכתוב לי בפרטי.',call:'\n\nאם אתם רוצים לבדוק את זה על העסק שלכם, אפשר לקבוע שיחה.'}[document.querySelector('#cta')?.value||'none']||'';if(angle==='story')return `לפעמים ההוכחה הכי חזקה שלנו כבר קיימת — אבל אנחנו לא משתמשים בה.\n\n${proof}\n\nמה שמעניין אותי כאן הוא לא רק האירוע עצמו, אלא מה הוא מוכיח: כשמחברים נכון בין בעיה, החלטה ופעולה, נוצרת תוצאה שאפשר לראות.\n\nמבחינתי, זו בדיוק הנקודה: ${goal}.${cta}`;if(angle==='insight')return `${proof}\n\nהמשפט הזה חשוב בעיניי בגלל דבר אחד: מומחיות לא נמדדת רק במה שאנחנו יודעים להסביר, אלא במה שכבר הצלחנו לייצר במציאות.\n\nכשאני בוחן עבודה מקצועית, אני מחפש עקבה — מה השתנה, עבור מי, ובאיזה הקשר.\n\nזו ההוכחה שאני מעדיף לבנות עליה סמכות.${cta}`;return `${proof}\n\nזו לא טענה על מה שאני יודע לעשות. זו עקבה של משהו שכבר קרה.\n\nמבחינתי, זה ההבדל בין "אני טוב בזה" לבין הוכחה שאפשר לבדוק.\n\n${goal}.${cta}`}
-function insights(){const active=state.proofs.filter(p=>!p.dismissed);const counts={};active.flatMap(p=>p.tags).forEach(t=>counts[t]=(counts[t]||0)+1);const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'עדיין אין מספיק מידע';const avg=k=>active.length?Math.round(active.reduce((s,p)=>s+p.breakdown[k],0)/active.length):0;const weakest=Object.keys(labels).sort((a,b)=>avg(a)-avg(b))[0];return {top,weak:labels[weakest],gap:weakest==='specificity'?'יותר מספרים ומסגרות זמן':weakest==='external'?'יותר אימות מצד שלישי':weakest==='conversion'?'חיבור ישיר יותר להצעה':'הוכחות שמחזקות את '+labels[weakest]}}
-function render(){document.querySelector('#app').innerHTML=`<div class="app"><div class="topbar"><div class="brand"><h1>ProofMiner</h1><p>גלה את ההוכחות שכבר בנית. הפוך אותן לסמכות שנראית.</p></div><span class="pill">Evidence → Proof → Leverage</span></div><div class="layout"><aside class="card sidebar"><h3 class="section-title">1. למי ומה אתה רוצה להוכיח?</h3>${['icp','goal','offer'].map((k,i)=>`<div class="field"><label>${['מי הקהל שאתה רוצה להשפיע עליו?','מה אתה רוצה שיחשבו / יעשו?','מה אתה מוכר כרגע?'][i]}</label><input data-context="${k}" value="${esc(state.context[k])}"></div>`).join('')}<hr style="border:0;border-top:1px solid #e4ded3;margin:18px 0"><h3 class="section-title">2. הוסף מקורות</h3><div class="tabs"><button class="tab ${state.tab==='paste'?'active':''}" data-tab="paste">טקסט</button><button class="tab ${state.tab==='file'?'active':''}" data-tab="file">קובץ</button><button class="tab ${state.tab==='web'?'active':''}" data-tab="web">אינטרנט</button></div>${state.tab==='paste'?`<div class="field"><textarea id="paste" placeholder="הדבק כתבה, קורות חיים, המלצה, case study, תמלול..."></textarea></div><div class="actions"><button class="btn" id="addText">הוסף מקור</button><button class="btn secondary" id="sample">טען דוגמה</button></div>`:''}${state.tab==='file'?`<div class="field"><input type="file" id="file" accept=".txt,.md" multiple></div><div class="notice">ב-MVP הנוכחי נתמכים TXT ו-MD. הקבצים נקראים מקומית בדפדפן.</div>`:''}${state.tab==='web'?`<div class="field"><input id="webName" placeholder="שם / אתר / פרופיל"></div><div class="notice">חיפוש חי עדיין לא מחובר. אין כאן התחזות לחיפוש אמיתי.</div><div class="actions" style="margin-top:10px"><button class="btn secondary" id="demoWeb">השתמש בדוגמת חיפוש</button></div>`:''}<div style="margin-top:16px" class="notice">${state.sources.length?`נוספו ${state.sources.length} מקורות.`:'עדיין לא נוספו מקורות.'}</div><button class="btn" style="width:100%;margin-top:10px" id="mine" ${state.sources.length?'':'disabled'}>חלץ ודרג הוכחות</button></aside><main class="main"><section class="card hero"><div><h2>${state.proofs.length?'מאגר ההוכחות שלך':'לא חסרים לך רעיונות. חסרות לך הוכחות גלויות.'}</h2><p>${state.proofs.length?'הדירוג משתנה לפי הקהל והמטרה שהגדרת.':'המערכת מפרקת מקורות ליחידות הוכחה, ואז מדרגת מה הכי שווה להפיץ עכשיו.'}</p></div><div class="metric"><b>${state.proofs.filter(p=>!p.dismissed).length}</b><span>Proof Units</span></div></section>${state.proofs.length?renderResults():`<section class="card empty"><h3>התחל ממקור שכבר קיים</h3><p>כתבה, קורות חיים, המלצת לקוח, תוצאה, הרצאה או מאמר. אפשר גם לטעון דוגמה.</p></section>`}</main></div></div>${state.selected?renderModal():''}`;bind()}
-function renderResults(){const active=state.proofs.filter(p=>!p.dismissed);const sorted=[...active].sort((a,b)=>(b.pinned-a.pinned)||(b.score-a.score));const top=sorted.slice(0,3),ins=insights();const filtered=sorted.filter(p=>state.filter==='all'||p.tags.includes(state.filter));const tags=[...new Set(active.flatMap(p=>p.tags))];return `<section class="card"><div class="toolbar"><div><h3 class="section-title">3 ההזדמנויות החזקות ביותר</h3><span class="source">לא "הכי מרשים" — הכי שימושי למטרה הנוכחית.</span></div><button class="btn ghost small" id="how">איך הדירוג עובד?</button></div><div class="top3">${top.map((p,i)=>proofCard(p,i+1)).join('')}</div></section><section class="card"><h3 class="section-title">תמונת מצב אסטרטגית</h3><div class="insights"><div class="insight"><b>מה כבר יש לך הרבה ממנו</b>${esc(ins.top)}</div><div class="insight"><b>החולשה הממוצעת</b>${esc(ins.weak)}</div><div class="insight"><b>הפער הכי יקר כרגע</b>${esc(ins.gap)}</div></div></section><section class="card"><div class="toolbar"><div><h3 class="section-title">Proof Inventory</h3><span class="source">כל מסמך הוא container; כל שורה כאן היא יחידת הוכחה אטומית.</span></div><div class="field"><select id="filter"><option value="all">כל הסוגים</option>${tags.map(t=>`<option ${state.filter===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div></div><div class="inventory">${filtered.map(p=>row(p)).join('')}</div></section>`}
-function proofCard(p,rank){return `<div class="proof-card"><div class="rank">#${rank}</div><div class="score ${scoreClass(p.score)}">${p.score}</div><div class="claim">${esc(p.claim)}</div><div class="reason">${esc(explain(p))}</div><div class="meta">${p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div><div class="actions" style="margin-top:12px"><button class="btn small" data-post="${p.id}">הפוך לפוסט</button></div></div>`}
-function row(p){const strong=Object.entries(p.breakdown).sort((a,b)=>b[1]-a[1])[0][0],weak=Object.entries(p.breakdown).sort((a,b)=>a[1]-b[1])[0][0];return `<div class="row"><div><div class="score ${scoreClass(p.score)}" style="font-size:24px">${p.score}</div></div><div><div class="claim">${esc(p.claim)}</div><div class="source">מקור: ${esc(p.source)} · חזק: ${labels[strong]} · חלש: ${labels[weak]}</div><div class="meta">${p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></div><div class="source">${esc(missing(p))}</div><div class="row-actions"><button class="btn small" data-post="${p.id}">פוסט</button><button class="btn ghost small" data-pin="${p.id}">${p.pinned?'★':'☆'}</button><button class="btn ghost small" data-dismiss="${p.id}">הסתר</button><button class="btn ghost small" data-expand="${p.id}">פירוט</button></div><div class="breakdown hidden" id="b-${p.id}">${Object.entries(p.breakdown).map(([k,v])=>`<div class="bar-row"><span>${labels[k]}</span><div class="bar"><i style="width:${v}%"></i></div><b>${v}</b></div>`).join('')}</div></div>`}
-function renderModal(){const p=state.proofs.find(x=>x.id===state.selected);if(!p)return'';return `<div class="modal"><div class="modal-card"><div class="modal-head"><div><h3 style="margin:0">בנה פוסט מתוך הוכחה</h3><p class="source">המקור נשאר צמוד לפוסט כדי למנוע המצאת עובדות.</p></div><button class="close" id="close">×</button></div><div class="notice" style="margin:12px 0"><b>הטענה שהפוסט מוכיח:</b> ${esc(p.claim)}</div><div class="angle-tabs"><button class="tab ${state.angle==='direct'?'active':''}" data-angle="direct">הוכחה ישירה</button><button class="tab ${state.angle==='story'?'active':''}" data-angle="story">סיפור</button><button class="tab ${state.angle==='insight'?'active':''}" data-angle="insight">תובנה מקצועית</button></div><div class="field"><label>CTA</label><select id="cta"><option value="none">ללא CTA</option><option value="discussion">הזמנה לדיון</option><option value="dm">הודעה פרטית</option><option value="call">שיחה</option></select></div><textarea class="postarea" id="postText">${esc(postFor(p,state.angle))}</textarea><div class="footerline"><span>מקור: ${esc(p.source)}</span><span id="chars">${postFor(p,state.angle).length} תווים</span></div><div class="actions" style="margin-top:12px"><button class="btn" id="copy">העתק</button></div></div></div>`}
-function bind(){document.querySelectorAll('[data-context]').forEach(el=>el.oninput=e=>{state.context[e.target.dataset.context]=e.target.value;save()});document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;save();render()});document.querySelector('#addText')?.addEventListener('click',()=>{const t=document.querySelector('#paste').value;addSource(`טקסט ${state.sources.length+1}`,t)});document.querySelector('#sample')?.addEventListener('click',()=>addSource('דוגמת נכסים',sampleText));document.querySelector('#demoWeb')?.addEventListener('click',()=>addSource('תוצאות חיפוש — דמו בלבד',demoWeb));document.querySelector('#file')?.addEventListener('change',async e=>{for(const f of e.target.files){addSource(f.name,await f.text())}});document.querySelector('#mine')?.addEventListener('click',mine);document.querySelector('#filter')?.addEventListener('change',e=>{state.filter=e.target.value;save();render()});document.querySelectorAll('[data-post]').forEach(b=>b.onclick=()=>{state.selected=b.dataset.post;state.angle='direct';save();render()});document.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const p=state.proofs.find(x=>x.id===b.dataset.pin);p.pinned=!p.pinned;save();render()});document.querySelectorAll('[data-dismiss]').forEach(b=>b.onclick=()=>{state.proofs.find(x=>x.id===b.dataset.dismiss).dismissed=true;save();render()});document.querySelectorAll('[data-expand]').forEach(b=>b.onclick=()=>document.querySelector(`#b-${b.dataset.expand}`).classList.toggle('hidden'));document.querySelector('#close')?.addEventListener('click',()=>{state.selected=null;save();render()});document.querySelectorAll('[data-angle]').forEach(b=>b.onclick=()=>{state.angle=b.dataset.angle;save();render()});document.querySelector('#cta')?.addEventListener('change',()=>{const p=state.proofs.find(x=>x.id===state.selected),ta=document.querySelector('#postText');ta.value=postFor(p,state.angle);document.querySelector('#chars').textContent=`${ta.value.length} תווים`});document.querySelector('#postText')?.addEventListener('input',e=>document.querySelector('#chars').textContent=`${e.target.value.length} תווים`);document.querySelector('#copy')?.addEventListener('click',async()=>{await navigator.clipboard.writeText(document.querySelector('#postText').value);document.querySelector('#copy').textContent='הועתק'});document.querySelector('#how')?.addEventListener('click',()=>alert('הדירוג הוא כלי החלטה שקוף, לא אמת אובייקטיבית. המשקל הנוכחי: אימות חיצוני 20%, רלוונטיות ל-ICP 20%, עוצמת טענה 15%, ספציפיות 15%, בידול 10%, עדכניות 5%, פוטנציאל סיפורי 5%, קרבה להמרה 10%.'))}
+const WEIGHTS = {
+  evidence: 35,
+  fit: 35,
+  proximity: 20,
+  freshness: 10,
+};
+
+const state = JSON.parse(localStorage.getItem('proofminer-v2') || 'null') || {
+  context: {
+    audience: 'בעלי עסקים קטנים ויועצים שכבר משתמשים ב-AI אבל עדיין לא רואים תוצאה עסקית ברורה',
+    belief: 'שיש לי דרך מוכחת לזהות איפה נמצא המינוף העסקי הגבוה ביותר',
+    doubt: 'שזה עוד ייעוץ כללי או עוד דיבור על AI בלי תוצאה',
+    offer: 'תהליך ייעוץ עסקי ממוקד מינוף ותוצאה',
+  },
+  sources: [],
+  proofs: [],
+  tab: 'paste',
+  selected: null,
+  angle: 'lesson',
+  cta: 'none',
+  dismissed: [],
+  pinned: [],
+};
+
+const save = () => localStorage.setItem('proofminer-v2', JSON.stringify(state));
+const esc = (s='') => String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+const clamp = n => Math.max(0, Math.min(100, Math.round(n)));
+const words = t => String(t).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x => x.length > 2);
+const overlap = (a,b) => {
+  const A = new Set(words(a)), B = new Set(words(b));
+  if (!A.size || !B.size) return 0;
+  let n = 0; A.forEach(x => B.has(x) && n++);
+  return n / Math.min(A.size, B.size);
+};
+
+const SAMPLE = `ליוויתי בעל עסק שבמשך ארבעה חודשים לא ייצר הכנסה חדשה. בתוך חודש מהעבודה המשותפת נסגרו עסקאות בהיקף 5,500 ש״ח, ובהמשך 27,000 ש״ח מעשר עסקאות.
+התראיינתי בכתבה מקצועית על שימוש ב-AI בעסקים קטנים.
+העברתי הרצאה על הנדסת פרומפטים לקהל של מנהלים ובעלי עסקים.
+סיימתי תואר בעבודה סוציאלית בציון ממוצע 93.24.
+לקוחה כתבה אחרי תהליך העבודה: "סוף סוף הצלחתי לראות מה באמת מעכב את העסק ולא רק מה מרגיש דחוף".
+יש לי שנים של ניסיון בליווי אנשים ותהליכים.
+אני יצירתי, סקרן ואסטרטגי מאוד.`;
+
+const DEMO_WEB = `[דמו בלבד] אתר כנס מציג הרצאה בנושא AI ועסקים בפני כ-80 משתתפים.
+[דמו בלבד] כתבה חיצונית מצטטת תוצאה של לקוח שהגדיל הכנסות לאחר שינוי בתהליך המכירה.
+[דמו בלבד] עמוד מקצועי מתאר חיבור בין עבודה סוציאלית, אסטרטגיה ובינה מלאכותית.`;
+
+function signalType(text) {
+  const x = text.toLowerCase();
+  if (/לקוח|לקוחה|הכנס|הכנסות|מכירות|עסקאות|חסך|הפחית|הגדיל|נסגר/.test(x)) return 'תוצאה בשטח';
+  if (/כתבה|ראיון|עיתון|ציטט|המלצ|אמרה|כתב|כתבה חיצונית/.test(x)) return 'אימות חיצוני';
+  if (/הרצא|כנס|וובינר|פאנל/.test(x)) return 'במה מקצועית';
+  if (/מחקר|מאמר|פרסם|פרסום/.test(x)) return 'יצירה מקצועית';
+  if (/תואר|ציון|הסמכ|פרס/.test(x)) return 'הסמכה';
+  return 'ניסיון / טענה';
+}
+
+function beliefMoved(text) {
+  const x = text.toLowerCase();
+  if (/הכנס|הכנסות|מכירות|עסקאות|חסך|הפחית|הגדיל|נסגר|בתוך חודש/.test(x)) return '“זה עובד בפועל, לא רק נשמע טוב.”';
+  if (/לקוח|לקוחה|המלצ|כתבה|ראיון|ציטט/.test(x)) return '“לא רק הוא אומר שהוא טוב — אחרים ראו ערך.”';
+  if (/הרצא|כנס|וובינר|מחקר|מאמר/.test(x)) return '“יש כאן מומחיות שמחזיקה גם מול קהל מקצועי.”';
+  if (/תואר|הסמכ|פרס|ציון/.test(x)) return '“יש כאן בסיס מקצועי ואמינות.”';
+  return '“יש כאן ניסיון, אבל עדיין חסרה הוכחה חזקה.”';
+}
+
+function evidenceScore(text, sourceName='') {
+  const x = text.toLowerCase();
+  const nums = (text.match(/\d[\d,.]*/g) || []).length;
+  const thirdParty = /כתבה|ראיון|עיתון|לקוח|לקוחה|המלצ|ציטט|אתר כנס|עמוד כנס/.test(x) || /חיפוש|כתבה|המלצה|לקוח/.test(sourceName.toLowerCase());
+  const outcome = /הכנס|הכנסות|מכירות|עסקאות|חסך|הפחית|הגדיל|נסגר|תוצאה|בתוך חודש|לפני|אחרי/.test(x);
+  const attribution = /לקוח|לקוחה|חברה|ארגון|כנס|כתבה|עיתון|אתר/.test(x);
+  const vague = /יצירתי|סקרן|מקצועי מאוד|אסטרטגי מאוד|שנים של ניסיון/.test(x) && !nums;
+  return clamp(25 + nums * 12 + (thirdParty ? 22 : 0) + (outcome ? 20 : 0) + (attribution ? 10 : 0) - (vague ? 28 : 0));
+}
+
+function fitScore(text) {
+  const ctx = `${state.context.audience} ${state.context.belief} ${state.context.doubt} ${state.context.offer}`;
+  const lexical = overlap(text, ctx);
+  const x = text.toLowerCase();
+  let structural = 0;
+  if (/עסק|לקוח|מכירות|הכנס|הכנסות|ai|בינה מלאכותית|ייעוץ|תהליך/.test(x)) structural += 18;
+  if (/תוצאה|שינוי|בתוך|אחרי|לפני|הגדיל|הפחית|נסגר/.test(x)) structural += 16;
+  return clamp(35 + lexical * 55 + structural);
+}
+
+function proximityScore(text) {
+  const x = text.toLowerCase();
+  const offerFit = overlap(text, state.context.offer);
+  const buyerOutcome = /לקוח|עסק|הכנס|הכנסות|מכירות|תוצאה|חסך|הפחית|הגדיל|נסגר/.test(x);
+  const statusOnly = /תואר|ציון|פרס/.test(x) && !buyerOutcome;
+  return clamp(30 + offerFit * 45 + (buyerOutcome ? 30 : 0) - (statusOnly ? 18 : 0));
+}
+
+function freshnessScore(text) {
+  const x = text.toLowerCase();
+  if (/2026|השנה|החודש|לאחרונה|בתוך חודש/.test(x)) return 88;
+  if (/2025/.test(x)) return 72;
+  return 55;
+}
+
+function confidenceScore(text, sourceName='') {
+  const x = text.toLowerCase();
+  const nums = (text.match(/\d[\d,.]*/g) || []).length;
+  const demo = /דמו בלבד/.test(x);
+  const sourceKnown = sourceName && !/^טקסט \d+/.test(sourceName);
+  const attribution = /לקוח|לקוחה|כתבה|ראיון|כנס|חברה|ארגון|עיתון/.test(x);
+  return clamp(35 + nums * 10 + (sourceKnown ? 15 : 0) + (attribution ? 15 : 0) - (demo ? 25 : 0));
+}
+
+function evaluate(text, source) {
+  const evidence = evidenceScore(text, source);
+  const fit = fitScore(text);
+  const proximity = proximityScore(text);
+  const freshness = freshnessScore(text);
+  const priority = clamp(
+    evidence * WEIGHTS.evidence / 100 +
+    fit * WEIGHTS.fit / 100 +
+    proximity * WEIGHTS.proximity / 100 +
+    freshness * WEIGHTS.freshness / 100
+  );
+  return { evidence, fit, proximity, freshness, priority, confidence: confidenceScore(text, source) };
+}
+
+function strengthen(text, metrics) {
+  const x = text.toLowerCase();
+  if (metrics.confidence < 55) return 'צרף מקור ברור: שם לקוח, קישור, ציטוט, מסמך או הקשר שניתן לבדוק.';
+  if (metrics.evidence < 65) return 'הפוך את הטענה לעקבה: הוסף מספר, לפני/אחרי, מסגרת זמן או תוצאה שנוצרה.';
+  if (metrics.fit < 65) return 'הסבר במשפט אחד למה ההוכחה הזו חשובה דווקא לקהל שבחרת.';
+  if (metrics.proximity < 60) return 'חבר את ההוכחה ישירות לבעיה שאתה פותר או לתוצאה שאתה מוכר.';
+  if (!/למד|מכאן|המשמעות|זה אומר|גיליתי/.test(x)) return 'כדי להפוך את זה לתוכן שימושי, הוסף את הלקח המקצועי שהקורא יכול לקחת לעצמו.';
+  return 'ההוכחה כבר חזקה. עכשיו חשוב לא להעמיס עליה — בחר מסר אחד והפץ.';
+}
+
+function whyNow(proof) {
+  const { evidence, fit, proximity } = proof.metrics;
+  if (fit >= 78 && evidence >= 72) return 'גם אמינה וגם פוגעת קרוב לספק של הקהל — זו ההוכחה שהייתי מוציא ראשונה.';
+  if (evidence >= 82 && fit < 68) return 'חזקה מאוד כהוכחה, אבל לפני פרסום צריך לחבר אותה מפורשות לבעיה של הקהל.';
+  if (fit >= 80 && evidence < 65) return 'רלוונטית מאוד לקהל, אבל כרגע היא נשענת יותר על טענה מאשר על ראיה.';
+  if (proximity >= 78) return 'קרובה מאוד להצעה שלך ולכן יכולה לקצר את הדרך משיחה מקצועית לשיחה עסקית.';
+  return 'שימושית, אבל יש במאגר הוכחות שיכולות לשנות תפיסה מהר יותר.';
+}
+
+function mine() {
+  const chunks = state.sources.flatMap(source =>
+    source.text
+      .split(/(?<=[.!?])\s+|\n+/)
+      .map(text => ({ text: text.trim(), source: source.name }))
+  ).filter(x => x.text.length > 24);
+
+  const candidates = chunks.map((x, i) => ({
+    id: `p-${Date.now()}-${i}`,
+    claim: x.text,
+    source: x.source,
+    type: signalType(x.text),
+    belief: beliefMoved(x.text),
+    metrics: evaluate(x.text, x.source),
+  })).sort((a,b) => b.metrics.priority - a.metrics.priority);
+
+  const dedup = [];
+  for (const p of candidates) {
+    if (!dedup.some(d => overlap(d.claim, p.claim) > .72)) dedup.push(p);
+  }
+  state.proofs = dedup.slice(0, 30);
+  save();
+  render();
+}
+
+function addSource(name, text) {
+  if (!String(text).trim()) return;
+  state.sources.push({ id: crypto.randomUUID(), name, text: String(text).trim() });
+  save(); render();
+}
+
+function activeProofs() {
+  return state.proofs
+    .filter(p => !state.dismissed.includes(p.id))
+    .sort((a,b) => (state.pinned.includes(b.id) - state.pinned.includes(a.id)) || (b.metrics.priority - a.metrics.priority));
+}
+
+function topInsight() {
+  const proofs = activeProofs();
+  if (!proofs.length) return null;
+  const best = proofs[0];
+  const weakEvidence = proofs.filter(p => p.metrics.evidence < 60).length;
+  const weakFit = proofs.filter(p => p.metrics.fit < 60).length;
+  const external = proofs.filter(p => /אימות חיצוני|תוצאה בשטח/.test(p.type)).length;
+  let gap = 'המאגר מגוון יחסית.';
+  if (weakEvidence > proofs.length / 2) gap = 'יש הרבה טענות, אבל מעט עקבות שניתן לבדוק.';
+  else if (weakFit > proofs.length / 2) gap = 'יש הוכחות, אבל הן עדיין לא מחוברות מספיק לספק של הקונה.';
+  else if (external < 2) gap = 'חסר יותר קול חיצוני: לקוחות, מקורות, ציטוטים או תוצאות מתועדות.';
+  return { best, gap };
+}
+
+function ctaText() {
+  return {
+    none: '',
+    discuss: '\n\nמעניין אותי לשמוע — איזה סוג הוכחה גורם לכם לסמוך על איש מקצוע?',
+    dm: '\n\nאם אתם מתלבטים איפה נמצא המינוף אצלכם, אפשר לכתוב לי בפרטי.',
+    call: '\n\nאם אתם רוצים לבדוק את זה על העסק שלכם, אפשר לקבוע שיחה קצרה.'
+  }[state.cta] || '';
+}
+
+function postFor(proof, angle) {
+  const raw = proof.claim.replace(/^\[דמו בלבד\]\s*/,'');
+  const lesson = proof.type === 'תוצאה בשטח'
+    ? 'החלק המעניין הוא לא המספר עצמו, אלא מה היה צריך להשתנות כדי שהתוצאה תקרה.'
+    : proof.type === 'אימות חיצוני'
+      ? 'אימות חיצוני חשוב רק כשהוא עוזר לקורא להבין משהו שימושי על העבודה עצמה.'
+      : 'מומחיות הופכת למעניינת כשאפשר לחבר אותה להחלטה אמיתית של מישהו אחר.';
+  const cta = ctaText();
+
+  if (angle === 'result') {
+    return `${raw}\n\nאני משתף את זה לא כדי להגיד “תראו מה עשיתי”, אלא כי זו הוכחה לדבר שמעסיק אותי מקצועית: ${state.context.belief}.\n\n${lesson}${cta}`;
+  }
+  if (angle === 'story') {
+    return `לפעמים אנחנו מחפשים רעיון לפוסט, בזמן שהחומר הכי טוב כבר קרה במציאות.\n\n${raw}\n\n${lesson}\n\nמבחינתי, זו הנקודה שהאירוע הזה מוכיח: ${state.context.belief}.${cta}`;
+  }
+  return `${raw}\n\nמה אפשר ללמוד מזה מעבר לסיפור עצמו?\n\n${lesson}\n\nכשאני בוחן עבודה מקצועית, אני מחפש פחות הצהרות ויותר עקבות: מה השתנה, עבור מי, ובאיזה הקשר.\n\nזה בדיוק סוג ההוכחה שיכול לצמצם את הספק: ${state.context.doubt}.${cta}`;
+}
+
+function scoreBand(n) {
+  if (n >= 78) return { label: 'להוציא עכשיו', cls: 'strong' };
+  if (n >= 64) return { label: 'שווה לחזק', cls: 'medium' };
+  return { label: 'לא עכשיו', cls: 'weak' };
+}
+
+function renderContext() {
+  const fields = [
+    ['audience','למי אתה רוצה להיראות רלוונטי עכשיו?','למשל: מנהלות HR בחברות של 50–300 עובדים'],
+    ['belief','מה אתה רוצה שהם יבינו עליך?','למשל: שאני יודע להפוך בעיה עמומה לתהליך שמייצר תוצאה'],
+    ['doubt','איזה ספק אתה רוצה להקטין?','למשל: שזה נשמע טוב אבל לא יעבוד אצלנו'],
+    ['offer','מה אתה מוכר כרגע?','למשל: תהליך ייעוץ של 30 יום'],
+  ];
+  return fields.map(([key,label,ph]) => `
+    <label class="field">
+      <span>${label}</span>
+      <input data-context="${key}" value="${esc(state.context[key])}" placeholder="${esc(ph)}" />
+    </label>`).join('');
+}
+
+function renderSourcePanel() {
+  return `
+    <section class="source-panel">
+      <div class="step-label">01 · כוון את ההוכחה</div>
+      <h2>מה אתה רוצה שהקונה יאמין?</h2>
+      <p class="muted">המערכת לא מחפשת את הדבר הכי מרשים שעשית. היא מחפשת מה הכי יעזור מול הקונה הזה, עכשיו.</p>
+      <div class="context-fields">${renderContext()}</div>
+      <div class="divider"></div>
+      <div class="step-label">02 · תן לה חומר שכבר קיים</div>
+      <div class="tabs">
+        <button data-tab="paste" class="tab ${state.tab==='paste'?'active':''}">הדבק טקסט</button>
+        <button data-tab="file" class="tab ${state.tab==='file'?'active':''}">קובץ</button>
+        <button data-tab="web" class="tab ${state.tab==='web'?'active':''}">אינטרנט</button>
+      </div>
+      ${state.tab === 'paste' ? `
+        <textarea id="paste" class="source-text" placeholder="כתבה, המלצה, קורות חיים, תמלול, case study, מאמר..."></textarea>
+        <div class="button-row"><button id="addText" class="primary">הוסף למאגר</button><button id="sample" class="secondary">טען דוגמה</button></div>` : ''}
+      ${state.tab === 'file' ? `
+        <label class="upload-box"><input id="file" type="file" accept=".txt,.md" multiple><b>בחר TXT או MD</b><span>הקבצים נקראים מקומית בדפדפן</span></label>` : ''}
+      ${state.tab === 'web' ? `
+        <div class="web-box"><b>חיפוש חי עדיין לא מחובר.</b><span>אנחנו לא מציגים תוצאה מדומה כאילו היא אמיתית.</span><button id="demoWeb" class="secondary">נסה עם תוצאות דמו</button></div>` : ''}
+      <div class="source-count">${state.sources.length ? `${state.sources.length} מקורות מחכים לניתוח` : 'עדיין לא הוספת מקור'}</div>
+      <button id="mine" class="primary analyze" ${state.sources.length ? '' : 'disabled'}>מצא מה הכי שווה להראות עכשיו</button>
+    </section>`;
+}
+
+function proofMini(proof, rank) {
+  const band = scoreBand(proof.metrics.priority);
+  return `
+    <article class="mini-proof">
+      <div class="mini-top"><span class="rank">#${rank}</span><span class="band ${band.cls}">${band.label}</span></div>
+      <h4>${esc(proof.claim)}</h4>
+      <p>${esc(proof.belief)}</p>
+      <button class="text-button" data-select="${proof.id}">למה דווקא זה? →</button>
+    </article>`;
+}
+
+function renderBest(proof) {
+  const band = scoreBand(proof.metrics.priority);
+  return `
+    <section class="best-card">
+      <div class="best-copy">
+        <div class="step-label">03 · ההוכחה שהייתי מוציא ראשונה</div>
+        <div class="best-title-row"><h2>${esc(proof.type)}</h2><span class="band ${band.cls}">${band.label}</span></div>
+        <blockquote>${esc(proof.claim)}</blockquote>
+        <div class="belief-box"><span>מה זה יכול לגרום לקונה להבין</span><b>${esc(proof.belief)}</b></div>
+        <p class="why">${esc(whyNow(proof))}</p>
+        <div class="button-row"><button data-post="${proof.id}" class="primary">הפוך את זה לפוסט</button><button data-select="${proof.id}" class="secondary">פתח את הראיות</button></div>
+      </div>
+      <div class="best-signal">
+        <span>עדיפות</span><strong>${proof.metrics.priority}</strong><small>לא “ציון אמת” — אות להשוואה</small>
+        <div class="confidence"><span>ביטחון בראיה</span><b>${proof.metrics.confidence}%</b></div>
+      </div>
+    </section>`;
+}
+
+function renderEvidenceDrawer(proof) {
+  if (!proof) return '';
+  const metrics = [
+    ['עוצמת הראיה', proof.metrics.evidence, 'עד כמה אפשר לבדוק את זה מבחוץ'],
+    ['התאמה לקונה', proof.metrics.fit, 'עד כמה זה נוגע לספק שהגדרת'],
+    ['קרבה למה שאתה מוכר', proof.metrics.proximity, 'עד כמה זה מוכיח את התוצאה הרלוונטית'],
+    ['עדכניות', proof.metrics.freshness, 'עד כמה הזמן מחזק או מחליש את השימוש עכשיו'],
+  ];
+  return `
+    <div class="drawer-backdrop" data-close-drawer>
+      <aside class="drawer" onclick="event.stopPropagation()">
+        <button class="close" data-close-drawer>×</button>
+        <div class="step-label">למה המערכת בחרה בזה?</div>
+        <h3>${esc(proof.claim)}</h3>
+        <p class="source-line">מקור: ${esc(proof.source)}</p>
+        <div class="metric-list">${metrics.map(([name,val,desc]) => `
+          <div class="metric-row"><div><b>${name}</b><span>${desc}</span></div><div class="meter"><i style="width:${val}%"></i></div><strong>${val}</strong></div>`).join('')}</div>
+        <div class="strengthen"><span>מה חסר כדי שזה יהיה משכנע יותר?</span><b>${esc(strengthen(proof.claim, proof.metrics))}</b></div>
+        <p class="epistemic">הדירוג הוא כלי תעדוף היוריסטי. הוא לא מודד “השפעה חברתית” כאמת אובייקטיבית, והוא אמור להשתנות כשמשנים קהל, ספק או הצעה.</p>
+      </aside>
+    </div>`;
+}
+
+function renderPostModal(proof) {
+  if (!proof) return '';
+  const post = postFor(proof, state.angle);
+  return `
+    <div class="modal-backdrop">
+      <section class="post-modal">
+        <button id="closePost" class="close">×</button>
+        <div class="step-label">הפוך הוכחה לתוכן — בלי להפוך אותה להתרברבות</div>
+        <h3>איזו זווית נותנת הכי הרבה ערך לקורא?</h3>
+        <div class="angle-tabs">
+          <button data-angle="lesson" class="tab ${state.angle==='lesson'?'active':''}">תובנה מקצועית</button>
+          <button data-angle="story" class="tab ${state.angle==='story'?'active':''}">סיפור</button>
+          <button data-angle="result" class="tab ${state.angle==='result'?'active':''}">הוכחה ישירה</button>
+        </div>
+        <label class="field"><span>CTA</span><select id="cta"><option value="none">בלי CTA</option><option value="discuss" ${state.cta==='discuss'?'selected':''}>פתח דיון</option><option value="dm" ${state.cta==='dm'?'selected':''}>הזמן להודעה</option><option value="call" ${state.cta==='call'?'selected':''}>הזמן לשיחה</option></select></label>
+        <textarea id="postText" class="post-text">${esc(post)}</textarea>
+        <div class="post-meta"><span>הראיה נשארת צמודה למקור: ${esc(proof.source)}</span><span id="chars">${post.length} תווים</span></div>
+        <button id="copyPost" class="primary">העתק פוסט</button>
+      </section>
+    </div>`;
+}
+
+function renderResults() {
+  const proofs = activeProofs();
+  if (!proofs.length) return `<section class="empty"><h2>אין כרגע הוכחות פעילות</h2><p>הוסף מקור חדש או אפס את המאגר.</p></section>`;
+  const insight = topInsight();
+  const best = insight.best;
+  const next = proofs.slice(1,3);
+  return `
+    ${renderBest(best)}
+    ${next.length ? `<section class="next-section"><div class="section-head"><div><div class="step-label">אם הראשונה לא מתאימה</div><h3>עוד שתי אפשרויות טובות</h3></div></div><div class="next-grid">${next.map((p,i)=>proofMini(p,i+2)).join('')}</div></section>` : ''}
+    <section class="gap-card"><div><span>הפער הכי יקר במאגר כרגע</span><b>${esc(insight.gap)}</b></div><button id="showAll" class="secondary">ראה את כל המאגר</button></section>
+    <section id="allProofs" class="all-proofs collapsed">
+      <div class="section-head"><div><div class="step-label">מאחורי ההכרעה</div><h3>כל ההוכחות שמצאנו</h3></div><button id="how" class="text-button">איך התעדוף עובד?</button></div>
+      <div class="proof-list">${proofs.map(p => {
+        const band = scoreBand(p.metrics.priority);
+        return `<article class="proof-row"><div class="priority ${band.cls}">${p.metrics.priority}</div><div class="proof-body"><b>${esc(p.claim)}</b><span>${esc(p.type)} · ${esc(p.source)}</span><small>${esc(p.belief)}</small></div><div class="proof-actions"><button data-post="${p.id}" class="secondary">פוסט</button><button data-select="${p.id}" class="text-button">פירוט</button><button data-pin="${p.id}" class="icon-button" aria-label="נעץ">${state.pinned.includes(p.id)?'★':'☆'}</button><button data-dismiss="${p.id}" class="text-button danger">הסתר</button></div></article>`;
+      }).join('')}</div>
+    </section>`;
+}
+
+function render() {
+  const selectedProof = state.proofs.find(p => p.id === state.selected);
+  const postProof = state.proofs.find(p => p.id === state.postSelected);
+  document.querySelector('#app').innerHTML = `
+    <header class="site-header"><div class="brand"><b>ProofMiner</b><span>לא עוד רעיונות. הוכחות שכבר הרווחת.</span></div><div class="principle">מה להראות → מה זה מוכיח → מה לעשות עכשיו</div></header>
+    <main class="shell">
+      ${renderSourcePanel()}
+      <section class="workspace">
+        ${state.proofs.length ? renderResults() : `
+          <section class="welcome">
+            <div class="eyebrow">הבעיה אינה שאין לך מה להגיד</div>
+            <h1>הדבר הכי משכנע שכבר עשית כנראה קבור בתוך מסמך.</h1>
+            <p>תן למערכת כתבה, קורות חיים, המלצה, תוצאה או מאמר. היא תפרק אותם להוכחות ותראה לך <b>מה הכי שווה להוציא עכשיו — מול הקונה הספציפי שלך.</b></p>
+            <div class="promise-grid"><div><b>1</b><span>מוצאים עקבות אמיתיות</span></div><div><b>2</b><span>בודקים איזה ספק הן מצמצמות</span></div><div><b>3</b><span>בוחרים הוכחה אחת להפיץ</span></div></div>
+          </section>`}
+      </section>
+    </main>
+    ${selectedProof ? renderEvidenceDrawer(selectedProof) : ''}
+    ${postProof ? renderPostModal(postProof) : ''}`;
+  bind();
+}
+
+function bind() {
+  document.querySelectorAll('[data-context]').forEach(el => el.addEventListener('input', e => {
+    state.context[e.target.dataset.context] = e.target.value; save();
+  }));
+  document.querySelectorAll('[data-tab]').forEach(el => el.onclick = () => { state.tab = el.dataset.tab; save(); render(); });
+  document.querySelector('#addText')?.addEventListener('click', () => addSource(`טקסט ${state.sources.length+1}`, document.querySelector('#paste').value));
+  document.querySelector('#sample')?.addEventListener('click', () => addSource('דוגמת נכסים', SAMPLE));
+  document.querySelector('#demoWeb')?.addEventListener('click', () => addSource('תוצאות חיפוש — דמו בלבד', DEMO_WEB));
+  document.querySelector('#file')?.addEventListener('change', async e => { for (const f of e.target.files) addSource(f.name, await f.text()); });
+  document.querySelector('#mine')?.addEventListener('click', mine);
+  document.querySelectorAll('[data-select]').forEach(el => el.onclick = () => { state.selected = el.dataset.select; save(); render(); });
+  document.querySelectorAll('[data-close-drawer]').forEach(el => el.onclick = () => { state.selected = null; save(); render(); });
+  document.querySelectorAll('[data-post]').forEach(el => el.onclick = () => { state.postSelected = el.dataset.post; state.angle='lesson'; save(); render(); });
+  document.querySelector('#closePost')?.addEventListener('click', () => { state.postSelected = null; save(); render(); });
+  document.querySelectorAll('[data-angle]').forEach(el => el.onclick = () => { state.angle = el.dataset.angle; save(); render(); });
+  document.querySelector('#cta')?.addEventListener('change', e => { state.cta = e.target.value; save(); render(); });
+  document.querySelector('#postText')?.addEventListener('input', e => { document.querySelector('#chars').textContent = `${e.target.value.length} תווים`; });
+  document.querySelector('#copyPost')?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(document.querySelector('#postText').value);
+    document.querySelector('#copyPost').textContent = 'הועתק';
+  });
+  document.querySelectorAll('[data-pin]').forEach(el => el.onclick = () => {
+    const id = el.dataset.pin;
+    state.pinned = state.pinned.includes(id) ? state.pinned.filter(x=>x!==id) : [...state.pinned,id];
+    save(); render();
+  });
+  document.querySelectorAll('[data-dismiss]').forEach(el => el.onclick = () => { state.dismissed = [...new Set([...state.dismissed, el.dataset.dismiss])]; save(); render(); });
+  document.querySelector('#showAll')?.addEventListener('click', () => {
+    document.querySelector('#allProofs')?.classList.toggle('collapsed');
+    document.querySelector('#showAll').textContent = document.querySelector('#allProofs')?.classList.contains('collapsed') ? 'ראה את כל המאגר' : 'סגור מאגר';
+  });
+  document.querySelector('#how')?.addEventListener('click', () => alert('התעדוף משלב ארבעה דברים: עוצמת הראיה (35%), התאמה לקונה ולספק שהגדרת (35%), קרבה למה שאתה מוכר (20%) ועדכניות (10%). בנוסף מוצג ביטחון נפרד בראיה. זה כלי החלטה היוריסטי — לא מדידה אובייקטיבית של השפעה חברתית.'));
+}
+
 render();
