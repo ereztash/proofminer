@@ -1,163 +1,255 @@
-# DOD Business Model Delta — v1
+# DOD Business Model Delta — v2
 
 Date: 2026-08-15
 
 ## Authority
 
-This is an additive DOD extension to `docs/DEFINITION_OF_DONE.md` created by the Personal Decision Intelligence / business-model iteration.
+This is an additive DOD extension to `docs/DEFINITION_OF_DONE.md`.
 
-It adds commercial and retention gates without weakening any existing product / epistemic / authorship gate.
+It governs category, commercial model, retention and compounding value without weakening product / epistemic / authorship gates.
+
+Read with `CATEGORY_BUSINESS_MODEL_ITERATION_V2.md` and `COMMERCIAL_FIELD_PROTOCOL_V1.md` (currently protocol v2).
 
 ---
 
-# E1 — Category / wedge separation
+# E1 — User telos and business telos remain separate
+
+The system can state both:
+
+- user telos — improve professional market-position decisions / outcomes while preserving authorship;
+- business telos — capture sustainable value without distorting those decisions.
+
+**Hard fail:** recommendation logic is changed to increase engagement, recommendation count, allocation delta or billing duration.
+
+---
+
+# E2 — Category / customer promise separation
 
 Pass only if the product distinguishes:
 
-- architectural category: Personal Decision Intelligence;
-- first vertical: Professional Authority / Market Position;
+- architectural family: Personal Decision Intelligence;
+- commercial domain: Professional Market Position;
+- current high-density trigger: Professional Transition / Inflection Episode;
 - initial ICP;
 - paid job.
 
-**Fail:** broadening the live product to generic life decisions merely because the architecture can represent them.
+**Fail:** customer-facing copy depends on understanding `Personal Decision Intelligence` before pain recognition.
 
 ---
 
-# E2 — Urgent struggling moment
+# E3 — Authority is not forced problem language
 
-The initial ICP can describe a current professional transition where several plausible actions compete for scarce resources and choosing poorly has visible economic / career cost.
+The user can enter through a market-position / opportunity problem without declaring a desire to `become an authority`.
 
-**Fail:** the product must educate the user that "better decision-making" is a problem before relevance is felt.
+Authority may remain a mechanism / desired state when relevant.
 
----
-
-# E3 — WTP is tested behaviorally
-
-Pricing confidence cannot come primarily from survey responses.
-
-Material evidence requires real offers / commitments / refusals at specific price points after the participant has experienced value.
+**Fail:** the product forces all professional-position problems into an authority framing.
 
 ---
 
-# E4 — Generic-decision price ceiling is acknowledged
+# E4 — Urgent struggling moment
 
-The product must demonstrate why it deserves materially more than generic decision-journal / decision-app pricing before pricing it as professional intelligence.
-
-The justification must come from professional / economic value, not more features or more frameworks.
+The initial ICP can describe an active professional inflection point where multiple plausible moves compete for scarce resources and choosing poorly has visible economic / career cost.
 
 ---
 
-# E5 — One-shot versus recurring value is separated
+# E5 — Transition episode is observable
+
+The product can identify whether multiple consequential decisions belong to one bounded 60–180 day transition episode.
+
+Record:
+
+- episode goal;
+- boundary;
+- decision events;
+- inter-decision timing;
+- episode close / pause condition.
+
+Do not assume all customers require permanent active mode.
+
+---
+
+# E6 — WTP is tested behaviorally
+
+Pricing confidence requires real payment / commitment / refusal at specific prices after experienced value.
+
+Survey WTP cannot close this gate.
+
+---
+
+# E7 — Price premium must come from economic decision value
+
+The product must demonstrate why it deserves materially more than generic decision-app pricing.
+
+Valid justification:
+
+- commercially consequential decisions;
+- person + field evidence;
+- resource-allocation change;
+- longitudinal decision value;
+- high-touch human research where explicitly sold.
+
+Invalid justification:
+
+- more frameworks;
+- bigger scores;
+- AI sophistication;
+- more screens.
+
+---
+
+# E8 — Commercial cadence follows decision density
+
+The billing unit remains open until FIELD observes natural decision density.
+
+Possible valid units:
+
+- 90-day active episode;
+- monthly active mode;
+- episodic decision review;
+- ongoing adviser / concierge relationship.
+
+**Fail:** monthly subscription is preserved after repeated evidence that customers have nothing material to decide.
+
+---
+
+# E9 — One-shot, active and dormant value are separated
 
 The product can state which value belongs to:
 
-- initial project / model construction;
-- ongoing evidence / trigger monitoring;
-- repeated decision events;
-- longitudinal learning.
+- initial model / research;
+- active episode decision support;
+- outcome capture;
+- persistent dormant lineage;
+- monitoring;
+- reactivation.
 
-**Fail:** a one-time authority map is disguised as subscription value.
-
----
-
-# E6 — Retention is event-driven
-
-The product does not require artificial daily engagement.
-
-A returning session should normally be caused by:
-
-- new decision;
-- new evidence;
-- returned outcome;
-- dependency unlock;
-- boundary change;
-- justified scheduled review.
-
-**Fail:** engagement metrics reward generating unnecessary decisions or recommendations.
+A one-time strategic map cannot be disguised as recurring value.
 
 ---
 
-# E7 — Longitudinal state creates incremental decision value
+# E10 — Monitoring requires a real information channel
 
-At a second+ material decision event, prior decision / action / outcome history changes at least one material element relative to a fresh intake:
+Ongoing monitoring value passes only when new decision-relevant information actually enters through:
+
+- connected source;
+- user outcome return;
+- external research update;
+- dependency event;
+- explicit human-in-loop review.
+
+**Fail:** generic reminders or unchanged dashboards are counted as monitoring value.
+
+---
+
+# E11 — Retention is event / episode driven
+
+Do not require artificial daily engagement.
+
+Track natural trigger returns, second/third decisions, paid continuation and paid reactivation.
+
+---
+
+# E12 — Longitudinal history is transferability-gated
+
+Prior decision history may influence a later decision only when relevance / transferability is inspectable.
+
+**Hard fail:** old outcomes or inferred preferences silently govern a new domain / audience / boundary.
+
+---
+
+# E13 — Personal Decision State is versioned
+
+Goals, constraints, preferences, audience, desired identity and economic assumptions carry source + temporal/context state.
+
+The product can distinguish:
+
+- current state;
+- superseded historical state;
+- uncertain state.
+
+**Fail:** an inferred trait becomes permanent because it was once observed.
+
+---
+
+# E14 — Longitudinal state creates incremental value
+
+At decision #2+, transferable prior history changes at least one material element relative to a fresh analysis:
 
 - representation;
 - evidence selection;
 - information request;
-- allocation;
-- uncertainty boundary;
-- reversal trigger.
+- action ordering;
+- resource allocation;
+- uncertainty / reversal boundary.
 
-Remembering biography or writing style does not pass this gate.
-
----
-
-# E8 — One-year relevance is falsifiable
-
-The product can answer:
-
-> What can we do after one year of real decision lineage that we could not responsibly do from a fresh intake today?
-
-If deletion of prior longitudinal history has negligible effect on the next recommendation, the compounding-retention thesis fails.
+Remembering biography or writing style does not pass.
 
 ---
 
-# E9 — Retention preserves authorship
+# E15 — Stale-history rejection is a capability
 
-Retention must arise from accumulated usefulness, external state, decision lineage and trigger monitoring — not from making the user less capable of deciding without the product.
+The system can correctly ignore old history when boundary / goals / market state changed enough to make it non-transferable.
 
-**Hard fail:** product behavior is optimized to increase dependency on system authority.
-
----
-
-# E10 — Business-model alternatives remain live
-
-Subscription is a hypothesis, not an invariant.
-
-If decision events are too episodic, test alternatives such as:
-
-- episodic paid Decision Reviews;
-- setup + lower-cost persistent history;
-- 90-day engagements;
-- human-in-loop professional intelligence;
-- team / employer-funded model later.
-
-Do not preserve SaaS recurrence for aesthetic reasons.
+Long-term value requires selective forgetting / scoping, not maximal memory.
 
 ---
 
-# E11 — Authority wedge earns its priority
+# E16 — One-year relevance is falsifiable
 
-The authority vertical remains first only while it shows a superior combination of:
+At a later consequential decision, the system can answer both:
 
-- urgent recognizable trigger;
-- recurring enough decisions;
+1. what can it do because it observed prior decisions / outcomes that a fresh intake cannot responsibly reconstruct?
+2. which old state must it **not** reuse because it no longer transfers?
+
+If prior history has negligible positive value or mainly creates stale bias, the compounding thesis fails.
+
+---
+
+# E17 — Retention preserves authorship
+
+Retention must come from accumulated usefulness, external evidence, versioned lineage and trigger recognition — not user dependency on system authority.
+
+---
+
+# E18 — Commercial alternatives remain live
+
+If subscription fit is weak, episodic / active-episode / pause-reactivate models must remain valid.
+
+Do not preserve SaaS recurrence for aesthetic or fundraising reasons.
+
+---
+
+# E19 — Professional Market Position wedge earns priority
+
+The wedge remains first only while it shows a strong combination of:
+
+- urgent recognizable inflection point;
+- decision density during the episode;
 - observable feedback;
 - economic consequence;
 - direct willingness to pay;
-- domain-specific advantage over general AI;
-- manageable competitive intensity.
-
-If a founder/business-decision vertical materially dominates on these dimensions, `REPLAN` is required.
+- domain-specific advantage over generic AI;
+- manageable competition;
+- sufficient outcome capture.
 
 ---
 
-# E12 — Commercial FIELD precedes broad build
+# E20 — Commercial FIELD precedes broad build
 
-Before broadening the product or building a full Personal Decision Intelligence platform, require:
+Before broad Personal Decision Intelligence expansion require:
 
-- several real authority-wedge cases;
-- at least some real payment / refusal evidence;
-- second-cycle use where possible;
-- evidence that longitudinal state improves a later decision;
-- evidence that the user understands why the product is worth ongoing payment.
-
-No generic category expansion before this gate.
+- real paid / refusal evidence;
+- at least one observed second-decision cycle;
+- observed decision-density data;
+- evidence that prior transferable lineage improves a later decision;
+- evidence about preferred billing unit;
+- evidence that job language is understood without internal taxonomy.
 
 ---
 
 # Current outcome
 
-`FIELD`
+**FIELD**
 
-Next justified work is paid Wizard-of-Oz + longitudinal second-decision evidence, governed by `COMMERCIAL_FIELD_PROTOCOL_V1.md`.
+The current highest-value work is a paid Professional Transition Episode with longitudinal observation, not more internal pricing/category refinement.
