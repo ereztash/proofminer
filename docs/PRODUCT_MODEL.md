@@ -81,10 +81,20 @@ Suggested fields:
 - `authority_domain`
 - `desired_perceived_identity`
 - `desired_business_or_career_outcomes[]`
+- `target_authority_surfaces[]`
 - `selected_audience_path_id`
 - `status`
 - `created_at`
 - `updated_at`
+
+`target_authority_surfaces` prevents the product from equating authority with public social visibility. Possible surfaces include:
+
+- referral network
+- selected professional community
+- public digital audience
+- organizational/internal field
+- industry stage/media ecosystem
+- buyer shortlist / sales context
 
 Possible status values:
 
@@ -111,12 +121,21 @@ Suggested fields:
 - `domain`
 - `desired_association`
 - `target_audience_definition`
+- `target_authority_surfaces[]`
 - `desired_audience_actions[]`
 - `observable_authority_signals[]`
+- `business_or_career_signals[]`
 - `time_horizon` optional
 - `constraints[]`
 
-The system must distinguish desired perception from observable signals and from downstream business outcomes.
+The system must distinguish:
+
+1. desired perception;
+2. perceived-identity evidence;
+3. observable authority signals;
+4. downstream business/career outcomes.
+
+There is no universal authority score. Each Authority Project defines a relevant signal bundle.
 
 ---
 
@@ -235,11 +254,23 @@ Suggested fields:
 - `project_ids[]`
 - `asset_class`
 - `description`
+- `source_context`
 - `supporting_evidence_unit_ids[]`
 - `confidence_state`
 - `disclosure_state`
 - `maturity_state`
+- `transferability_state`
+- `transferability_rationale`
 - `strategic_uses[]`
+
+`transferability_state` may be:
+
+- directly_applicable
+- adjacent_bridgeable
+- weakly_transferable
+- not_currently_justified
+
+This is essential when prior experience comes from a different role, industry or authority field.
 
 Initial asset classes:
 
@@ -280,13 +311,18 @@ Suggested fields:
 - `project_id`
 - `known_assets[]`
 - `known_gaps[]`
-- `current_public_associations[]`
+- `perceived_identity_hypotheses[]`
+- `perceived_identity_evidence_refs[]`
 - `existing_audiences[]`
+- `existing_authority_surfaces[]`
 - `existing_distribution[]`
 - `existing_external_validation[]`
 - `client_acquisition_patterns[]`
+- `referral_language_patterns[]`
 - `unresolved_uncertainties[]`
 - `last_updated_at`
+
+`perceived_identity_hypotheses` must be grounded where possible in observational data such as referral language, client language, external mentions, audience behavior or repeated inbound themes rather than only the user's self-description.
 
 PersonState is derived and revisable.
 
@@ -302,6 +338,7 @@ Suggested fields:
 
 - `project_id`
 - `target_audience`
+- `relevant_authority_surfaces[]`
 - `recognized_authorities[]`
 - `known_for_associations[]`
 - `points_of_parity[]`
@@ -353,6 +390,7 @@ Suggested fields:
 - `assumptions[]`
 - `evidence_refs[]`
 - `uncertainties[]`
+- `cross_context_transferability_findings[]`
 - `why_this_model`
 
 `selected_lenses` may include SWOT or other strategic frameworks, but the user should not have to choose a framework.
@@ -400,6 +438,26 @@ Suggested fields:
 - `expected_learning`
 - `expected_authority_mechanism`
 - `status`
+
+Foundational `action_type` values may include:
+
+- capability_building
+- learning
+- real_project_or_pilot
+- collaboration
+- original_research
+- contribution
+- methodology_extraction
+- evidence_collection
+- external_validation
+- positioning
+- distribution
+- relationship_building
+- artifact_creation
+- outreach
+- feedback_collection
+
+This prevents the system from treating all authority gaps as communication problems.
 
 Possible status values:
 
@@ -523,8 +581,12 @@ Suggested fields:
 - `description`
 - `observed_at`
 - `source`
+- `authority_surface`
 - `audience_match_state`
+- `desired_association_match_state`
 - `attribution_state`
+
+A signal matters only relative to the project's audience, desired association and authority surface.
 
 ---
 
@@ -562,6 +624,10 @@ Did the system correctly understand the source?
 
 Is the inferred AuthorityAsset actually supported by source material or repeated evidence?
 
+### Transferability
+
+Does an asset from one context legitimately support authority in the target context?
+
 ### Strategic relevance
 
 Does this asset/action matter for the selected audience and current authority gap?
@@ -569,6 +635,10 @@ Does this asset/action matter for the selected audience and current authority ga
 ### Market-model confidence
 
 How well supported is the FieldModel or comparable-journey inference?
+
+### Perceived-identity confidence
+
+How much observational evidence supports the claim that the relevant audience currently associates the user with a particular capability/topic?
 
 ### Outcome attribution
 
@@ -613,6 +683,8 @@ Primary UI concepts should be ordinary-language projections of:
 
 - Where you want to become known
 - Who you want to be known by
+- Where that authority needs to exist
+- What the market appears to know you for today
 - What you already have
 - What is missing
 - The route
@@ -634,11 +706,13 @@ Valid outcomes include:
 - insufficient information to distinguish paths
 - no evidence for a proposed claim
 - methodology hypothesis not yet supported across cases
+- prior experience does not transfer strongly enough to the target field
 - best authority asset cannot be disclosed
 - benchmark journey is not transferable
 - market response is ambiguous
 - current action produced no meaningful signal
 - current strategic model is contradicted by new evidence
+- desired authority requires competence/evidence that must be built before communication should scale
 
 The correct response is to expose the gap and update the route, not manufacture certainty.
 
