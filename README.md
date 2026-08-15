@@ -1,52 +1,37 @@
 # ProofMiner
 
-ProofMiner helps an established expert reduce a buyer's uncertainty at a specific decision moment by finding and deploying the strongest evidence the expert has already earned.
-
-It is **not** a generic content generator and it is no longer modeled as a universal proof-scoring dashboard.
+ProofMiner helps an established expert decide **what evidence to show now** to reduce uncertainty at a specific buyer decision moment.
 
 ## Current product model
 
-```text
-Decision Moment
-→ Candidate Claim
-→ Evidence Units from real Source Assets
-→ SUPPORTS / QUALIFIES / CONTRADICTS
-→ Proof Move
-→ Representation
-→ Publication / Use
-→ Observed Outcome
-```
+`Decision Moment → Candidate Claim → Evidence Graph → Proof Move → Representation → Observed Outcome`
 
-The stable atom is an **Evidence Unit**, not a fixed Proof Unit. What evidence proves depends on the claim and the decision context.
+The stable atom is **Evidence**, not a fixed Proof Unit. Proof is contextual: the same evidence can support different claims in different decision moments, and one claim may require several pieces of evidence.
 
-## Current architecture status
+## Interactive v2 Preview
 
-Product lifecycle state: **ARCHITECTING**.
+The current product branch implements a visible end-to-end prototype of the new experience:
 
-The current production UI is a functional prototype. Future implementation should derive from the current product doctrine and Definition of Done rather than extending the legacy fixed-weight scoring model.
+1. describe one real Decision Moment;
+2. provide one existing source;
+3. receive one Proof Move with an exact source trace;
+4. see why the evidence supports the claim and what it does **not** prove;
+5. correct the recommendation or choose an alternative;
+6. turn the selected proof into a reader-first draft;
+7. pass a Truth Check before marking it ready for use.
 
-## Product source of truth
+The current extraction/recommendation logic is still a **client-side prototype**, not the final AI/evidence engine. The product doctrine and Definition of Done explicitly prevent treating it as validated intelligence.
 
-- [`PRODUCT_DOCTRINE.md`](PRODUCT_DOCTRINE.md) — telos, ICP, invariants, UX and epistemic doctrine.
-- [`docs/PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md) — Decision Moment, Evidence Graph, Proof Move and product memory.
-- [`docs/DEFINITION_OF_DONE.md`](docs/DEFINITION_OF_DONE.md) — blocking gates for build, field validation and shipping.
-- [`docs/ARCHITECTURE_DECISION_LOG.md`](docs/ARCHITECTURE_DECISION_LOG.md) — decisions that supersede earlier product assumptions.
+## Source of truth
 
-## Delivery orchestration
+Read these before changing product behavior:
 
-Application work is routed through:
+- `PRODUCT_DOCTRINE.md`
+- `docs/PRODUCT_MODEL.md`
+- `docs/DEFINITION_OF_DONE.md`
+- `docs/ARCHITECTURE_DECISION_LOG.md`
 
-```text
-app-orchestrator
-→ Architect provider
-→ BUILD_AUTHORIZED contract
-→ vercel-app-builder
-→ Preview evidence
-→ validation
-→ ship / revise / kill
-```
-
-See [`skills/README.md`](skills/README.md).
+Deployment/orchestration contracts live under `skills/`.
 
 ## Run locally
 
