@@ -1,467 +1,479 @@
-# ProofMiner — Definition of Done v3.6
+# ProofMiner — Definition of Done v4.0
+
+Date: 2026-08-15
 
 ## Governing rule
 
-This DOD is subordinate to `docs/TELOS_GOVERNANCE.md`.
+This DOD is subordinate to `docs/TELOS_GOVERNANCE.md` v1.3.
 
-It is the current best hypothesis about what must be true to realize O. It does not define O, and passing every gate does not authorize `STOP` if Telos Governance still finds a material end-to-end gap.
+It is the current best falsifiable model of what must be true to realize O. It does not define O and it cannot authorize `STOP` by checklist completion.
 
-Use together with:
+Read with:
 
+- `docs/CHARACTERIZATION_GOVERNANCE_V1.md`
 - `docs/META_DECISION_GOVERNANCE.md`
 - `docs/COR_SYS_GRAPH_AUDIT_V1.md`
-- `docs/UX_TRANSITION_CONTRACT.md`
 - `docs/RESOURCE_REALLOCATION_CONTRACT.md`
 - `docs/FIELD_PROTOCOL_V3.md`
+- `docs/DOD_BUSINESS_MODEL_DELTA_V1.md`
 
 ---
 
 # O recalled
 
-The product exists to increase the likelihood that a relevant audience comes to perceive the user as a credible, differentiated authority in the desired domain and acts accordingly.
+The product exists to help a professional in a consequential transition improve how they understand the problem and allocate scarce resources toward a desired professional market / opportunity state, while preserving decision authorship and learning from real outcomes.
 
-Because the user has scarce time, money and attention, the system must improve how those resources are allocated toward that end under uncertainty.
+Authority may be part of that route, but is not the mandatory end-state language.
 
-The system must also avoid spending user/system resources on analytical machinery that does not improve the live decision **and must not replace the user's authorship of the decision with system authority**.
-
-The system cannot guarantee authority. It is responsible for producing, explaining and adapting the best grounded allocation/route available, preserving user contestability, and learning responsibly from market evidence.
+The system should exploit useful expertise already embedded in the user's real professional practice **without allowing that professional lens to become an unchecked source of truth**.
 
 ---
 
-# Primary first-session transition
+# Primary transition
 
 ```text
-A1 — authority need + plausible actions + uncertain allocation / decision model
-→
-B — grounded, contestable allocation decision supported by a changed/explicit representation,
-    the least-complex sufficient reasoning process, and an Authority Map
+A — I know roughly where I want to go professionally.
+    I have many plausible actions.
+    I have expertise, but I may not be applying it to my own system.
+    I do not know what information / lens / action deserves resources now.
+
+        ↓ CHARACTERIZE
+
+B — I have a grounded, contestable representation of the transition:
+    what I believe;
+    what my own professional process reveals;
+    where that lens may fail;
+    what external facts still matter;
+    what decision is actually live;
+    what I will do / not do now;
+    why;
+    and what evidence will change course.
 ```
 
-`B` is not "the user received a map", "the user accepted the recommendation", or "the system ran an advanced framework".
+The product does **not** pass B merely because:
 
-The user should be able to state:
-
-- what they want to become known for and by whom;
-- what they would have done without the product;
-- what they previously believed the main bottleneck / dependency was;
-- what main gap was found;
-- what assumption or representation changed, if any;
-- what they will now `KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD`;
-- where scarce resources go first;
-- why;
-- what is parallel, blocked or premature;
-- which part of the recommendation they would challenge;
-- what information/evidence could change the representation and allocation again.
-
-The system should be able to state:
-
-- the current project/decision boundary;
-- what decision was actually live;
-- why the selected reasoning process was sufficient;
-- why a simpler method was insufficient, if escalation occurred;
-- why a more complex method was not justified, if escalation stopped.
+- an intake form is complete;
+- the system found information online;
+- the user's methodology was summarized;
+- a map was generated;
+- a recommendation was accepted;
+- a sophisticated decision framework was run.
 
 ---
 
-# Product hierarchy invariant
+# Canonical product hierarchy
 
 ```text
-CONSCIOUS PAIN
-→ AUTHORITY DIRECTION / OUTCOME
-→ PROJECT / DECISION BOUNDARY
-→ STATED COUNTERFACTUAL REPRESENTATION
-→ STATED COUNTERFACTUAL PLAN
+CONSCIOUS PROFESSIONAL TRANSITION
+→ O / TARGET STATE / BOUNDARY
+→ FREEZE PRIOR REPRESENTATION + ALLOCATION
+→ CHARACTERIZATION PROCESS SELECTION
+→ REAL-CASE EXPERTISE ELICITATION WHEN USEFUL
+→ PROFESSIONAL OPERATING MODEL
+→ SELF-APPLICATION WHEN USEFUL
+→ TRANSFERABILITY / COMPETING-LENS CHALLENGE
+→ DECISION-RELEVANT UNKNOWNS
+→ TARGETED EXTERNAL RESEARCH
 → LIVE DECISION FRAME
-→ MINIMUM DECISION-RELEVANT DATA
-→ DECIDE HOW TO DECIDE
-→ DIAGNOSIS / REPRESENTATION DELTA / ALLOCATION DELTA
-→ CONTESTABLE AUTHORITY MAP
-→ USER COMMITMENT
-→ EXECUTION
-→ MULTI-SURFACE MARKET EVIDENCE
-→ LEARNING / RE-ALLOCATION / REPRESENTATION UPDATE
+→ LEAST-COMPLEX SUFFICIENT DECISION METHOD
+→ REPRESENTATION + ALLOCATION DECISION
+→ CONTESTABLE COMMITMENT
+→ ACTION
+→ REAL OUTCOME / MULTI-SURFACE EVIDENCE
+→ LEARNING / REPLAN / VERSIONED DECISION LINEAGE
 ```
 
-A lower-level model, metric, framework, algorithm, library or UI element may not outrank this transition.
+A lower layer may not outrank a higher one.
 
 ---
 
-# PHASE A — PRODUCT / DECISION / UX ARCHITECTURE GATES
+# PHASE A — CHARACTERIZATION GATES
 
-## A1 — Stable project unit
+## A1 — No fixed-intake authority
 
-`AuthorityProject` remains the persistent top-level project context.
+The system does not assume one universal set of onboarding fields defines the person / business problem.
 
-## A2 — Trigger is falsifiable
+A question is justified only when it can change a material representation, decision, boundary, research need or allocation.
 
-The ICP should recognize an authority/resource-allocation problem without learning product vocabulary first.
+**Hard fail:** asking for information because it exists in the schema rather than because the live transition requires it.
 
-## A3 — Counterfactual is captured before advice
+## A2 — Baseline precedes intervention
 
-The system can record what the user says they would otherwise do during the relevant horizon, including order and material time/cash commitments when useful.
+Before advice, preserve the user's stated:
 
-The counterfactual is labeled as stated/self-reported, not causal truth.
+- target / desired movement;
+- current bottleneck / causal representation when useful;
+- intended actions;
+- material resource commitments;
+- reasons those actions should work;
+- current change / reversal conditions.
 
-## A4 — Live decision is framed before method selection
+Self-report remains self-report.
 
-Before invoking a decision framework, the system records the specific allocation decision being made and its link to O.
+## A3 — Characterization process is selected, not assumed
 
-**Fail:** running MCDA, optimization, VOI, robust analysis or another framework before the live decision is explicit.
+The system can state why it used or rejected a characterization process such as:
 
-## A5 — DecisionProblemProfile is sufficient
+- direct clarification;
+- critical-case reconstruction;
+- cross-case abstraction;
+- self-application / role reversal;
+- resource / decision reconstruction;
+- external mirror;
+- competing-lens challenge;
+- backward-from-O.
 
-The system can characterize at least the decision-relevant subset of:
+**Fail:** running self-application merely because it is the preferred product idea.
 
-- alternatives state;
-- objectives / trade-offs;
-- hard constraints;
+## A4 — Real cases precede strong claims about the user's professional process
+
+When the product relies materially on the user's expertise, it reconstructs actual professional episodes rather than treating abstract self-description as a complete operating model.
+
+Capture only what is decision-relevant: cues, alternatives, constraints, sequence, reversal conditions and outcomes.
+
+## A5 — ProfessionalOperatingModel is source-linked
+
+A professional operating model must retain links to the cases / observations from which it was derived.
+
+It may contain:
+
+- target state;
+- diagnostic questions;
+- cues;
+- constraints;
+- failure modes;
+- action families;
 - dependencies;
-- uncertainty type;
-- reversibility / lock-in;
-- information gaps;
-- feedback speed;
-- stakes / opportunity cost;
-- decision horizon.
+- success / reversal signals.
 
-Do not require every field when a simpler discriminator already resolves method choice.
+**Fail:** an inferred methodology is presented as canonical personal truth without source / uncertainty state.
 
-## A6 — Requisite method selection
+## A6 — Cross-case abstraction before broad transfer when material
 
-The system chooses the least-complex reasoning process sufficient to resolve the live decision responsibly.
+A pattern extracted from one case remains case-specific or provisional when one-case over-generalization could change a recommendation.
 
-**Pass:** method escalation has an explicit decision-changing justification.
+The product can request a contrasting / second case when that comparison has decision value.
 
-**Hard fail:** method escalation exists only because the method is available, prestigious, technically interesting or easier to score.
+Do not collect multiple cases by default.
 
-## A7 — Simple dominance / hard constraints can terminate escalation
+## A7 — Self-application is explicit and bounded
 
-If hard constraints, prerequisites or clear dominance resolve the decision, the system can decide without invoking a more complex trade-off model.
+When useful, the product can apply the user's own professional process to their business / transition.
 
-## A8 — Dependency reasoning precedes unnecessary scoring
+The mapping must make explicit:
 
-If sequence / feasibility / capacity determines what can happen now, the system does not hide that fact inside a weighted score.
+- what corresponds;
+- what does not;
+- what is assumed;
+- what the self-application changes.
 
-## A9 — Material allocation change is representable
+**Fail:** "you are a marketer, therefore your business is a marketing problem" without boundary reasoning.
 
-The product can represent `KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD` at action level.
+## A8 — Professional-lens capture is challenged
 
-Stopping is not automatically valuable.
+Before a self-applied conclusion governs resources, the system tests at least the material subset of:
 
-## A10 — Opportunity cost is decision-relevant
+- boundary mismatch;
+- transferability;
+- competing lens;
+- external market evidence;
+- user authorship.
 
-When recommending one action over another, the system can explain what is displaced, delayed or forgone when material.
+Possible states:
 
-## A11 — Data requests have value-of-information logic
+`directly_useful / useful_with_boundary / hypothesis_only / not_transferable / contradicted`.
 
-Before requesting material new information, the system can answer:
+## A9 — Endogenous knowledge is separated from external evidence
 
-> **Which live allocation decision or decision representation could change if we knew this?**
+The user's expertise may reveal what to inspect and which hypotheses matter. It does not substitute for buyer / market / competitor / channel evidence when those facts are external.
 
-If none, the request has no default claim to user effort.
+## A10 — Characterization has a stop condition
 
-If an unknown can flip the decision and is reasonably obtainable, the system can choose targeted information gathering instead of false certainty.
+At every additional question / case / lens:
 
-## A12 — Multi-criteria reasoning has preconditions
+> **What live representation or decision could this change?**
 
-When multiple feasible alternatives remain with genuine conflicting objectives, the system may use MCDA-like reasoning.
+If none, stop characterization.
 
-**Pass:** relevant criteria/trade-offs are explicit, preferences are not fabricated, and material sensitivity is inspectable.
+If the remaining uncertainty is external, route to research / FIELD rather than more introspection.
 
-**Fail:** criteria are added merely to make the decision look rigorous.
+---
 
-## A13 — Deep uncertainty does not receive fake precision
+# PHASE B — RESEARCH + DECISION ARCHITECTURE GATES
 
-When probabilities/forecasts are not defensible enough for expected-value optimization, the system can choose robust/vulnerability-oriented reasoning instead of manufacturing precise inputs.
+## B1 — Decision-directed research
 
-## A14 — Staged decisions can preserve options
+Every material research task records:
 
-When the problem unfolds over time and future evidence can change the route, the system can represent:
+- unknown;
+- `decision_affected` or `representation_affected`;
+- evidence capable of changing the decision;
+- relevant source type;
+- stop condition.
 
-- action now;
-- options preserved;
-- signposts;
-- trigger conditions;
-- contingency actions.
+**Fail:** broad "research the market" work with no discriminating question.
 
-## A15 — Sensitivity controls analytical escalation
+## B2 — Search output preserves evidence boundaries
 
-After a material recommendation, plausible changes in assumptions are tested when useful.
+Maintain:
 
-- If no plausible variation changes the recommendation, additional precision has low default value.
-- If small plausible changes flip the recommendation, that uncertainty becomes decision-relevant and should route to VOI, robust reasoning or FIELD as appropriate.
+```text
+SOURCE
+→ OBSERVATION
+→ INFERENCE / CLAIM
+→ TRANSFERABILITY
+→ DECISION USE
+```
 
-## A16 — Strategy remains adaptive
+Do not infer mechanism from prevalence or chronology alone.
 
-Different user states can produce different audience recommendations, diagnoses, dependencies, allocations, reasoning processes and next actions.
+## B3 — Live decision is framed before method selection
 
-## A17 — Map semantics remain explicit
+The system states the actual allocation / commitment decision and its link to O before running a decision framework.
 
-Available, sequential, parallel, blocked, premature and unlocked states remain distinguishable and inspectable.
+## B4 — Requisite method selection
 
-## A18 — Evidence/trust remains rigorous
+Use the least-complex sufficient reasoning process.
 
-Observation, user report, stated counterfactual representation, stated counterfactual allocation, inference, recommendation and market outcome remain distinct.
+A more complex method is justified only when it can plausibly change a material decision, reveal a decision-relevant uncertainty or prevent an error a simpler process would miss.
 
-Chronology is not causality; self-report is not external validation.
+## B5 — Hard constraints / dependencies outrank unnecessary scoring
 
-## A19 — Learning can reverse prior advice
+If feasibility, prerequisite or dominance resolves the decision, do not hide it in a weighted score.
 
-New evidence may preserve, weaken or reverse a prior representation, `STOP`, `DELAY`, `ACCELERATE` or other allocation decision.
+## B6 — Opportunity cost is explicit when material
 
-The system receives no credit for stubborn consistency.
+A recommendation can explain what is displaced, delayed or forgone.
 
-## A20 — No composite vanity metric
+## B7 — Information requests obey Value-of-Information logic
 
-Time, cash and other scarce resources remain separately observable unless an explicit defensible conversion is defined.
+Before requesting material new information:
 
-`Avoided Wrong Work` is not a standalone North Star.
+> **Which decision could change?**
 
-`Counterfactual Resource Allocation Delta` and `Representation Delta` remain separate observational constructs.
+If none, reject the request.
 
-## A21 — 95% assurance boundary is enforced
+## B8 — Deep uncertainty does not receive fake precision
 
-Internal systems may strongly confirm/refute only claim classes for which the relevant evidence is directly observable / deterministically testable or independently calibrated above the required confidence threshold.
+Do not manufacture probabilities / scores to make a preferred framework usable.
 
-Appropriate >95% assurance targets include finite structural claims such as:
+## B9 — Staged decisions preserve options when useful
 
-- baseline precedes recommendation;
-- hard constraint is represented;
-- router precondition is violated;
-- refuted policy assumption still reaches a recommendation;
-- route change has no recorded evidence trigger;
-- a prohibited metric is used as a routing/optimization input.
+When future information is expected, represent action now, options preserved, signposts, triggers and contingency path.
 
-Model confidence, reviewer agreement or cross-model consensus are not >95% strategic-truth evidence by default.
+## B10 — Sensitivity controls escalation
 
-## A22 — UX coherence
+If plausible assumption changes do not change the recommendation, more analytical precision has low default value.
 
-Blocking contradictions include:
+If small plausible changes flip the recommendation, expose the uncertainty and route to information / robustness / FIELD.
 
-- map-as-value without measured representation/decision change;
-- resource-allocation promise without pre-advice baseline;
-- recommendation contaminating the baseline;
-- "saved" claims merely because work was stopped;
-- adaptive doctrine with unexplained allocation changes;
-- complex decision method without a live decision-changing reason;
-- MCDA/optimizer output hiding a hard dependency;
-- user agreement treated as evidence of authorship;
-- UI elements with no user-state or live-decision job.
+---
 
-## A23 — Project / decision boundary is inspectable
+# PHASE C — REPRESENTATION / AUTHORSHIP / ALLOCATION GATES
 
-Before a material recommendation, the system can state the relevant boundary:
+## C1 — Representation change is inspectable
 
-- target authority domain / audience / surface;
-- relevant planning horizon;
-- material exclusions / adjacent contexts;
-- transferability limits when relevant.
+The product can show what changed between prior and revised understanding of:
 
-**Fail:** evidence or actions from an adjacent field silently become direct authority evidence without an explicit boundary/transferability judgment.
+- bottleneck;
+- mechanism;
+- dependency;
+- criterion;
+- reversal condition.
 
-## A24 — Decision authorship and contestability are preserved
+A copied system explanation does not count as learning.
 
-A material recommendation must remain contestable.
+## C2 — User acceptance is not authorship
 
 The user can:
 
-- inspect the criterion / assumption supporting it;
-- correct a false representation;
-- change a goal or constraint;
-- reject the recommendation without being treated as a system error;
-- identify what evidence could change the recommendation.
+- explain the governing criterion in their own language;
+- challenge an assumption;
+- correct a false model;
+- change a constraint;
+- reject a recommendation coherently;
+- state what evidence would reverse it.
 
-**Fail:** acceptance / verbatim recall / clicking confirm is counted as authorship.
+## C3 — Allocation action states are representable
 
-## A25 — Allocation metrics have no routing authority
+`KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD`.
 
-Until prospective evidence establishes a justified decision use:
+Stopping is not inherently good.
 
-```text
-Counterfactual Resource Allocation Delta:
-  measurement_use: observational / evaluation
-  routing_use: prohibited
-  governance_use_as_optimization_target: prohibited
-```
+## C4 — Allocation metrics cannot govern recommendations
 
-**Hard fail:** the system chooses an action because it maximizes measured decision/resource delta.
+`Representation Delta` and `Resource Allocation Delta` remain observational / evaluation constructs unless prospectively validated for a specific decision use.
 
-## A26 — One event can update multiple authority surfaces
+**Hard fail:** selecting a recommendation because it creates a larger measured delta.
 
-A real-world event is recorded once and may link to multiple affected authority surfaces / nested contexts.
+## C5 — Project / decision boundary is inspectable
 
-**Fail:** one event is duplicated solely to fit a one-surface data model, or a multi-surface effect is silently collapsed to one surface.
+The system can state relevant domain, audience, surface, horizon, exclusions and transferability limits.
 
----
+## C6 — One event may update multiple contexts
 
-# PHASE B — STRUCTURAL / FIXTURE FALSIFICATION GATE
+Record one real event once and link all affected authority / market / relationship surfaces.
 
-Before automating the full decision-policy router, use fixtures whose method-discriminating property is directly observable.
+## C7 — Learning may reverse prior advice
 
-Minimum fixture classes:
+New evidence can weaken or reverse prior representations, professional-lens conclusions and allocation recommendations.
 
-1. **hard prerequisite absent** — constraint/dependency reasoning must precede scoring;
-2. **simple dominance** — complex method escalation must be rejected;
-3. **genuine multi-objective trade-off** — simplistic single-criterion ranking must be rejected;
-4. **cheap decision-changing unknown** — targeted VOI/information path must be considered;
-5. **deep uncertainty without defensible probabilities** — fake precise expected-value optimization must be rejected;
-6. **staged decision with observable future trigger** — adaptive-pathway reasoning must be considered;
-7. **irrelevant wording mutation** — selected reasoning mode should remain stable;
-8. **decision-relevant structural mutation** — selected reasoning mode should change;
-9. **metric gaming mutation** — increasing Allocation Delta without improving the decision must not improve routing/governance status;
-10. **hollow ownership fixture** — user acceptance without criterion understanding must not pass authorship/contestability;
-11. **multi-surface event fixture** — one event updates several affected surfaces without duplicate event identity.
-
-These fixtures validate contracts, not the strategic truth of the resulting authority recommendation.
-
-A deterministic fixture pass can support >95% confidence about a finite implementation rule when the input property and expected rule are directly inspectable and mutation coverage is adequate.
+The system receives no credit for consistency when evidence changes.
 
 ---
 
-# PHASE C — LOW-FIDELITY / PERSONALIZED FIELD GATE
+# PHASE D — STRUCTURAL FALSIFICATION GATES
 
-Current UI instrument remains:
+Before production automation, deterministic fixtures should cover at least:
 
-`public/authority-prototype-v3-2.html`
+1. advice before baseline → reject;
+2. self-application without source professional model → reject where the model is required;
+3. one-case abstraction promoted to broad transferable rule without status → reject;
+4. professional rule crosses a boundary without transferability judgment → reject;
+5. characterization process has no decision / representation purpose → reject;
+6. external research has no decision-relevant unknown → reject;
+7. simple dominance but complex method escalates → reject;
+8. hard dependency hidden by score → reject;
+9. prohibited metric influences routing → reject;
+10. user agreement without contestability passes authorship → reject;
+11. one event duplicated across surfaces → reject;
+12. stale longitudinal history used without transferability check → reject.
 
-It is scripted and intentionally low fidelity.
-
-It tests the semantics of allocation change but does **not** validate personalized strategic intelligence, representation change, authorship or meta-decision superiority.
-
-For personalized Wizard-of-Oz participants capture:
-
-1. authority goal and planning horizon;
-2. explicit project/decision boundary;
-3. stated counterfactual decision representation **before reveal**;
-4. stated counterfactual action portfolio **before reveal**;
-5. material baseline time/cash commitments;
-6. live decision frame;
-7. method / reasoning mode used and why;
-8. personalized person/field/diagnosis/dependency analysis;
-9. revised representation;
-10. action-level recommended delta;
-11. revised intended allocation;
-12. authorship / contestability evidence;
-13. actual allocation at follow-up;
-14. observed market/authority signals linked to all affected surfaces;
-15. recommendation reversal/regret when applicable.
-
-Track separately:
-
-- Representation Delta;
-- Decision Authorship / Contestability;
-- Decision Delta;
-- Priority Delta;
-- Resource Allocation Delta by resource type;
-- Premature-Work Reallocation;
-- New-Leverage Allocation;
-- Recommendation Reversal / Regret;
-- later authority/business signals by surface.
-
-Where feasible, compare the adaptive/meta-decision process against a simpler fixed advisory process on equivalent cases.
-
-The next empirical questions are:
-
-> **Does the product create a useful change in the user's decision representation and resource allocation without replacing the user's authorship?**
-
-and, only where discriminative:
-
-> **Does context-sensitive selection of the reasoning process materially improve that result versus a simpler fixed process?**
+These fixtures validate structural contracts, not strategic truth.
 
 ---
 
-# PHASE D — FUNCTIONAL / COMMERCIAL VALIDATION
+# PHASE E — FIELD GATES
 
-Only after personalized decision value survives FIELD should a functional product be expected to automate:
+The next personalized Wizard-of-Oz test must compare **characterization value**, not merely recommendation quality.
 
-- counterfactual representation + allocation capture;
-- boundary capture;
-- live decision framing;
-- DecisionProblemProfile construction;
-- requisite decision-policy selection;
-- person/field research;
-- diagnosis;
-- dependency-aware allocation;
-- provenance;
-- contestability;
-- execution bridge;
-- actual allocation / multi-surface signal return;
-- evidence-sensitive re-planning;
-- reliability, security, privacy, RTL/mobile/accessibility.
+Freeze baseline before intervention.
 
-Before automated promotion of load-bearing strategic mechanisms, implement a minimal claim → dependent/refutation path or equivalent audit mechanism so invalidated assumptions cannot silently remain active.
+For each suitable participant record:
 
-Commercial validation ultimately requires users to return and some users to pay for continuing strategic allocation/learning value, not merely generated artifacts or sophisticated reasoning traces.
+1. professional transition / O;
+2. boundary;
+3. prior representation;
+4. prior allocation;
+5. characterization process selected and why;
+6. source professional cases used;
+7. extracted professional operating model;
+8. self-application result if used;
+9. competing-lens / transferability challenge;
+10. decision-relevant unknowns discovered;
+11. external research actually required;
+12. revised representation;
+13. revised allocation;
+14. authorship / contestability;
+15. actual action;
+16. outcome / evidence;
+17. what changed at decision #2.
+
+## Primary FIELD comparison
+
+Where feasible compare:
+
+### Arm S — strong simple intake / advisory process
+
+A competent advisor directly elicits goal, state, constraints, alternatives and recommends action.
+
+### Arm C — characterization-first process
+
+Uses the smallest justified characterization route, including real-case extraction / self-application only where useful.
+
+Compare whether Arm C materially improves:
+
+- problem representation;
+- discovery of hidden criteria / constraints;
+- decision-relevant research questions;
+- allocation;
+- user authorship;
+- later reversal / regret;
+- analytical / user effort.
+
+Do not reward Arm C for being more interesting or personalized.
+
+## Characterization kill conditions
+
+Weaken / collapse the architecture if:
+
+- Arm S repeatedly reaches the same decision at materially lower cost;
+- users' professional models rarely add a decision-relevant distinction;
+- self-application mainly reproduces existing beliefs;
+- boundary challenges routinely invalidate the transferred lens;
+- the process adds reflection but not action / allocation value;
+- the characterization router collapses to one simple interview family.
+
+---
+
+# PHASE F — COMMERCIAL GATES
+
+Commercial gates remain governed by `docs/DOD_BUSINESS_MODEL_DELTA_V1.md`.
+
+Key requirement added by v4.0:
+
+> **The paid value cannot depend on the user finding self-application clever. The characterization layer must materially improve a professional decision or the evidence required to make it.**
+
+The current paid FIELD offer remains a hypothesis, not validation.
 
 ---
 
 # Decision quality versus outcome quality
 
-Do not label a decision good solely because a good outcome followed.
-
 Evaluate separately:
 
-1. quality of the user's/system's decision representation at the time;
-2. quality of decision framing / process;
-3. user authorship / contestability;
-4. intended allocation change;
-5. actual allocation / execution;
-6. observed outcome by affected surface;
-7. what that outcome legitimately teaches.
+1. characterization quality;
+2. representation quality;
+3. decision-process quality;
+4. authorship / contestability;
+5. intended allocation;
+6. actual execution;
+7. observed outcome;
+8. what the outcome legitimately teaches;
+9. transferability of that learning to the next decision.
 
-A lucky outcome does not certify weak reasoning; an unlucky outcome does not automatically invalidate a well-grounded decision under uncertainty.
+A lucky outcome does not certify weak characterization; an unlucky outcome does not automatically invalidate a well-grounded decision.
 
 ---
 
 # GLOBAL TERMINATION RULE
 
-At the end of every meaningful phase, run `TELOS_GOVERNANCE`.
+At every meaningful closeout run `TELOS_GOVERNANCE`.
 
 Possible outcomes:
 
-- `CONTINUE` — a material internal gap remains and can be resolved now;
-- `REPLAN` — current framing / architecture / metric / decision process itself blocks O;
-- `FIELD` — reality is now the highest-value source of information;
-- `STOP` — no further justified action or analytical escalation is currently expected to materially improve O.
+- `CONTINUE`
+- `REPLAN`
+- `FIELD`
+- `STOP`
 
 A checklist cannot authorize `STOP`.
 
 ---
 
-# Current closeout — 2026-08-15 — COR-SYS graph audit
+# Current closeout — characterization-first iteration
 
 **O recalled**  
-Improve the user's allocation of scarce resources toward a desired authority state, learn from reality, and preserve the user's authorship over the decision rather than substituting system authority for it.
+Help a professional in a consequential transition improve representation and resource allocation toward a desired professional state, while preserving authorship and learning from outcomes.
 
-**Material findings**  
-The COR-SYS System Grammar audit exposed five gaps that were not sufficiently represented in v3.5:
+**Material finding**  
+The prior system had a gap between baseline/intake and person/field analysis. It specified what objects should exist but not how the system should discover which endogenous information matters.
 
-1. `REP` — allocation change was measured more strongly than change in the user's decision representation;
-2. `ACT/G` — user acceptance could be mistaken for decision authorship; contestability was not first-class;
-3. `metric_governance` — Allocation Delta was still described as a North-Star candidate despite the risk that optimizing the proxy would reward unnecessary decision change;
-4. `BND` — target/project/decision boundaries were implicit rather than inspectable;
-5. `EVT/MEM` — one real event can affect several authority surfaces, while the current model/documentation tends toward one-surface representation.
+**New direction**  
+Use governed characterization meta-processes. When the user's expertise is material, reconstruct it from real cases, abstract a minimal professional operating model, self-apply it to the user's own business / transition, challenge transferability / blind spots, and only then research the remaining decision-relevant unknowns.
 
-The graph also reintroduced two prior falsification lessons:
-
-- repeated self-analysis / conceptual similarity is not corroboration;
-- a router that does not change decisions or collapses to a simpler family should be collapsed rather than protected.
+**Research constraint**  
+Knowledge-elicitation research supports case-based elicitation of expert reasoning, while analogical-transfer research warns that expert procedures can be rigid or fail to transfer. Therefore self-application is a bounded hypothesis generator, not a truth source.
 
 **Invalidated assumptions**  
-- "Allocation Delta can serve as a North Star" is too strong. It is an observational evaluation construct with no routing/optimization authority.
-- "User acceptance implies decision ownership" is false as a product invariant.
-- "One authority event belongs to one authority surface" is structurally too narrow.
+- a fixed intake can define all useful inputs;
+- abstract "tell me your methodology" self-report is sufficient;
+- professional expertise automatically transfers to the expert's own business;
+- broad web research should precede endogenous characterization.
 
-**Governance action taken**  
-`REPLAN` was opened and closed by:
+**Internal action completed**  
+- Telos Governance updated to v1.3;
+- `CHARACTERIZATION_GOVERNANCE_V1.md` added;
+- DOD rebuilt as v4.0.
 
-- adding `docs/COR_SYS_GRAPH_AUDIT_V1.md`;
-- updating the resource-reallocation contract with Representation Delta, authorship/contestability and explicit metric-governance prohibition;
-- updating FIELD to measure pre/post representation, contestability and multi-surface outcomes;
-- adding DOD gates for boundary, authorship, metric authority and event nesting.
-
-**Remaining highest-leverage uncertainty**  
-Whether these mechanisms create real additional decision value for target users cannot be established by more internal graph work.
-
-**Current governance outcome:** `FIELD`.
-
-**Next justified action:** personalized Wizard-of-Oz cases capturing pre/post representation + allocation + authorship, followed by actual action and multi-surface evidence. Test the adaptive meta-decision router only when it can discriminate against a strong simpler process.
+**Current outcome:** `CONTINUE` until the FIELD protocol / offer are aligned with characterization; after that the expected outcome is `FIELD`.
