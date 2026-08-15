@@ -18,24 +18,31 @@ The first commercial wedge remains professional market position / opportunity fo
 
 # User telos
 
-Help the professional improve the **representation** of the transition and the **allocation** of scarce resources toward a desired professional state, while preserving decision authorship and learning from real outcomes.
+Current governing O is defined in `docs/TELOS_GOVERNANCE.md` v1.5:
+
+> **Help the professional move from professional ambiguity to grounded action with the least unnecessary cognitive work, while keeping commitments, trade-offs, evidence and reasons sufficiently visible and manipulable that they can be challenged and revised without starting over.**
 
 The system should:
 
-- exploit useful expertise already embedded in the user's real professional practice;
+- externalize plausible actions as explicit objects rather than burying them in prose;
+- make finite-resource trade-offs visible;
+- preserve a clean pre-intervention baseline when before/after evidence matters;
+- expose dependencies only where they can block / reorder action;
+- exploit useful expertise embedded in the user's real professional practice when it changes action;
 - challenge where that expertise does not transfer;
 - research external reality only where it can change a live decision;
 - use the least-complex sufficient reasoning process;
-- stress-test the resulting strategy before consuming scarce real-world exposure;
-- explicitly state what still belongs to reality rather than simulation.
+- stress-test a strategy when that can improve the next real-world test;
+- explicitly state what still belongs to reality rather than simulation;
+- preserve user authorship by keeping the user's model and system challenge separable.
 
 ---
 
 # Business telos
 
-Capture a sustainable share of created value without distorting recommendations to maximize engagement, billing duration, analytical complexity, simulation depth or dependence on system authority.
+Capture a sustainable share of created value without distorting recommendations or interaction design to maximize engagement, billing duration, interaction count, analytical complexity, simulation depth or dependence on system authority.
 
-Recommendation integrity wins when the two teloi conflict.
+Recommendation and interaction integrity win when commercial cadence conflicts with user value.
 
 ---
 
@@ -51,96 +58,127 @@ Simulation exists to improve the next encounter with reality, never to replace i
 
 ```text
 Professional Transition / O
-→ target state + boundary
-→ frozen prior representation + allocation
-→ smallest justified characterization process
-→ professional-case extraction / self-application when useful
-→ transferability / competing-lens challenge
+→ minimum decision-relevant representation
+→ characterization only when needed
 → decision-relevant unknowns
 → targeted external research
-→ live decision + requisite reasoning
-→ explicit strategy / allocation candidate
-→ Strategic Wind Tunnel
+→ live action / allocation frame
+→ least-complex sufficient reasoning
+→ strategy candidate when needed
+→ Strategic Wind Tunnel when decision-relevant
 → robust core + FIELD_DEBT
-→ contestable user decision
+→ manipulable user-owned plan
 → payment / action / outcome
 → learning / decision #2
 ```
 
 ---
 
-# Current user interface — Progressive Decision Episode
+# Current user interface — Manipulable Decision Workspace
 
-The previous ProofMiner v2 interface (`Decision Moment → Source → Proof Move → Draft`) is obsolete for the current telos.
+The legacy ProofMiner v2 proof-selection flow and the later five-step progressive wizard are no longer canonical.
 
-The canonical first-session prototype is now:
+The current interface hypothesis is:
+
+> **A progressively revealed manipulable decision workspace.**
+
+Default model:
 
 ```text
-1. מה משתנה אצלך מקצועית עכשיו?
-      ↓
-2. אם לא היינו כאן — מה היית עושה ב־30 הימים הקרובים?
-      ↓
-3. העדשה המקצועית שלך — רק אם היא יכולה לשנות החלטה
-      ↓
-4. לוח החלטה
-   לעשות עכשיו / לא עכשיו / לברר לפני שמחליטים
-      ↓
-5. ההכרעה שלך
-   מה תעשה / על מה אתה מערער / מה ישנה את דעתך
+TARGET TRANSITION
++
+ACTION OBJECTS
++
+FINITE RESOURCE / RESERVE
 ```
 
-The UI deliberately hides internal vocabulary such as `Personal Decision Intelligence`, `Characterization`, `FIELD_DEBT`, MCDA and router taxonomies from first-use buyer language.
+The user can then directly:
 
-The first screen preserves unprompted struggling-moment language. The second freezes the pre-intervention baseline before advice.
+- reorder actions;
+- move actions between `עכשיו / אחר כך / לברר`;
+- allocate conserved hours across actions;
+- see the unallocated reserve;
+- freeze the pre-system baseline;
+- expose a system challenge without allowing it to overwrite the user's model;
+- accept or reject a challenge at action level;
+- inspect reversal conditions.
 
-The professional mirror is explicitly **עדשה, לא תשובה** and may be skipped.
+Additional structure — dependencies, evidence detail, professional mirror, scenario or uncertainty — should appear only when it can change action.
 
-The decision board does not reward novelty. `KEEP` is valid when the user's plan survives available evidence.
+## Interaction invariants
 
-`לברר לפני שמחליטים` is a first-class outcome when the missing information can change a live decision.
-
-The final record is the user's commitment, challenge and reversal condition — not an `Accept recommendation` event.
+- manipulation must have semantic meaning;
+- sliders are used only for genuine continuous quantities such as time / money / horizon;
+- resource allocation must preserve conservation and opportunity cost;
+- drag always has button / keyboard alternatives;
+- the system may challenge the user's arrangement but may not silently replace it;
+- model complexity grows only where another distinction can change action;
+- text is an alternate way to create / edit objects, not the sole state representation;
+- `KEEP` remains a valid result;
+- a richer workspace must die if a strong guided flow produces comparable decisions at lower cognitive cost.
 
 See:
 
-- `docs/UX_STRATEGIC_WIND_TUNNEL_V1.md`
-- `docs/DOD_UI_DELTA_V1.md`
+- `docs/RECURSIVE_UI_DOD_PRESSURE_V1.md`
+- `skills/ui-dod-pressure-loop/SKILL.md`
+- `docs/DOD_UI_DELTA_V1.md` — effective UI DOD v5.2
 
 ---
 
-## Characterization before broad intake / research
+# Recursive DOD / Pressure / Telos governance
 
-When the user's own professional expertise is material, the canonical characterization loop is:
+Substantial product / UX changes are challenged through three roles:
+
+```text
+DOD Agent
+→ what must be observably true for O?
+
+Pressure Agent
+→ is O still a local optimization around the current mechanism?
+
+Telos Agent
+→ if yes, reconstruct O from the end-user change and invalidate the DOD / UI as needed
+```
+
+The loop continues until another internal attack changes only implementation rules rather than the governing user change. The unresolved behavioral attack then becomes FIELD_DEBT.
+
+The current run moved the UI through:
+
+```text
+recommendation workflow
+→ decision environment
+→ live action model
+→ minimum manipulable model
+→ current O: grounded action + revisable reasoning with minimum unnecessary cognitive work
+```
+
+---
+
+# Characterization before broad intake / research
+
+When the user's own professional expertise is material:
 
 ```text
 REAL PROFESSIONAL CASES
-→ EXTRACT how the person diagnoses / decides / creates value
-→ ABSTRACT minimum Professional Operating Model
-→ SELF-APPLY to the person's own transition when useful
-→ CHALLENGE transferability / competing lens
-→ GAP: what is still unknown that can change the decision?
-→ TARGETED EXTERNAL RESEARCH
+→ extract how the person diagnoses / decides / creates value
+→ abstract minimum Professional Operating Model
+→ self-apply when useful
+→ challenge transferability / competing lens
+→ identify what is still unknown that can change action
+→ targeted external research
 ```
 
-`SELF-APPLICATION` is not a default truth source. It is a bounded characterization mechanism.
-
-At every additional question / process:
-
-> **What live representation or decision could this change?**
-
-If none, stop characterization.
+`SELF-APPLICATION` is a bounded characterization mechanism, not a truth source.
 
 ---
 
-## Strategic Wind Tunnel
+# Strategic Wind Tunnel
 
-Current runnable skill:
+Runnable skill:
 
 `skills/strategy-wind-tunnel/SKILL.md`
 
-Its job is not to simulate customers as ground truth.
-
-It uses a strict evidence ladder:
+Evidence ladder:
 
 ```text
 F0 — real field behavior / payment / action / outcome
@@ -156,15 +194,13 @@ The Wind Tunnel must terminate in explicit `FIELD_DEBT` when only reality can re
 
 ---
 
-## Decision-directed research
-
-The product should not start with `research the market deeply`.
+# Decision-directed research
 
 Every material search must originate in a live unknown:
 
 ```text
-DECISION
-→ UNKNOWN THAT COULD FLIP / CHANGE IT
+DECISION / ACTION
+→ UNKNOWN THAT COULD CHANGE IT
 → RESEARCH QUESTION
 → SOURCE / OBSERVATION
 → INFERENCE
@@ -176,7 +212,7 @@ Broad search volume is not a product objective.
 
 ---
 
-## Measurement
+# Measurement
 
 Observe separately:
 
@@ -190,6 +226,9 @@ Observe separately:
 - Research Avoided / Newly Required;
 - Wind Tunnel Strategy Delta;
 - FIELD Yield;
+- Manipulation Unique Contribution;
+- Cognitive Reconstruction Cost;
+- Interaction-caused decision error;
 - Reversal / Regret;
 - Decision #2 / #3 rate;
 - History Materiality Rate;
@@ -200,18 +239,18 @@ These are evaluation measurements, not recommendation objectives.
 
 ---
 
-## Compounding state
+# Compounding state
 
-The long-term object is a **versioned Personal Decision State + lineage**, not a timeless personality / Decision Profile.
+The long-term object is a **versioned Personal Decision State + lineage**, not a timeless personality profile.
 
 It may contain:
 
 - goals / boundaries at the time;
 - representation snapshots;
+- action objects and resource allocation;
 - Professional Operating Model hypotheses + source cases;
 - transferability state;
 - alternatives / decisions;
-- resource commitments;
 - actual execution;
 - outcomes;
 - reversals;
@@ -223,7 +262,7 @@ Strong test:
 
 ---
 
-## Business model hypothesis
+# Business model hypothesis
 
 Current executable FIELD cell:
 
@@ -237,55 +276,56 @@ Monthly subscription is not an invariant.
 
 ---
 
-## Current lifecycle state
+# Current lifecycle state
 
-**FIELD — characterization-first paid Professional Transition validation with pre-registered FIELD_DEBT.**
+**FIELD — paid Professional Transition validation with manipulable-workspace UX FIELD_DEBT.**
 
-The redesigned UI is an authorized FIELD instrument, not validated product UX.
+The current interface is an authorized FIELD instrument, not validated product UX.
 
-Highest-value evidence now:
+Highest-value UX comparison:
 
-1. unprompted first-screen struggling-moment language;
-2. baseline completion friction;
-3. Strong Simple shadow;
-4. characterization unique contribution where justified;
-5. decision-board comprehension;
-6. authorship / contestability;
-7. real $1,500 payment / refusal;
-8. execution / outcome;
-9. decision #2 and history materiality.
+### Arm G — Strong Guided
 
-Do not build multiple polished visual variants, a broad autonomous research agent or a synthetic-customer platform before these debts survive reality.
+Concise guided prompts creating the same semantic objects.
 
----
+### Arm M — Manipulable Workspace
 
-## Source of truth
+Direct reordering, state changes and conserved resource allocation over those objects.
 
-1. `docs/TELOS_GOVERNANCE.md`
-2. `docs/DEFINITION_OF_DONE.md` + `docs/DOD_UI_DELTA_V1.md` (effective UI DOD v5.1)
-3. `docs/UX_STRATEGIC_WIND_TUNNEL_V1.md`
-4. `docs/CHARACTERIZATION_GOVERNANCE_V1.md`
-5. `docs/STRATEGIC_WIND_TUNNEL_GOVERNANCE_V1.md`
-6. `skills/strategy-wind-tunnel/SKILL.md`
-7. `docs/FIELD_PROTOCOL_V3.md`
-8. `docs/CHARACTERIZATION_FIELD_PROTOCOL_V1.md`
-9. `docs/PAID_FIELD_OFFER_V1.md`
-10. `docs/META_DECISION_GOVERNANCE.md`
-11. `docs/COR_SYS_GRAPH_AUDIT_V1.md`
-12. `docs/RESOURCE_REALLOCATION_CONTRACT.md`
-13. `docs/PRODUCT_MODEL_CHARACTERIZATION_DELTA_V4.md`
-14. `docs/PRODUCT_MODEL.md`
+The richer workspace survives only if it materially improves decision understanding, trade-off quality, authorship, research targeting or execution enough to justify its complexity.
+
+Do not add more interactive mechanics merely to make the product feel advanced.
 
 ---
 
-## Prototype status
+# Source of truth
+
+1. `docs/TELOS_GOVERNANCE.md` — v1.5
+2. `docs/RECURSIVE_UI_DOD_PRESSURE_V1.md`
+3. `skills/ui-dod-pressure-loop/SKILL.md`
+4. `docs/DEFINITION_OF_DONE.md` + `docs/DOD_UI_DELTA_V1.md` — effective UI DOD v5.2
+5. `docs/CHARACTERIZATION_GOVERNANCE_V1.md`
+6. `docs/STRATEGIC_WIND_TUNNEL_GOVERNANCE_V1.md`
+7. `skills/strategy-wind-tunnel/SKILL.md`
+8. `docs/FIELD_PROTOCOL_V3.md`
+9. `docs/CHARACTERIZATION_FIELD_PROTOCOL_V1.md`
+10. `docs/PAID_FIELD_OFFER_V1.md`
+11. `docs/META_DECISION_GOVERNANCE.md`
+12. `docs/COR_SYS_GRAPH_AUDIT_V1.md`
+13. `docs/RESOURCE_REALLOCATION_CONTRACT.md`
+14. `docs/PRODUCT_MODEL_CHARACTERIZATION_DELTA_V4.md`
+15. `docs/PRODUCT_MODEL.md`
+
+---
+
+# Prototype status
 
 Current implementation:
 
-- `src/app.js` — progressive decision episode;
-- `src/style.css` — calm decision-workspace visual system;
-- `index.html` — current Professional Transition metadata.
+- `src/app.js` — manipulable decision workspace;
+- `src/style.css` — direct-manipulation decision-workspace visual system;
+- `index.html` — current Professional Transition workspace metadata.
 
-The prototype is intentionally explicit that it does **not** yet contain validated autonomous market research or strategic intelligence.
+The prototype is explicit that it does **not** yet contain validated autonomous market research or strategic intelligence.
 
 A successful CI/build or Vercel Preview does not close UX FIELD_DEBT.
