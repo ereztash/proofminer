@@ -91,15 +91,17 @@ A completed checklist is not sufficient for `STOP`.
 
 ## Current lifecycle state
 
-**LOW-FIDELITY UX REPLAN → FIELD**
+**FIELD — trigger + A1→B comprehension**
 
-The latest finding reopened the entry experience: starting directly with "I want to become an authority in X" is still a useful input, but it is no longer assumed to be the right first message.
+The latest DOD re-run changed the entry hierarchy: starting directly with "I want to become an authority in X" remains a useful input, but the experience must first meet the ICP at the consciously recognized problem:
 
-The next field instrument must test:
+> **I know I need to build authority, but I do not know what is right for me to do or what should come first.**
+
+The current low-fidelity field instrument tests:
 
 > **conscious pain → promise → input → Decision-Ready Authority Map**
 
-before a polished UI or full AI engine is justified.
+The next justified action is target-user evidence, not unrelated UI polish or more internal architecture refinement.
 
 ## Source of truth
 
@@ -109,18 +111,22 @@ Read these before changing product behavior:
 2. `PRODUCT_DOCTRINE.md` — current product doctrine and mechanism hypotheses.
 3. `docs/UX_TRANSITION_CONTRACT.md` — trigger, A0→A1→B→C→D transitions and measurable UX lenses.
 4. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates, subordinate to telos governance.
-5. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
-6. `docs/ARCHITECTURE_DECISION_LOG.md` — important invalidated assumptions and architecture decisions.
+5. `docs/FIRST_SESSION_FLOW_V3.md` — current pain-first first-session flow.
+6. `docs/FIELD_PROTOCOL_V3.md` — preregistered trigger, comprehension and personalized value tests.
+7. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
+8. `docs/ARCHITECTURE_DECISION_LOG.md` — important invalidated assumptions and architecture decisions.
 
 Deployment/orchestration contracts live under `skills/`.
 
 ## Prototype status
 
-The repository contains low-fidelity FIELD instruments intended to test comprehension and strategic decision readiness cheaply.
+The current FIELD instrument is:
 
-They are **not production UI** and must not be treated as validated intelligence.
+`public/authority-prototype-v3-1.html`
 
-A low-fidelity test passes because users understand the problem, recommendation, dependencies and next action — not because they say the interface is interesting or attractive.
+It is intentionally low fidelity. It is **not production UI** and must not be treated as validated intelligence.
+
+A low-fidelity test passes because users recognize the problem and can reconstruct the recommendation, dependencies and next action — not because they say the interface is interesting or attractive.
 
 ## Run locally
 
