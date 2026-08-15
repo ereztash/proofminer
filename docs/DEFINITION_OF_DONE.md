@@ -1,4 +1,4 @@
-# ProofMiner — Definition of Done v3.2
+# ProofMiner — Definition of Done v3.3
 
 ## Governing rule
 
@@ -8,13 +8,17 @@ It is the current best hypothesis about what must be true to realize O. It does 
 
 The measurable user-state transitions are defined in `docs/UX_TRANSITION_CONTRACT.md`.
 
+The current resource-allocation value hypothesis is defined in `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
+
 ---
 
 # O recalled
 
 The product exists to help a person move from wanting greater authority / professional standing in a domain to an evidence-backed, personalized and continuously learning strategic journey that increases the likelihood that the relevant audience actually perceives that person as a credible, differentiated authority and acts accordingly.
 
-The system cannot guarantee that the market grants authority. It is responsible for producing, explaining and adapting the best grounded route available.
+Because time, money and attention are scarce, the product must also improve which authority-building actions receive those resources, which wait, which stop, and which are newly discovered.
+
+The system cannot guarantee that the market grants authority. It is responsible for producing, explaining and adapting the best grounded route and resource-allocation decision available under uncertainty.
 
 ---
 
@@ -22,27 +26,30 @@ The system cannot guarantee that the market grants authority. It is responsible 
 
 The current ICP is expected to be most aware of this problem:
 
-> **"I know I need to build authority / professional standing, but I do not know what is actually right for me to do, or what should come first."**
+> **"I know I need to build authority / professional standing, but I do not know what is actually right for me to do, what should come first, or what I should stop wasting effort on."**
 
-Therefore the primary first-session transition is:
+The primary first-session transition is now:
 
 ```text
-A1 — authority need without a personalized route
+A1 — authority need + plausible actions + uncertain allocation
 →
-B — Decision-Ready Authority Map
+B — grounded allocation decision supported by an Authority Map
 ```
 
-`B` means the user can explain, without facilitator interpretation:
+`B` is not satisfied merely because a map exists.
+
+The user must be able to explain, without facilitator interpretation:
 
 - what they want to become known for;
 - by whom;
+- what they would have done without the system;
 - what their main strategic gap is;
-- what to do now;
-- why that action has priority;
+- what they will now keep / accelerate / reorder / reduce / delay / stop / replace / add;
+- where scarce resources go first;
+- why the allocation changed or remained the same;
 - what can happen in parallel;
-- what is blocked;
-- what is premature;
-- what information could materially change the map.
+- what is blocked or premature;
+- what information could materially change the allocation again.
 
 ---
 
@@ -52,17 +59,19 @@ The product should reveal value in this order:
 
 ```text
 CONSCIOUS PAIN
-→ PROMISE OF A PERSONALIZED ROUTE
-→ MINIMAL INPUT
-→ FIRST STRATEGIC VALUE
-→ EXPLANATION
-→ DEEPER MODEL
-→ COMPOUNDING LEARNING
+→ AUTHORITY DIRECTION / OUTCOME
+→ STATED COUNTERFACTUAL PLAN
+→ MINIMAL DATA NEEDED TO CHALLENGE THAT PLAN
+→ ALLOCATION DECISION
+→ AUTHORITY MAP / EXPLANATION
+→ EXECUTION
+→ MARKET EVIDENCE
+→ RE-ALLOCATION / LEARNING
 ```
 
-Internal sophistication must not outrank the pain the user already knows they have.
+Internal sophistication must not outrank the pain or decision the user already has.
 
-Starting with `Authority Project`, SWOT, ProofMove, evidence taxonomy, dependency terminology or other internal concepts before problem recognition is a hierarchy failure unless field evidence shows otherwise.
+A map is an explanatory/navigation artifact. It is not the value claim by itself.
 
 ---
 
@@ -76,202 +85,198 @@ The persistent system unit is an `AuthorityProject`, not a post, score, ProofMov
 
 ## A2 — Trigger is explicit and falsifiable
 
-The system has a concrete hypothesis for what makes the ICP seek help now.
+**Pass:** the entry experience makes the target user recognize an authority/resource-allocation problem without teaching the internal product model.
 
-**Pass:** the entry experience can make the target user recognize the problem without teaching the internal product model.
+## A3 — Counterfactual baseline exists before advice
 
-## A3 — A1→B contract is explicit
+Before recommendation, the product can capture what the user would otherwise do during the relevant planning window.
 
-**Pass:** the first session is designed to produce a Decision-Ready Authority Map, not merely information, content or a score.
+**Pass:** baseline actions, order and material resource commitments can be captured without contaminating the baseline with system advice.
 
-## A4 — Audience selection is assisted
+The counterfactual is labeled as stated/self-reported, not causal truth.
+
+## A4 — A1→B contract is an allocation transition
+
+**Pass:** the first session can produce a material allocation decision, not merely information, content, a score or a map.
+
+A material decision may be `KEEP`, `ACCELERATE`, `REORDER`, `REDUCE`, `DELAY`, `STOP`, `REPLACE` or `ADD`.
+
+## A5 — Audience selection is assisted
 
 The system compares routes using current authority capital, market need, commercial/career potential, competitive difficulty and credible distance.
 
-**Pass:** it recommends when possible, does not fabricate three options, and asks only discriminating questions that can change the recommendation.
+**Pass:** it recommends when possible, does not fabricate options, and asks only discriminating questions that can change a material recommendation.
 
-## A5 — Minimum useful knowledge acquisition
+## A6 — Minimum useful knowledge acquisition
 
-Every requested answer/source must change a material decision or unlock a useful capability.
+Every requested answer/source must change a live decision, resource allocation or useful capability.
 
-**Pass:** if the system cannot explain what new decision the input improves, the request is removed.
+**Pass:** if the system cannot answer "which allocation could change if we knew this?", the request is removed by default.
 
-## A6 — Zero-data path
+## A7 — Zero-data path
 
 **Pass:** a user with no prepared files can begin productively through guided discovery/interview.
 
-## A7 — Authority assets are broader than proof
+## A8 — Authority assets are broader than proof
 
-The system can model at least:
-
-- evidence;
-- methodology;
-- experience;
-- perspective;
-- relationship/distribution;
-- market-response assets.
+The system can model evidence, methodology, experience, perspective, relationship/distribution and market-response assets.
 
 **Pass:** real experience can become useful authority capital without being mislabeled as proof.
 
-## A8 — Desired vs perceived authority remain distinct
+## A9 — Desired vs perceived authority remain distinct
 
 **Pass:** what the user wants to be known for is not silently presented as what the market already believes.
 
-## A9 — Field model is inspectable
+## A10 — Field model is inspectable
 
-The system can model audiences, recognized authorities, known-for associations, category expectations, differentiation opportunities, channels/intermediaries and comparable journeys.
+**Pass:** audiences, recognized authorities, known-for associations, category expectations, differentiation opportunities, channels/intermediaries and comparable journeys can inform allocation while observation, public self-report and inference remain distinguishable.
 
-**Pass:** observation, public self-report and inference remain distinguishable; chronology is not causality.
+## A11 — Strategic model follows the gap
 
-## A10 — Strategic model follows the gap
+**Pass:** different states justify different lenses; the user sees the decision-relevant conclusion before framework detail.
 
-SWOT and other frameworks are tools, not fixed product templates.
+## A12 — Authority Map is a dependency graph
 
-**Pass:** different states can justify different lenses; the user sees the conclusion before framework detail.
+It distinguishes available now, sequential, parallel, blocked, premature, unlocks and highest-leverage action.
 
-## A11 — Authority Map is a dependency graph
+**Pass:** flattening it into an unordered checklist would remove material allocation meaning.
 
-It distinguishes:
+## A13 — Opportunity cost is visible when material
 
-- available now;
-- sequential;
-- parallel;
-- blocked;
-- premature;
-- unlocks;
-- highest-leverage action.
+**Pass:** when recommending one action over another, the system can explain what the user is giving up or delaying by allocating resources there.
 
-**Pass:** flattening it into an unordered checklist would remove material strategic meaning.
+## A14 — One dominant allocation decision
 
-## A12 — One dominant next action
+**Pass:** at any primary state the user can answer, "Where should I put my next unit of meaningful effort, what should not receive it yet, and why?"
 
-**Pass:** at any primary state the user can answer, "What should I do now, and why?"
+## A15 — Progressive disclosure
 
-## A13 — Progressive disclosure
-
-The default hierarchy is:
-
-1. bottom line;
-2. meaning;
-3. action;
-4. optional depth.
+Default hierarchy: bottom line → allocation change → rationale → action → optional depth.
 
 **Pass:** specialist vocabulary is never required for the core flow.
 
-## A14 — UI elements have a transition job
+## A16 — UI elements have a transition/decision job
 
-Each meaningful UI element should support at least one of:
-
-- `A0→A1` recognition;
-- `A1→B` activation;
-- `B→C` execution;
-- `C→D` learning/replanning;
-- or accessibility, safety, privacy/basic usability.
+Each meaningful UI element supports `A0→A1`, `A1→B`, `B→C`, `C→D`, a live allocation decision, or accessibility/safety/privacy/basic usability.
 
 **Pass:** elements without a defensible job have no default claim to screen priority.
 
-## A15 — Gamification represents strategic resolution
+## A17 — Gamification represents strategic resolution
 
-**Pass:** progress corresponds to reduced uncertainty, a new usable asset/capability, an unlocked action or meaningful market evidence — not raw activity.
+**Pass:** progress corresponds to reduced uncertainty, a new usable asset/capability, an unlocked action, improved allocation or meaningful market evidence — not raw activity.
 
-## A16 — Evidence/trust subsystem remains rigorous
+## A18 — Evidence/trust subsystem remains rigorous
 
 **Pass:** provenance, contradiction, privacy and inference limits survive beneath authority claims. Self-report is not external validation and chronology is not causality.
 
-## A17 — Learning reaches reality and returns
+## A19 — Learning reaches reality and returns
 
 ```text
-goal → route → action → market signal → learning → revised route
+counterfactual plan → allocation decision → actual allocation/action
+→ market signal → learning → revised allocation
 ```
 
-**Pass:** plausible new evidence can materially change a later recommendation when warranted.
+**Pass:** plausible new evidence can materially change a later allocation when warranted, including reversing a prior `DELAY` or `STOP`.
 
-## A18 — Privacy/persistence are explicit
+## A20 — Privacy/persistence are explicit
 
-**Pass:** stored source truth, derived inference, correction, deletion, disclosure and consent are specified.
+**Pass:** stored source truth, stated counterfactual, derived inference, correction, deletion, disclosure and consent are specified.
 
-## A19 — Scenario falsification remains adaptive
+## A21 — Scenario falsification remains adaptive
 
-At minimum test materially different states such as strong expert/low visibility, high visibility/weak depth, experience-to-new-authority transition, referral-driven authority and low-legitimacy field entry.
+At minimum test strong expert/low visibility, high visibility/weak depth, experience-to-new-authority transition, referral-driven authority and low-legitimacy field entry.
 
-**Pass:** they produce meaningfully different diagnoses, requests, maps and next actions.
+**Pass:** they produce meaningfully different diagnoses, allocation changes, data requests, maps and next actions.
 
-## A20 — UX coherence
+## A22 — UX coherence
 
 Blocking contradictions include:
 
 - pain-first doctrine with solution-first entry;
+- map-as-value language with no measured decision change;
+- resource-allocation claim with no pre-advice baseline;
+- "work saved" claims merely because the system stopped something;
 - few choices with many equivalent CTAs;
 - system-recommends doctrine with user-performs-diagnosis flow;
 - persistent project with session reset;
-- bottom-line-first doctrine with analytics-first screen;
-- adaptive route with unexplained map changes.
+- adaptive route with unexplained reallocation.
 
-**Pass:** no known contradiction remains that changes user action, product action, required information, dependency structure or field experiment.
+**Pass:** no known contradiction remains that changes user action, product action, required information, resource allocation, dependency structure or field experiment.
 
 ---
 
 # PHASE B — LOW-FIDELITY FIELD GATES
 
-The current low-fidelity instrument is `public/authority-prototype-v3-1.html`.
+The next instrument must supersede the current v3.1 comprehension-only flow by adding counterfactual allocation capture before recommendation.
 
-It is intentionally not polished UI.
+It should remain intentionally low fidelity.
 
 ## B1 — Trigger recognition
 
-Before entering the authority domain, the target user can explain what pain the product is for.
+Target user can explain what pain/decision the product is for.
 
-## B2 — Promise legibility
+## B2 — Counterfactual capture
 
-The target user can explain that the product aims to determine the personalized route and sequence for building authority / professional standing.
+Before advice, user can state what they would actually do during the planning window and approximately where material time/cash would go.
 
-## B3 — End-to-end A1→B flow
+## B3 — Promise legibility
 
-The experience covers:
+User understands that the product aims to improve what deserves resources now, not simply generate an authority plan.
 
-`pain → promise → authority direction → minimal data → audience path → diagnosis → dependency map → next action → data unlock`.
+## B4 — End-to-end A1→B flow
 
-## B4 — Decision-ready recall
+`pain → authority goal → counterfactual plan → minimal evidence → diagnosis → allocation delta → map → next action`.
 
-After leaving the interface, without looking again, the user can reconstruct the B-state.
+## B5 — Allocation recall
 
-## B5 — Dependency comprehension
+After leaving the interface, user can state what changed in their plan and why.
 
-The user distinguishes sequential, parallel, blocked and premature states.
+## B6 — Dependency comprehension
 
-## B6 — Diagnostic efficiency
+User distinguishes sequential, parallel, blocked and premature states.
 
-The user understands why material data requests are useful.
+## B7 — Diagnostic efficiency
 
-## B7 — Personal relevance
+User understands why material data requests could change a live decision.
 
-The user can explain why the route is specific to their state rather than a generic authority checklist.
+## B8 — Personal relevance
 
-## B8 — Trust / inspectability
+User can explain why the allocation change is specific to their state rather than a generic checklist.
 
-The user can distinguish observation, inference and recommendation when necessary without being forced to read the full reasoning model.
+## B9 — Trust / inspectability
 
-## B9 — Replanning legibility
+User can distinguish observation, stated counterfactual, inference and recommendation.
 
-When new evidence changes the route, the user can explain why. Arbitrary-feeling change is a failure even if internal reasoning is defensible.
+## B10 — Replanning legibility
+
+When new evidence changes allocation, user can explain why. Arbitrary-feeling change is a failure.
 
 ---
 
 # Working thresholds for the next FIELD wave
 
-These are preregistered experiment thresholds, not permanent doctrine:
+These are experiment thresholds, not permanent doctrine:
 
-- `>=80%` explain the product promise in their own words;
-- `>=80%` recall selected audience, primary gap and next action;
-- `>=80%` explain why the next action has priority;
-- `>=70%` correctly reconstruct sequential versus parallel work;
+- `>=80%` explain the product decision promise in their own words;
+- `>=80%` can state the main allocation change after the session;
+- `>=80%` explain why the highest-priority action has priority;
+- `>=70%` reconstruct sequential versus parallel work;
 - `>=70%` distinguish blocked versus premature;
-- `>=80%` explain why the next requested data would be useful;
-- `0` users require internal terminology such as SWOT, EvidenceUnit, ProofMove or ontology to complete the core flow.
+- `>=80%` explain which decision the next requested data could change;
+- `0` users require internal terminology such as SWOT, EvidenceUnit, ProofMove or ontology.
 
-Do not average these into one vanity UX score. A repeated blocking mechanism failure can trigger `REPLAN` even when aggregate results look acceptable.
+For personalized tests, every participant record must include:
 
-Compliments, visual preference and "interesting" are not pass evidence.
+- stated baseline action portfolio before reveal;
+- revised action portfolio after reveal;
+- action-level delta classification;
+- time/cash deltas separately where material;
+- actual allocation at follow-up where feasible;
+- later evidence that supports, weakens or reverses the reallocation.
+
+Do not average these into one vanity score.
+
+Do not call reallocated resources "saved" until the judgment has survived later evidence strongly enough to justify that wording.
 
 ---
 
@@ -279,17 +284,19 @@ Compliments, visual preference and "interesting" are not pass evidence.
 
 A functional product must eventually demonstrate:
 
-1. real data ingestion with provenance;
-2. adaptive diagnosis across user states;
-3. real dependency-state updates;
-4. at least one real authority-asset transformation without fabricated facts;
-5. real-world execution/export;
-6. market-signal return path;
-7. later recommendations changing appropriately from new evidence;
-8. reliability, recovery, security and prompt-injection resistance;
-9. RTL/mobile/accessibility.
+1. real counterfactual-plan capture without recommendation contamination;
+2. real data ingestion with provenance;
+3. adaptive diagnosis across user states;
+4. real dependency and allocation-state updates;
+5. at least one real authority-asset transformation without fabricated facts;
+6. real-world execution/export;
+7. actual resource allocation tracking at a practical level;
+8. market-signal return path;
+9. later recommendations changing appropriately from new evidence;
+10. reliability, recovery, security and prompt-injection resistance;
+11. RTL/mobile/accessibility.
 
-Feature completeness cannot compensate for failure of the A1→B contract.
+Feature completeness cannot compensate for failure to create material allocation value.
 
 ---
 
@@ -298,18 +305,27 @@ Feature completeness cannot compensate for failure of the A1→B contract.
 Ultimately demonstrate a chain such as:
 
 1. target users recognize the trigger;
-2. they reach a Decision-Ready Authority Map;
-3. they execute recommended real-world actions;
-4. authority-relevant market signals appear and can be recorded responsibly;
-5. later recommendations improve from prior evidence;
-6. users return;
-7. some users pay for continuing strategic value.
+2. baseline intended allocation is captured;
+3. personalized analysis produces a material, understandable allocation decision;
+4. users actually reallocate resources and execute;
+5. authority-relevant market signals appear and can be recorded responsibly;
+6. later evidence improves or reverses subsequent allocation appropriately;
+7. users return because ongoing reallocation/learning is useful;
+8. some users pay for continuing strategic value.
 
-The first post-activation behavioral metric is:
+Primary value evidence is not merely action completion.
 
-> **What proportion of activated users perform the recommended real-world action within the preregistered observation window?**
+Track separately:
 
-Working default: 7 days unless the action itself reasonably requires another horizon.
+- Decision Delta;
+- Priority Delta;
+- Resource Allocation Delta by resource type;
+- Premature-Work Reallocation;
+- New-Leverage Allocation;
+- Recommendation Reversal / Regret;
+- later authority / business signals.
+
+Do not collapse these into one composite without explicit justification.
 
 ---
 
@@ -320,50 +336,43 @@ At the end of every meaningful phase, run the full Telos Governance Loop.
 Possible outcomes:
 
 - `CONTINUE` — a material internal gap remains and is resolvable now;
-- `REPLAN` — current framing / architecture / hierarchy itself blocks O;
+- `REPLAN` — current framing / architecture / metric / hierarchy itself blocks O;
 - `FIELD` — reality is now the highest-value source of information;
-- `STOP` — no further justified action is currently expected to materially improve O.
+- `STOP` — no further justified action or reallocation is currently expected to materially improve O.
 
-A checklist cannot authorize `STOP`.
+A checklist or improved metric cannot authorize `STOP`.
 
 ---
 
-# Current closeout — 2026-08-15
+# Current closeout — 2026-08-15, resource-allocation iteration
 
 **O recalled**  
-Build and continuously adapt the best grounded route from desired authority position to relevant market perception/action.
+Increase the likelihood that the relevant market grants the desired authority position and acts accordingly, while allocating scarce user resources toward the strongest grounded path under uncertainty.
 
-**Material finding that reopened the prior FIELD state**  
-The previous entry flow began too close to the product solution. It did not explicitly guarantee that the first hierarchy layer reflects the ICP's most conscious problem: needing to build authority while lacking a clear personalized route and sequence.
+**Material finding**  
+`Decision-Ready Authority Map` was an artifact-level B-state. It could pass even when the user would have executed exactly the same plan without the product. Therefore it did not prove additive value.
+
+**Highest-leverage unmeasured primitive**  
+The user's **stated counterfactual resource allocation before advice**.
+
+Without it, the product cannot measure whether it changed a decision, prevented premature work, discovered a higher-leverage action, or merely explained an existing plan.
+
+**Invalidated assumption**  
+`Avoided Wrong Work` is not sufficient as a North Star because stopping is not inherently good and can be premature. The broader construct is `Counterfactual Resource Allocation Delta toward O`.
 
 **Governance action taken**  
-`REPLAN` was opened specifically for acquisition/activation hierarchy.
+`REPLAN` opened for activation value and measurement.
 
-The following were changed:
+Updated:
 
-- trigger hypothesis made explicit;
-- A0→A1→B→C→D transition contract created;
-- A1→B defined as the primary first-session job;
-- DOD updated around measurable transition gates;
-- README aligned;
-- first-session flow changed to pain-first;
-- FIELD protocol changed to test trigger before solution comprehension;
-- new low-fidelity instrument `authority-prototype-v3-1.html` created while preserving the prior prototype as historical evidence.
+- Telos Governance to make resource allocation and opportunity cost explicit;
+- Resource Reallocation Contract created;
+- UX transition B-state changed from map possession to grounded allocation decision;
+- DOD gates changed to require pre-advice counterfactual and post-advice allocation delta.
 
-**Technical evidence**  
-The new instrument is deployed successfully on Vercel and its branch CI passes.
+**Remaining highest-leverage internal gap**  
+The FIELD instrument and protocol must capture the counterfactual **before** recommendation and compare it with the revised plan. Until that instrument exists, returning to FIELD would test the old value hypothesis.
 
-**Remaining highest-leverage uncertainties**  
-They are now behavioral:
+**Current governance outcome:** `CONTINUE`.
 
-1. does the ICP actually recognize the proposed pain as theirs before explanation?
-2. can they state the product promise correctly?
-3. does the low-fidelity experience produce a Decision-Ready Authority Map without facilitator rescue?
-4. do users understand dependencies and data requests?
-5. after comprehension passes, does a genuinely personalized Wizard-of-Oz map materially change decisions?
-
-These cannot be resolved responsibly by more internal refinement.
-
-**Current governance outcome:** `FIELD`.
-
-**Next justified action:** run the preregistered trigger + A1→B comprehension wave with target users. Do not open unrelated UI polish or architecture refinement before that evidence arrives.
+**Next justified action:** update FIELD protocol / first-session instrument to measure baseline → allocation delta → later validation. Do not invest in UI polish.
