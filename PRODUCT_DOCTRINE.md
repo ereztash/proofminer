@@ -1,437 +1,478 @@
-# ProofMiner — Product Doctrine v2
+# ProofMiner — Product Doctrine v3
 
 ## Status
 
-This document is the current product source of truth for ProofMiner.
+This doctrine is subordinate to `docs/TELOS_GOVERNANCE.md`.
 
-It supersedes the earlier framing of ProofMiner as a scoring system, content generator, or fixed `Proof Unit` miner.
+It supersedes v2's assumption that `DecisionMoment -> ProofMove` is the top-level product job.
 
-Current lifecycle state: **ARCHITECTING**.
+Current lifecycle state: **REPLAN / ARCHITECTING**.
 
-The product is not `BUILD_AUTHORIZED` until implementation work is derived from this doctrine and its Definition of Done.
-
----
-
-## Telos
-
-ProofMiner helps an established expert reduce a buyer's uncertainty at a specific decision moment by finding and deploying the strongest evidence the expert has already earned.
-
-The user-facing job is not "change a belief" and not "create content".
-
-The practical question is:
-
-> **What should I show this person now so they have enough confidence to take the next decision?**
-
-Belief change remains an internal explanatory mechanism. The observable target is a decision or next action.
+The existing v2 Preview is evidence about one discarded framing. It is not the design target for the next build.
 
 ---
 
-## Primary user
+## Product telos
 
-The primary ICP is an established B2B expertise-based independent professional:
+The product helps a person move from:
 
-- consultant
-- fractional executive
-- senior freelancer
-- advisor
-- coach or specialist selling expertise
-- small professional-services / agency owner
+> **"I want to become recognized as an authority in this domain."**
 
-They already have real work, clients, outcomes, talks, testimonials, proposals, transcripts, credentials, publications, or external mentions.
+into a personalized, evidence-backed and continuously learning authority-building journey that increases the likelihood that a chosen audience actually perceives that person as a credible, differentiated authority and acts accordingly.
 
-Their problem is not primarily lack of ideas. Their problem is that useful evidence is fragmented, underinterpreted, and poorly matched to the decision they are trying to influence now.
-
-### Core user condition
-
-The user should be able to say:
-
-> "I have done enough real work that there should already be evidence somewhere — I just do not know what matters most here."
-
-ProofMiner is not primarily for someone who has no evidence yet and wants AI to manufacture authority.
+The product does not manufacture authority. It helps the user discover, build, sequence, expose and learn from the assets and actions through which authority can become legible to the relevant market.
 
 ---
 
-## Core job
+## Primary user condition
 
-For one concrete decision moment:
+The primary user is a professional whose future opportunities depend materially on how a relevant audience understands their expertise.
 
-1. Understand who is deciding.
-2. Understand what next action the user wants to make easier.
-3. Identify the uncertainty preventing that action.
-4. Accept one existing source with minimal setup.
-5. Extract factual evidence without assigning it a permanent meaning.
-6. Construct candidate claims relevant to the decision moment.
-7. Compare which evidence supports, qualifies, or contradicts those claims.
-8. Recommend one **Proof Move**.
-9. Show why the move is supported and where inference must stop.
-10. Convert the move into an external representation without inventing facts.
-11. Let the user correct the system.
-12. Record whether the move was actually deployed and what happened afterward.
+Initial ICP remains strongest for expertise-based B2B professionals such as consultants, fractional leaders, senior freelancers, advisors, specialists and small professional-services owners, but the product model must also survive adjacent cases such as an experienced manager trying to become known for management expertise.
+
+The user does not need to understand branding, UX, reputation theory or authority-building frameworks.
+
+They should be able to start with ordinary language:
+
+> **"I want to become an authority in ____."**
 
 ---
 
-## The fundamental unit is evidence, not proof
+# The top-level product object: Authority Project
 
-A document is a container.
-
-A sentence is not automatically a proof.
-
-A `Proof Unit` is not stable across contexts.
-
-The stable atomic object is an **Evidence Unit**: an attributable observation or statement extracted from a source with exact provenance.
-
-The meaning of an Evidence Unit depends on the decision being influenced.
-
-The same client outcome may support different claims for different buyers, stages, offers, or decisions.
-
-Therefore:
-
-`Source Asset -> Evidence Unit`
-
-is stable, while:
-
-`Evidence Unit -> Claim -> Proof Move`
-
-is contextual.
-
----
-
-## Decision Moment
-
-The top-level working context is a **Decision Moment**.
-
-A Decision Moment contains:
-
-- decision actor or audience
-- relationship / stage
-- desired next action
-- relevant offer or proposition
-- current uncertainty / objection / risk
-- constraints on what may be disclosed
-
-Examples:
-
-- A CEO considering whether to book a first call.
-- A buyer evaluating a proposal after a sales conversation.
-- A LinkedIn reader deciding whether this expert is worth following or contacting.
-- An existing lead deciding whether the expert can credibly handle a specific problem.
-
-The same evidence can rank differently across these moments.
-
----
-
-## Proof Move
-
-A **Proof Move** is the product's primary recommendation object.
+An **Authority Project** represents one desired position in one field for one meaningful audience.
 
 It contains:
 
-1. a candidate claim that matters in the current Decision Moment
-2. one or more Evidence Units that support it
-3. relevant qualifying or contradicting evidence
-4. provenance for every factual statement
-5. the inference boundary: what the evidence does **not** justify claiming
-6. the recommended external representation or next action
+- desired authority domain
+- candidate and selected target audience
+- desired perceived identity: what the user wants to be known for
+- business / career outcomes the user hopes that perception will enable
+- current-state model
+- market / field model
+- authority assets already available
+- capability and evidence gaps
+- strategic diagnosis
+- dependency-aware authority map
+- actions and artifacts
+- market signals and outcomes
+- learning history
 
-A Proof Move is not a truth score.
+A person may have multiple Authority Projects.
 
-It is a disciplined, contextual argument backed by traceable evidence.
-
----
-
-## Evidence graph
-
-The internal model should support many-to-many relationships:
-
-`Source Asset`
-→ `Evidence Unit`
-→ `SUPPORTS / QUALIFIES / CONTRADICTS`
-→ `Candidate Claim`
-→ `Proof Move`
-→ `Representation`
-→ `Publication / Use`
-→ `Observed Outcome`
-
-One claim may require multiple Evidence Units.
-
-One Evidence Unit may support multiple claims.
-
-A source may contradict another source.
-
-The model must preserve these relationships rather than flattening them into one score.
+Do not merge all professional identities into one undifferentiated profile.
 
 ---
 
-## Epistemic contract
+# Entry promise
 
-ProofMiner does **not** promise to prove what is true in the world.
+The first screen must communicate the user's gain before exposing the system.
 
-It promises provenance and disciplined inference.
+The product should make a promise equivalent to:
 
-For every material factual claim, the system should be able to answer:
+> **Turn what you have already done — and what you should do next — into a clear path for becoming known for the expertise you want the market to associate with you.**
 
-- Who or what source asserted this?
-- Where exactly in the source?
-- Is this self-report, client report, external validation, observed outcome, credential, or another evidence type?
-- Does the evidence directly support the claim, only partially support it, or contradict it?
-- What cannot safely be inferred from the evidence?
+The first substantive input is:
 
-### Non-negotiable epistemic rules
+> **"I want to become an authority in the field of ____."**
 
-- Self-authored material is not third-party validation merely because it is written in a document.
-- Chronological sequence is not automatically causality.
-- A client result is not automatically attributable solely to the user's work.
-- Prestige is not automatically decision relevance.
-- A source with numbers is not automatically high-confidence evidence.
-- Absence of sufficient evidence must be allowed to produce: **"There is not enough evidence yet."**
-- Contradicting evidence must not be silently discarded.
+The exact copy is not doctrine. The job is.
 
 ---
 
-## Uncertainty must remain decomposed
+# Audience-path selection
 
-Do not collapse confidence into one number.
+Authority is audience-relative.
 
-At minimum the system must distinguish:
+After the user names a field, the product should not demand that they already know the optimal audience.
 
-### Source fidelity
-Did the system correctly extract what the source actually says?
+It should construct candidate paths from the intersection of:
 
-### Claim support
-Does the evidence actually justify the proposed claim?
+- assets and experience the user already has
+- credibility / right-to-speak signals
+- market need
+- commercial or career potential
+- competitive difficulty
+- likely speed to credible authority
 
-### Decision relevance
-Is there a good reason to think this claim matters in the current Decision Moment?
+The system should normally present strategic alternatives such as:
 
-These may be represented qualitatively or comparatively. They must not be collapsed into pseudo-objective certainty.
+1. **Natural path** — strongest fit with existing experience and assets.
+2. **Commercial path** — strongest expected business/career value.
+3. **Fast path** — shortest credible distance from current position to recognizable authority.
 
----
+These are roles, not mandatory three-card theater.
 
-## Ranking doctrine
+If one audience dominates several roles, say so rather than inventing alternatives.
 
-There is no universal weighted score such as:
+If two paths remain meaningfully close, ask one discriminating question whose answer can change the recommendation.
 
-`35% evidence + 35% fit + 20% proximity + 10% freshness`.
-
-Ranking is contextual and comparative.
-
-The product should prefer:
-
-- stronger support over weaker support
-- more decision-relevant evidence over prestigious but irrelevant evidence
-- independent corroboration when the claim requires it
-- evidence close to the offered outcome when appropriate
-- safe, publishable evidence when two candidates are otherwise comparable
-- evidence that meaningfully reduces the target uncertainty
-
-### Time relevance
-
-Recency is conditional, not a global weight.
-
-A dated market result may decay quickly. A credential or enduring professional event may remain relevant for years.
-
-Freshness must therefore be interpreted by evidence type and Decision Moment.
+The system recommends when evidence is sufficient and asks only when the answer is decision-relevant.
 
 ---
 
-## UX doctrine
+# Initial knowledge acquisition
 
-The user's attention is scarce.
+The product should learn enough to build a useful first strategic map, but every request for information must have a decision-use justification.
 
-The user should not have to understand the evidence model before receiving value.
+Potential inputs include:
 
-### Entry experience
+- LinkedIn profile
+- CV / resume
+- personal or company website
+- public search results and public mentions
+- past content
+- talks, interviews and podcasts
+- testimonials and referrals
+- proposals / case studies
+- sales or client conversations
+- prior client-acquisition paths
+- user narration and guided interview
 
-Start with:
+The system should not require a bulk archive before showing value.
 
-> **What are you trying to make happen now?**
+When no source exists, the system should be able to interview the user.
 
-Allow natural language.
+A useful mode is a guided authority interview that treats experience as latent data rather than asking the user to self-package it.
 
-Infer actor, desired action, likely uncertainty, and offer context where possible. Ask only for the missing decision-critical information.
-
-Then ask for one source:
-
-> **Give me one thing that already exists. You do not need to organize it.**
-
-Do not begin with a bulk archive project.
-
-### Progressive evidence acquisition
-
-After analyzing the first source, ask for another source only if it resolves a specific gap.
-
-Example:
-
-> "This is good evidence that you identify the problem well, but it does not show an outcome. If you have a testimonial or before/after case, that is the only thing I would add next."
-
-### Result experience
-
-The primary result should be one recommendation:
-
-> **The move I would make now**
-
-Then show:
-
-- the claim
-- the leading evidence
-- what this helps the buyer understand
-- why the evidence supports the claim
-- what it still does not justify claiming
-- exact source provenance
-
-Primary actions:
-
-- Use this
-- This is not accurate
-- I cannot publish this
-- Show me another option
-
-Do not lead with a large numeric score.
-
-### Correction is part of the product
-
-Corrections are not merely error handling.
-
-They are durable product data.
-
-Useful correction reasons include:
-
-- the system inferred too much
-- missing context
-- wrong buyer relevance
-- private / confidential
-- wording overstates the evidence
-- causality is not justified
-- source attribution is wrong
+Example: a former bookstore team manager should be able to surface a management methodology even if they never wrote one down.
 
 ---
 
-## Representation doctrine
+# What the system extracts
 
-LinkedIn is the initial wedge, not the product boundary.
+The product does not only mine proof.
 
-A Proof Move may become:
+It builds an **Authority Asset Map** containing at minimum:
 
-- LinkedIn post
-- proposal proof block
-- case-study section
-- About / bio line
-- sales follow-up
-- DM
-- landing-page proof
-- pitch-deck evidence
+### Evidence assets
 
-The representation must remain visibly grounded in the Proof Move.
+Traceable events, outcomes, testimonials, credentials, third-party mentions and other signals that can support claims.
 
-For content, reader value comes before self-promotion.
+### Methodology assets
 
-Useful transformation pattern:
+Tacit patterns in how the user diagnoses, decides, acts or produces results — including patterns reconstructed through interview or repeated cases.
 
-`Proof Move -> useful mechanism / lesson -> implication for reader -> restrained evidence`
+### Experience assets
 
----
+Roles, situations, responsibilities, transitions and exposures that give the user a legitimate vantage point even when they are not direct proof of an outcome.
 
-## Outcome doctrine
+### Perspective assets
 
-The system may record what happened after a Proof Move was deployed:
+Distinctive interpretations, frameworks, questions, categories or mechanisms the user can teach.
 
-- no observable response
-- meaningful comment
-- profile visit
-- reply / DM
-- qualified conversation
-- proposal movement
-- deal
+### Relationship / distribution assets
 
-These outcomes are learning signals, not automatic causal proof that the Proof Move caused the result.
+Audiences, communities, partners, clients, institutions, stages, channels or intermediaries through which expertise can become visible or endorsed.
 
-Repeated use should improve contextual recommendations through accumulated evidence, corrections, Decision Moments, and outcomes.
+### Market-response assets
+
+Observed evidence that some prior action, artifact, referral, post, talk or relationship preceded meaningful inbound interest or opportunity.
+
+These must be stored with provenance and uncertainty. Market response is not automatically causal proof.
 
 ---
 
-## Compounding value / moat
+# Market and field model
 
-The durable product asset is not generated copy.
+Authority is not built in a vacuum.
 
-It is the user's growing map of:
+For the selected field and audience, the system should develop a working model of:
 
-- source assets
-- evidence units
-- claims
-- decision contexts
-- corrections
-- disclosure constraints
-- proof moves used
-- outcomes observed
+- recognized experts / authorities
+- what each is known for
+- category expectations
+- points of parity required for legitimacy
+- meaningful points of difference
+- common authority assets
+- important channels and intermediaries
+- public journeys or sequences that appear relevant
+- unmet audience needs and under-served positions
 
-A generic writing model can generate prose from one document.
+The product may benchmark comparable authority journeys, but it must distinguish:
 
-ProofMiner should become more valuable because it remembers what the business has already earned, what it actually supports, where it worked, where it failed, and which uncertainty remains unproven.
+- observed sequence
+- public self-report
+- external validation
+- inferred mechanism
 
----
-
-## Privacy and disclosure
-
-Professional evidence often contains client-sensitive material.
-
-The product must support evidence-level disclosure state, including at minimum:
-
-- publishable
-- private
-- anonymize before use
-- permission required
-
-The system must never turn private evidence into public copy without an explicit permitted path.
-
-Users must be able to remove their sources and derived evidence.
+It must not convert "X happened before Y" into "X caused Y".
 
 ---
 
-## Anti-build
+# Strategic diagnosis
 
-Do not add features merely because they are common in content tools.
+There is no universal authority framework.
 
-Specifically, do not prioritize:
+SWOT may be useful for one diagnostic need and irrelevant for another.
 
-- scheduling
-- virality scoring
-- hashtag generation
+The system selects or composes the strategic model according to the actual gap.
+
+Possible diagnostic lenses may include, without becoming a fixed taxonomy:
+
+- positioning / category fit
+- differentiation
+- evidence / credibility
+- methodology legibility
+- visibility / reach
+- third-party legitimacy
+- network / intermediaries
+- distribution
+- consistency / repetition
+- conversion path
+- audience learning
+
+The user sees the conclusion first.
+
+Framework names, assumptions and deeper reasoning belong in progressive disclosure under an affordance equivalent to:
+
+> **"How was this map built?"**
+
+---
+
+# Authority Map
+
+The primary dashboard is not a dashboard of metrics.
+
+It is a **strategic route from current state to desired authority state**.
+
+The map must distinguish:
+
+- what can start now
+- what is sequential
+- what can happen in parallel
+- what depends on a prerequisite
+- what is currently premature
+- what will unlock after an action or new evidence
+- what the current highest-leverage move is
+
+The map is a dependency graph, not a checklist.
+
+The dominant dashboard question is:
+
+> **"What is the most useful thing for me to do now, and why?"**
+
+Secondary views can expose assets, gaps, field map, experts, prior actions and research.
+
+---
+
+# Action hierarchy
+
+Every main state should have one dominant action.
+
+The user should not have to choose among many professional tools or frameworks.
+
+The system manages complexity behind the scenes and reveals only information that supports:
+
+- understanding
+- input
+- correction
+- decision
+- next action
+
+Bottom line precedes explanation.
+
+Explanation precedes optional depth.
+
+---
+
+# ProofMiner as a subsystem
+
+The v2 evidence architecture is not discarded. Its level changes.
+
+`DecisionMoment`, `EvidenceUnit`, `CandidateClaim`, `EvidenceRelation` and `ProofMove` become an **evidence / trust subsystem** inside the broader Authority Project.
+
+Use this subsystem when an Authority Action requires the user to make a capability, outcome or credibility claim legible to an audience.
+
+Evidence provenance, contradiction handling, privacy and inference discipline remain non-negotiable.
+
+Proof is one authority-building mechanism, not the top-level product telos.
+
+---
+
+# Authority actions and artifacts
+
+The route may generate actions such as:
+
+- extract and name a methodology
+- improve profile positioning
+- publish a useful point of view
+- turn an existing result into a case study
+- obtain a testimonial or permission
+- contribute to a relevant community
+- speak on a stage / podcast / webinar
+- create original research
+- engage an information intermediary or partner
+- develop a flagship framework or asset
+- publish evidence-backed guidance
+- make a targeted outreach or follow-up move
+
+Outputs are not restricted to content.
+
+A generated artifact is valuable only if it serves the current strategic path.
+
+---
+
+# Gamification doctrine
+
+Do not reward activity for its own sake.
+
+Do not celebrate "five files uploaded" merely because files were uploaded.
+
+Reward **increase in strategic resolution or capability**.
+
+Examples:
+
+- "We can now compare what clients repeatedly value about you."
+- "You unlocked external-validation analysis."
+- "We can now distinguish your claimed methodology from what appears consistently across cases."
+
+Progress should represent meaningful reduction in uncertainty, a new usable asset, or a newly unlocked action.
+
+---
+
+# Compounding learning loop
+
+The canonical product loop is:
+
+```text
+Authority goal
+→ audience path
+→ current-state + market model
+→ strategic diagnosis
+→ dependency-aware map
+→ next authority action
+→ artifact / real-world behavior
+→ market signal / business outcome
+→ learning
+→ updated model and map
+```
+
+The second session must be better because the first happened.
+
+The system should learn from:
+
+- user corrections
+- added sources
+- repeated methodology patterns
+- actions accepted / rejected
+- assets used
+- audience responses
+- warm inbound
+- referrals
+- invitations
+- qualified conversations
+- deals or career opportunities
+
+Outcomes are evidence for learning, not automatic proof of causality.
+
+---
+
+# Desired versus perceived authority
+
+The product must preserve the distinction between:
+
+- **desired authority identity** — what the user wants the audience to associate with them;
+- **perceived authority identity** — what available market signals suggest the audience actually associates with them.
+
+The strategic job is not simply to project the desired identity.
+
+It is to reduce the gap between desired and perceived identity without fabricating competence, hiding material contradictions or optimizing only for appearance.
+
+---
+
+# Research-grounded mechanism hypotheses
+
+Current external research supports several working hypotheses, not immutable laws:
+
+1. Authority/reputation is audience-relative and strongly connected to being known for something specific.
+2. Personal branding is strategic and programmatic rather than a one-off content act.
+3. Positioning requires both fit with field expectations and meaningful differentiation.
+4. Desired identity must be compared with perceived identity through feedback.
+5. High-quality thought leadership can influence professional vetting, trust and receptivity to outreach.
+6. Useful thought leadership tends to combine credible grounding, understanding of audience problems and concrete guidance/cases.
+7. Brand building is better modeled as a long-term system connecting orientation, identity, market activity and performance than as isolated publishing.
+
+These hypotheses must be tested against the actual ICP and product behavior.
+
+---
+
+# Privacy, provenance and inference
+
+All source-derived claims must retain provenance.
+
+The product must distinguish:
+
+- what the user said
+- what a source said
+- what a third party said
+- what was observed
+- what the system inferred
+- what the system recommends
+
+Confidentiality and disclosure state remain first-class.
+
+User approval is required for persistent storage where applicable in the product experience.
+
+---
+
+# Anti-build
+
+Do not prioritize a feature merely because authority-building products often contain it.
+
+In particular, do not automatically build:
+
 - generic content calendars
-- engagement automation
-- vanity analytics
-- broad social publishing infrastructure
+- post schedulers
+- follower-growth dashboards
+- virality scores
+- vanity gamification
+- universal authority scores
+- giant all-options workspaces
+- framework libraries users must navigate themselves
 
-unless field evidence shows they materially improve the core Decision Moment job.
-
----
-
-## Product success hierarchy
-
-Early success is measured in this order:
-
-1. **Discovery** — user finds evidence they had not considered usable.
-2. **Decision** — user can accept or reject one Proof Move without expert assistance.
-3. **Decision clarity** — user understands what uncertainty the move is intended to reduce.
-4. **Grounding** — user can inspect where every material claim comes from.
-5. **Deployment** — the Proof Move becomes a real external artifact or sales action.
-6. **Compounding** — a later session benefits from prior sources, corrections, and contexts.
-7. **Downstream signal** — the user records what happened after deployment.
-8. **Commercial proof** — ICP users pay for continued access/use.
-
-Impressions are secondary unless reach is explicitly the current Decision Moment objective.
+A feature must justify itself through O and the current Authority Map.
 
 ---
 
-## Stop rule
+# UX invariants already decided
 
-Internal review should continue only when a new objection changes at least one of:
+1. Value/pain is legible immediately.
+2. Start from the desired authority field.
+3. Audience selection is assisted, not outsourced to the user.
+4. Recommend when possible; ask only discriminating questions when necessary.
+5. Use a wizard/process for local tasks, but let the whole product feel like a persistent project.
+6. Hide most system complexity until relevant.
+7. Keep choices small and decision-relevant; do not force an arbitrary number when one path dominates.
+8. Bottom line first, then meaning, then action, then optional explanation.
+9. The strategic map is primary; frameworks are secondary/explainable.
+10. Data contribution should unlock insight/capability, not points for activity.
+11. Preserve user control over stored information.
+12. Empty state must be productive through guided discovery/interview.
 
-- user action
-- product action
-- evidence requirement
-- field test
-- inference boundary
+---
 
-If another perspective only suggests additional elegance, theoretical refinement, or cosmetic polish without changing one of those, it does not open another architecture iteration.
+# Success hierarchy
 
-Once no blocking internal objection remains, build a Preview and let real ICP behavior become the next falsification layer.
+Early success should be evaluated in this order:
+
+1. **Orientation** — the user can state the authority position they want to occupy.
+2. **Audience strategy** — the system produces a useful, defensible audience-path recommendation.
+3. **Discovery** — the system surfaces assets, methodology or opportunities the user had not recognized as usable.
+4. **Strategic clarity** — the user understands where they are, what the main gap is and why.
+5. **Action clarity** — the user knows the next highest-leverage move without facilitator explanation.
+6. **Execution** — the user performs or deploys a real authority-building action.
+7. **Learning** — the next recommendation changes appropriately based on new evidence or market response.
+8. **Perception signal** — target-audience behavior produces observable indicators consistent with the intended authority position.
+9. **Business/career signal** — meaningful inbound, invitation, referral, qualified conversation, deal or opportunity occurs.
+10. **Commercial proof** — users pay for continued use because the system improves the journey, not merely because generated content is convenient.
+
+---
+
+# Current conclusion
+
+The next implementation must not be derived from the v2 Decision Moment Preview.
+
+Before another UI build, the Authority Project, Authority Map, strategic diagnosis and first-session journey must be sufficiently specified and falsified against multiple user scenarios.
+
+The governing stop rule is defined in `docs/TELOS_GOVERNANCE.md`.
