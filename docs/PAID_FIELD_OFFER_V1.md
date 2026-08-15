@@ -1,4 +1,4 @@
-# Paid FIELD Offer — v1
+# Paid FIELD Offer — v1.1
 
 Date: 2026-08-15
 
@@ -20,7 +20,9 @@ Customer-facing naming is not validated. Do not require the buyer to understand 
 
 Plain-language description:
 
-> **For the next 90 days, we build and maintain the decision picture behind your professional transition — what you are trying to change in the market, what deserves your resources now, what should wait, and what new evidence should make us replan.**
+> **For the next 90 days, we help you understand the professional transition you are in, surface the way you already know how to solve systems for others, apply that expertise to your own business where it actually transfers, and decide what deserves your time / money / attention now — with replanning when reality changes.**
+
+Do not sell `self-application` as a gimmick. It is an internal mechanism whose value must be demonstrated through a better decision.
 
 ---
 
@@ -31,38 +33,64 @@ Independent expert / consultant / fractional leader who:
 - is actively repositioning, moving upmarket, entering a field, launching / reframing an offer or trying to change how they are chosen;
 - has several plausible actions competing for limited time / money / attention;
 - controls the resources being allocated;
+- has a real professional discipline / repeated process used to create value for others;
 - expects more than one consequential decision during the next 90 days.
 
-Do not sell the pilot to a participant who mainly wants content production / execution.
+Do not sell the pilot to a participant who mainly wants content production / execution or has no live professional decision.
 
 ---
 
 # What the pilot includes
 
-## 1. Initial Decision State
+## 1. Transition + baseline
 
-Reconstruct:
+Freeze before advice:
 
 - desired professional market position / outcome;
 - project / audience / surface boundary;
 - current representation of the bottleneck;
 - current planned actions / resource allocation;
-- existing evidence / assets;
+- why the participant believes those actions should work;
 - relevant constraints / opportunity costs;
-- external field / market state where decision-relevant.
+- current reversal / change conditions.
 
-## 2. First material decision
+## 2. Professional-process characterization — when useful
+
+Rather than asking the user to fill a universal intake, reconstruct how they actually create value in their own profession from one or more real cases only when that can change the live decision.
+
+Possible output:
+
+- diagnostic questions they naturally use;
+- cues / criteria;
+- common failure modes;
+- dependencies / ordering rules;
+- decision / reversal conditions.
+
+Then, where justified, apply that operating model to the user's own business / transition and explicitly test where the analogy does **not** transfer.
+
+The participant can correct / reject the extracted model.
+
+## 3. Decision-relevant external research
+
+Only after endogenous characterization, identify what must still be learned from the market / audience / competitors / channels / public evidence.
+
+Do not sell research breadth as value. Each material search should exist because it can change the live decision.
+
+## 4. First material decision
 
 Produce a contestable recommendation that states:
 
 - what changed in the representation;
+- what the user's own professional process contributed, if anything;
+- what part of that process was rejected / bounded;
+- what external evidence mattered;
 - what receives resources now;
 - what is reduced / delayed / stopped / added;
 - what remains uncertain;
 - what evidence would reverse the decision;
 - why a more complex analysis is or is not justified.
 
-## 3. Up to three additional consequential decision reviews during the 90-day active episode
+## 5. Up to three additional consequential decision reviews during the 90-day active episode
 
 A review is justified by a natural trigger such as:
 
@@ -74,25 +102,31 @@ A review is justified by a natural trigger such as:
 
 Do not manufacture reviews to consume quota.
 
-## 4. Outcome / evidence loop
+At decision #2+, prior professional-process / decision history may be reused only when transferability is justified.
+
+## 6. Outcome / evidence loop
 
 For prior recommendations, record where feasible:
 
 - what was actually executed;
 - resources actually committed;
 - observable market / opportunity signals;
+- which characterization / transfer assumption survived or failed;
 - what the evidence legitimately changes;
 - reversals / regrets.
 
-## 5. Persistent decision lineage
+## 7. Persistent decision lineage
 
 At close, preserve a versioned record of:
 
-- prior assumptions;
+- prior representations;
+- professional operating-model hypotheses;
+- source cases;
+- transferability limits;
 - decisions;
 - actions;
 - outcomes;
-- transferability limits;
+- reversals;
 - unresolved triggers.
 
 ---
@@ -104,7 +138,8 @@ At close, preserve a versioned record of:
 - guaranteed leads / revenue / authority;
 - generic business consulting outside the active professional-market-position boundary;
 - automated 24/7 monitoring unless a real signal channel is explicitly connected;
-- unlimited meetings merely because the engagement lasts 90 days.
+- unlimited meetings merely because the engagement lasts 90 days;
+- a promise that the user's professional expertise automatically contains the answer.
 
 ---
 
@@ -141,10 +176,11 @@ Do not lead the session with the offer.
 Reveal only after:
 
 1. the participant's pre-advice representation / allocation is frozen;
-2. one real personalized analysis is delivered;
-3. the participant states what changed, if anything;
-4. authorship / contestability is checked;
-5. the participant can state the practical consequence of the decision change.
+2. one real personalized intervention is delivered;
+3. if characterization was used, the participant can say what it uniquely revealed or failed to reveal;
+4. the participant states what changed, if anything;
+5. authorship / contestability is checked;
+6. the participant can state the practical consequence of the decision change.
 
 Then say the offer and price clearly.
 
@@ -167,6 +203,7 @@ For refusals record the primary reason without arguing:
 - price too high;
 - value unclear;
 - one decision was enough;
+- characterization felt interesting but did not improve the decision;
 - no expected second decision;
 - wants execution, not decision support;
 - prefers human mentor / consultant;
@@ -179,7 +216,7 @@ Do not reframe a refusal as interest.
 
 # Cell stop rule
 
-After 3–5 suitable participants who actually reach the offer reveal, re-run Commercial FIELD Governance.
+After 3–5 suitable participants who actually reach the offer reveal, re-run Commercial FIELD Governance + Characterization FIELD.
 
 Do not change price because one person negotiates.
 
@@ -190,6 +227,7 @@ Change the cell only if accumulated evidence can change a material commercial de
 - ICP;
 - episode length;
 - billing unit;
-- paid job.
+- paid job;
+- characterization mechanism.
 
-The objective is not to maximize closes in this cell. The objective is to learn whether a professional decision episode creates enough value to support a serious paid relationship.
+The objective is not to maximize closes. The objective is to learn whether a professional decision episode — including characterization only where it adds decision value — supports a serious paid relationship.
