@@ -14,6 +14,12 @@ It is:
 
 That requires measuring what the user would have done without the product before showing any recommendation.
 
+A second governing insight now sits above the analytical stack:
+
+> **The system must also decide how to decide — and use the least-complex reasoning process sufficient for the live allocation decision.**
+
+MCDA, optimization, Value of Information, robust analysis, adaptive pathways and simple rules are tools. None has default authority.
+
 ---
 
 ## Current user-state model
@@ -22,7 +28,9 @@ That requires measuring what the user would have done without the product before
 A0 — capability / market-response mismatch
   ↓ recognition
 A1 — authority need + plausible actions + uncertain allocation
-  ↓ counterfactual capture + analysis
+  ↓ counterfactual capture + decision framing
+META — decide how this decision should be decided
+  ↓ requisite reasoning
 B  — grounded allocation decision
      KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD
   ↓ execution
@@ -69,6 +77,44 @@ See `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
 
 ---
 
+## Meta-decision architecture
+
+Before choosing a framework or algorithm, the system frames the live decision and characterizes only what is needed to select a sufficient reasoning mode.
+
+Examples:
+
+```text
+hard prerequisite / dominance
+→ simple rule or dependency reasoning
+
+finite resource portfolio
+→ marginal allocation reasoning
+
+multiple real trade-offs
+→ multi-criteria reasoning
+
+one missing fact could flip the choice
+→ Value of Information / targeted research
+
+probabilities are not defensible
+→ robust / vulnerability-oriented reasoning
+
+future signals can justify changing course
+→ adaptive pathways / triggers
+```
+
+At every escalation the system asks:
+
+> **What material allocation decision could this additional analytical layer change?**
+
+If none, analytical escalation stops.
+
+This is the Stop Rule applied to reasoning itself.
+
+See `docs/META_DECISION_GOVERNANCE.md`.
+
+---
+
 ## Current product model
 
 The top-level unit remains an **Authority Project**.
@@ -76,6 +122,8 @@ The top-level unit remains an **Authority Project**.
 ```text
 Authority goal
 → stated counterfactual allocation
+→ live decision frame
+→ requisite method selection
 → person + field model
 → audience path
 → strategic diagnosis
@@ -84,7 +132,7 @@ Authority goal
 → real-world action
 → market signal / outcome
 → learning
-→ revised allocation / map
+→ revised allocation / map / method if needed
 ```
 
 The system should be able to say not only "do X", but also:
@@ -97,6 +145,26 @@ The system should be able to say not only "do X", but also:
 - add a higher-leverage action the user had not planned.
 
 Stopping is not inherently good. Evidence may later reverse a prior `STOP` or `DELAY`.
+
+---
+
+## 95% assurance boundary
+
+Behind-the-scenes systems are not allowed to vote on strategic truth merely because they are sophisticated or agree with each other.
+
+They may be treated as high-confidence assurance only for claim classes they can directly observe or deterministically test in a defined scope.
+
+Good targets include:
+
+- baseline was captured before recommendation;
+- a hard constraint was represented;
+- a method was invoked without its required preconditions;
+- a refuted assumption still feeds an active recommendation;
+- a map/allocation change has no recorded evidence trigger.
+
+Deterministic guards, mutation/contract tests, refutation propagation and provenance checks are appropriate here.
+
+Blind-review agreement, model confidence and cross-model consensus can test reproducibility or ambiguity, but are **not** >95% evidence that a strategic recommendation is true unless independently calibrated for that exact claim class.
 
 ---
 
@@ -117,27 +185,27 @@ The repository is governed by a telos-first recursive stop rule.
 Every meaningful phase ends with one of:
 
 - `CONTINUE` — a material internal gap remains and is resolvable now;
-- `REPLAN` — the current framing / architecture / metric / sequence blocks O;
+- `REPLAN` — the current framing / architecture / metric / decision process blocks O;
 - `FIELD` — reality is now the highest-value information source;
-- `STOP` — no further justified action or reallocation is currently expected to materially improve O.
+- `STOP` — no further justified action, reallocation, information request or analytical escalation is currently expected to materially improve O.
 
-The Stop Rule now explicitly asks not only "what should happen next?" but also **where further resources are justified and where they are not**.
-
-A completed checklist or improving metric cannot authorize `STOP`.
+A completed checklist, improving metric or more sophisticated model cannot authorize `STOP`.
 
 ---
 
 ## Current lifecycle state
 
-**FIELD — counterfactual → allocation-delta validation**
+**FIELD — adaptive meta-decision value**
 
-The latest Telos Governance iteration invalidated `Decision-Ready Authority Map` as a sufficient B-state. A user can understand a map perfectly while receiving no additive value if they would execute the same plan anyway.
+The latest Telos Governance iteration found that the prior resource-allocation architecture still left method choice implicit.
 
-The current field question is therefore:
+The current architecture now treats method selection as a governed meta-decision and adopts a requisite principle: use the least-complex process sufficient for the live problem.
 
-> **Does a grounded personalized analysis materially change where a target user intends to allocate scarce resources — and does later evidence support, weaken or reverse that reallocation?**
+The next material question is empirical:
 
-The scripted low-fidelity prototype tests whether the before/after semantics are understandable. Personalized strategic value must be tested with Wizard-of-Oz analysis, not simulated intelligence.
+> **Does context-sensitive selection of the reasoning process materially improve allocation decisions versus a simpler fixed advisory process?**
+
+Do not build a full MCDA / optimization / VOI stack before that survives FIELD.
 
 ---
 
@@ -146,14 +214,15 @@ The scripted low-fidelity prototype tests whether the before/after semantics are
 Read these before changing product behavior:
 
 1. `docs/TELOS_GOVERNANCE.md` — highest-authority governing rule.
-2. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — counterfactual baseline, allocation delta and validation contract.
-3. `docs/UX_TRANSITION_CONTRACT.md` — A0→A1→B→C→D user-state transitions.
-4. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates.
-5. `docs/FIRST_SESSION_FLOW_V3.md` — current counterfactual-first session flow.
-6. `docs/FIELD_PROTOCOL_V3.md` — preregistered comprehension + personalized allocation-value tests.
-7. `PRODUCT_DOCTRINE.md` — broader product doctrine and mechanism hypotheses.
-8. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
-9. `docs/ARCHITECTURE_DECISION_LOG.md` — invalidated assumptions and architecture decisions.
+2. `docs/META_DECISION_GOVERNANCE.md` — how the system decides how to decide.
+3. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — counterfactual baseline, allocation delta and validation contract.
+4. `docs/UX_TRANSITION_CONTRACT.md` — A0→A1→B→C→D user-state transitions.
+5. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates.
+6. `docs/FIRST_SESSION_FLOW_V3.md` — current counterfactual-first session flow.
+7. `docs/FIELD_PROTOCOL_V3.md` — preregistered comprehension + personalized allocation-value tests.
+8. `PRODUCT_DOCTRINE.md` — broader product doctrine and mechanism hypotheses.
+9. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
+10. `docs/ARCHITECTURE_DECISION_LOG.md` — invalidated assumptions and architecture decisions.
 
 Deployment/orchestration contracts live under `skills/`.
 
@@ -161,7 +230,7 @@ Deployment/orchestration contracts live under `skills/`.
 
 ## Prototype status
 
-Current FIELD instrument:
+Current UI FIELD instrument:
 
 `public/authority-prototype-v3-2.html`
 
@@ -179,7 +248,7 @@ what I planned to do without the product
 → what evidence should change the allocation again
 ```
 
-The personalized Wizard-of-Oz test is the next evidence gate.
+The personalized Wizard-of-Oz test remains the evidence gate for strategic value; structural router fixtures are the evidence gate for method-selection implementation rules.
 
 ## Run locally
 
