@@ -136,11 +136,15 @@ If history is either useless or indiscriminately reused, the compounding thesis 
 
 ### Current priority — Active Transition Episode
 
-Test a human-in-loop 90-day engagement at **$900–$2,400 total**.
+First executable FIELD cell:
 
-Includes initial state / research, multiple consequential decision reviews, evidence / outcome learning and persistent lineage.
+> **90-Day Professional Market Position Decision Intelligence Pilot — $1,500 total.**
 
-This is a FIELD price band, not validated pricing.
+Human-in-loop is explicit. The pilot includes initial person/field/decision-state work, the first material allocation decision, up to three additional consequential decision reviews triggered by real events, outcome/evidence review, and persistent lineage.
+
+The $1,500 price is a research cell, not validated pricing. Do not discount within the first 3–5 suitable offers merely to increase conversion.
+
+See `docs/PAID_FIELD_OFFER_V1.md`.
 
 ### Other live models
 
@@ -196,7 +200,7 @@ Highest-value evidence now:
 
 1. real suitable participant;
 2. one real personalized decision change;
-3. real paid continuation / refusal;
+3. real $1,500 paid continuation / refusal;
 4. naturally occurring decision #2;
 5. compare longitudinal vs fresh analysis;
 6. test whether prior history is actually transferable;
@@ -213,19 +217,22 @@ Do not broaden the product, polish production UI, or build a full autonomous dec
 2. `docs/CATEGORY_BUSINESS_MODEL_ITERATION_V2.md`
 3. `docs/CATEGORY_RESEARCH_SOURCE_LEDGER_V1.md` (currently ledger v2)
 4. `docs/COMMERCIAL_FIELD_PROTOCOL_V1.md` (currently protocol v2)
-5. `docs/DOD_BUSINESS_MODEL_DELTA_V1.md` (currently delta v2)
-6. `docs/COR_SYS_GRAPH_AUDIT_V1.md`
-7. `docs/META_DECISION_GOVERNANCE.md`
-8. `docs/RESOURCE_REALLOCATION_CONTRACT.md`
-9. `docs/DEFINITION_OF_DONE.md`
-10. `docs/FIELD_PROTOCOL_V3.md`
-11. `docs/PRODUCT_MODEL_GRAPH_DELTA_V3_1.md`
-12. `docs/PRODUCT_MODEL.md`
+5. `docs/PAID_FIELD_OFFER_V1.md`
+6. `docs/DOD_BUSINESS_MODEL_DELTA_V1.md` (currently delta v2)
+7. `docs/COR_SYS_GRAPH_AUDIT_V1.md`
+8. `docs/META_DECISION_GOVERNANCE.md`
+9. `docs/RESOURCE_REALLOCATION_CONTRACT.md`
+10. `docs/DEFINITION_OF_DONE.md`
+11. `docs/FIELD_PROTOCOL_V3.md`
+12. `docs/PRODUCT_MODEL_GRAPH_DELTA_V3_1.md`
+13. `docs/PRODUCT_MODEL.md`
 
 ---
 
 ## Prototype status
 
-Current UI FIELD instrument: `public/authority-prototype-v3-2.html`.
+`public/authority-prototype-v3-2.html` is now a **historical semantics instrument** for counterfactual/allocation comprehension.
 
-It is low fidelity, scripted, not production UI, and not validated strategic intelligence.
+It is not the commercial FIELD instrument for the new Professional Market Position wedge.
+
+The next valid product evidence is the paid Wizard-of-Oz episode, not another UI prototype.
