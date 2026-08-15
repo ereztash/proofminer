@@ -1,0 +1,25 @@
+.resource-segment span{
+  display:grid;
+  grid-template-rows:auto auto;
+  gap:1px;
+  width:100%;
+  min-width:0;
+  text-align:center;
+  line-height:1.05;
+}
+.resource-segment span strong{
+  font-size:12px;
+  font-weight:750;
+}
+.resource-segment span small{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:10px;
+  font-weight:520;
+  opacity:.9;
+}
+@media(max-width:720px){
+  .resource-segment span small{display:none}
+}
