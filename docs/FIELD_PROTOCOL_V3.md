@@ -1,388 +1,239 @@
-# FIELD Protocol v3.2 — Trigger → Counterfactual → Allocation Delta
+# FIELD Protocol v3.3
 
 ## Purpose
 
-This protocol answers four material questions that must not be conflated:
+This protocol exists to answer material uncertainties that internal reasoning can no longer resolve efficiently.
 
-1. **Does the target user recognize the problem immediately?**
-2. **Can the target user state a usable counterfactual plan before advice?**
-3. **Can the user understand the experience and the resulting allocation decision?**
-4. **Does genuinely personalized analysis materially improve allocation of scarce resources toward O?**
+It separates four questions that must not be conflated:
 
-A scripted low-fidelity prototype can test 1–3 structurally. It cannot validate 4 by pretending scripted recommendations are real intelligence.
+1. **Does the target user recognize the problem immediately as relevant to them?**
+2. **Can the target user understand the counterfactual → allocation-delta experience?**
+3. **Does a genuinely personalized strategic analysis create material allocation value?**
+4. **Does context-sensitive selection of the reasoning process create more decision value than a simpler fixed advisory process?**
+
+A scripted low-fidelity prototype can test questions 1–2. It cannot validate questions 3–4 by pretending scripted recommendations are personalized intelligence.
 
 ---
 
 # Governing rules
 
-- Do not explain what the participant was supposed to understand before observing behavior.
-- Do not reveal recommendations before the baseline counterfactual is captured.
-- Do not suggest candidate baseline actions unless the participant truly cannot state any; if rescue occurs, mark the baseline contaminated.
-- Do not treat compliments, "interesting", visual preference or map comprehension as sufficient value evidence.
-- Do not call stopped/delayed work "saved" merely because the system recommended stopping it.
-- Preserve decision quality separately from later outcome quality.
+- Do not ask users to validate the architecture in abstract language.
+- Do not explain what they were supposed to understand before observing their behavior.
+- Do not treat compliments, founder agreement, "interesting", or visual preference as evidence that a transition succeeded.
+- Do not let a polished UI rescue an unclear value mechanism.
+- Do not infer strategic truth from model agreement or reviewer consensus.
+- Preserve the 95% assurance boundary from `docs/META_DECISION_GOVERNANCE.md`.
 
 ---
 
 # Wave 0 — Trigger / entry comprehension
 
-## Objective
+Test whether the user recognizes the conscious problem before solution vocabulary appears.
 
-Test whether the entry hierarchy reaches a consciously available pain:
+Ask before interaction:
 
-> **"I need to build authority / professional standing, but I do not know where my limited effort should go first."**
-
-Before clicking ask:
-
-> **"What problem do you think this product is trying to solve for someone like you?"**
+> **What problem do you think this product is trying to solve for someone like you?**
 
 Then:
 
-> **"What decision do you expect it to help you make?"**
+> **What do you expect it to change if it works?**
 
-Repeated interpretation as content generation, generic personal branding or a scorecard is a `REPLAN` signal.
+Repeated mismatch triggers `REPLAN`.
 
 ---
 
-# Wave 1 — Low-fidelity allocation comprehension
+# Wave 1 — Counterfactual / allocation semantics
 
-## Instrument requirement
+Current instrument:
 
-The next low-fidelity instrument must implement:
+`public/authority-prototype-v3-2.html`
+
+It is scripted and low fidelity.
+
+Its job is to test whether a participant understands:
 
 ```text
-pain
-→ authority direction / outcome
-→ stated counterfactual plan
-→ minimal evidence
-→ diagnosis
-→ allocation delta
-→ Authority Map
-→ next action
-→ simulated re-plan
+what I would have done without the product
+→ what the system changed
+→ where resources moved
+→ why
+→ what evidence should change the allocation again
 ```
 
-It should remain deliberately low fidelity.
+Before any recommendation, capture a stated counterfactual action portfolio and material resource commitments.
 
-## Participants
+Do not call reallocated resources "saved" at this stage.
 
-Initial falsification wave: **5 primary-ICP participants**.
-
-This is not statistical inference. After the wave, run Telos Governance and continue only if another similar session can still change the next product decision.
+Wave 1 does not validate strategic correctness.
 
 ---
 
-## Task 1 — Trigger / promise
+# Wave 2 — Personalized Wizard-of-Oz allocation value
 
-Capture verbatim:
+## Core rule
 
-- what problem the participant thinks this is for;
-- what decision/change they expect.
+The counterfactual must be frozen **before** the participant sees the personalized recommendation.
 
-## Task 2 — Authority direction / consequence
+For each participant capture:
 
-Participant states what they want to become known for and what they want that position to unlock.
+1. desired authority position / association;
+2. target audience / desired consequence where relevant;
+3. actual planning horizon;
+4. stated counterfactual actions;
+5. intended order / priority;
+6. material time / cash / other scarce commitments;
+7. why the participant believes each action matters;
+8. confidence in the baseline plan.
 
-## Task 3 — Counterfactual baseline — MUST precede advice
+Then create the personalized analysis using person evidence, field evidence, constraints, dependencies, opportunity cost and uncertainty.
 
-Ask:
+After reveal capture the revised allocation using:
 
-> **"If this product did not exist, what would you actually do over the next 30 days to build that position?"**
+`KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD`.
 
-Use another horizon if their real planning window differs.
+Record what changed, why, and how much resource moved.
 
-Let them answer freely first.
-
-For each material intended action, capture only as needed:
-
-- action;
-- priority / order;
-- approximate hours;
-- approximate cash;
-- other material scarce commitment;
-- why they think it matters;
-- confidence it is right now.
-
-Record whether any moderator prompt contaminated the baseline.
-
-## Task 4 — Starting evidence
-
-Participant chooses how the system should learn about them.
-
-Ask after choice:
-
-> **"Which decision do you expect this information to improve?"**
-
-## Task 5 — Diagnosis / audience recommendation
-
-Before accepting, ask participant to explain:
-
-- what the system thinks is limiting them;
-- who it recommends building authority with;
-- which baseline-plan assumption is being challenged, if any.
-
-## Task 6 — Allocation Delta
-
-Show the system recommendation relative to the participant's baseline.
-
-Ask:
-
-> **"What changed between what you planned and what the system recommends now?"**
-
-Classify every material action as:
-
-- KEEP
-- ACCELERATE
-- REORDER
-- REDUCE
-- DELAY
-- STOP
-- REPLACE
-- ADD
-
-Capture time and cash deltas separately when meaningful.
-
-## Task 7 — Authority Map
-
-Without explanation ask participant to identify:
-
-- what can start now;
-- what follows a dependency;
-- what can run in parallel;
-- what is blocked;
-- what is premature;
-- what the allocation decision unlocks.
-
-## Task 8 — Commitment
-
-Ask:
-
-> **"Given this, what would you actually do next, and what would you no longer spend time or money on yet?"**
-
-This is intended revised allocation, not actual behavior.
-
-## Task 9 — Data unlock
-
-Ask:
-
-> **"Would you provide this additional information? Which live decision could it change?"**
-
-## Task 10 — Simulated re-plan
-
-Introduce new evidence.
-
-Ask:
-
-> **"What allocation changed, and why? Does this feel like learning or arbitrary inconsistency?"**
+At follow-up capture actual execution, actual allocation where feasible, market evidence and recommendation reversal/regret.
 
 ---
 
-# Wave 1 evidence
+# Wave 3 — Meta-decision discrimination
 
-Track separately:
+This wave tests the new claim introduced by `docs/META_DECISION_GOVERNANCE.md`:
 
-## Comprehension
+> **Choosing the reasoning process from the structure of the live decision can create more decision value than applying one strong fixed process everywhere.**
 
-- promise understood;
-- baseline understood as "what I would otherwise do";
-- allocation delta understood;
-- map dependencies understood;
-- observation / counterfactual / inference / recommendation distinguished.
+Do not test this by asking whether the adaptive process "feels smarter".
 
-## Decision Delta
+## Comparison design
 
-Did intended action materially change?
+For the same or carefully matched decision case, produce two independent advisory outputs before revealing either to the participant:
 
-## Resource Allocation Delta
+### Arm F — fixed process
 
-How much intended time / cash / other capacity moved between actions?
+Use one predeclared strong fixed advisory process across cases.
 
-Do not combine unlike resources into one universal score.
+It may include a consistent sequence such as:
 
-## Zero-delta cases
+- define goal;
+- map current state;
+- compare actions;
+- recommend allocation.
 
-A zero delta is not automatically failure.
+Do not deliberately weaken it.
 
-Possible interpretations:
+### Arm A — adaptive meta-decision
 
-- the user's original plan was already strong and the system correctly confirmed it;
-- the personalized analysis is generic / adds no value;
-- insufficient evidence was collected to challenge the plan.
+First construct a `DecisionProblemProfile`, then select the least-complex sufficient reasoning mode according to `META_DECISION_GOVERNANCE`.
 
-The session record must classify which interpretation is supported.
+Possible modes include:
 
----
+- dominance / simple rule;
+- dependency / constraint reasoning;
+- marginal resource allocation;
+- multi-criteria trade-off reasoning;
+- Value of Information;
+- robust/deep-uncertainty reasoning;
+- adaptive pathway reasoning.
 
-# Wave 1 blocking failures
+## Blindness rule
 
-- counterfactual collected after advice or contaminated by suggestions;
-- user cannot state what changed in their plan;
-- map looks sophisticated but allocation is unchanged for generic reasons;
-- system issues STOP/DELAY without defensible dependency/opportunity-cost rationale;
-- user cannot distinguish "reallocated" from "saved";
-- baseline and revised plan use incompatible units / horizons;
-- repeated users understand the map but would do exactly the same work for the same reasons;
-- map update feels arbitrary.
+The participant should not be told which arm is more sophisticated or which one is the new product hypothesis before evaluating the decisions.
 
----
+When feasible, the person preparing/scoring one arm should not use the other arm's conclusion as input.
 
-# Wave 1 exit decision
+## Primary comparison evidence
 
-### REPLAN
-Repeated evidence shows that the value mechanism, counterfactual capture, allocation semantics or hierarchy is wrong.
+Compare arms on decision consequences, not prose quality:
 
-### CONTINUE
-A low-cost instrumentation / comprehension repair remains.
+- material Decision Delta relative to the participant's frozen baseline;
+- action ordering / Priority Delta;
+- Resource Allocation Delta;
+- identification of a real blocked/premature action;
+- discovery of a decision-changing information need;
+- preservation of useful optionality / reversibility;
+- participant's ability to explain the recommendation;
+- actual execution at follow-up;
+- later recommendation reversal/regret.
 
-### FIELD-2
-The structure is understandable enough that the highest-value uncertainty is whether **personalized analysis creates real allocation value**.
+## Key falsification patterns
 
----
+The adaptive meta-decision hypothesis weakens if:
 
-# Wave 2 — Personalized Wizard-of-Oz allocation-value test
+- Arm A selects different method labels but produces essentially the same allocation as Arm F;
+- Arm A asks for more data / time without materially changing the decision;
+- Arm A creates greater apparent rigor but no additional decision value;
+- method choice is unstable under irrelevant wording changes;
+- Arm A overfits the case and produces more reversals/regret;
+- Arm F repeatedly creates comparable or better allocation decisions at materially lower analytical/user cost.
 
-## Why Wizard-of-Oz
+The hypothesis strengthens when Arm A repeatedly catches decision-relevant structure that Arm F misses, such as:
 
-The strongest product hypothesis is adaptive strategic resource allocation, not automated report generation.
+- a hard dependency hidden by generic ranking;
+- one cheap piece of information that should be gathered before committing;
+- a need for robustness because precise probabilities are indefensible;
+- a staged path/trigger that avoids premature irreversible commitment.
 
-Do not build the full AI/data engine before proving that the resulting decision changes are valuable.
-
----
-
-# Wave 2 session order
-
-## Step 1 — Goal / constraints
-
-Capture desired authority position, audience/outcome context and relevant planning horizon.
-
-## Step 2 — Counterfactual baseline BEFORE analyst work is revealed
-
-Capture the participant's actual intended plan and resource commitments using the same fields defined above.
-
-Freeze the baseline before recommendation reveal.
-
-## Step 3 — Behind-the-scenes personalized analysis
-
-Using human/agent-assisted research, develop:
-
-- PersonState;
-- FieldModel;
-- audience-path recommendation;
-- strategic diagnosis;
-- dependencies;
-- opportunity costs;
-- proposed allocation changes;
-- provenance / uncertainty notes.
-
-Do not force a change merely to demonstrate value.
-
-## Step 4 — Reveal Allocation Delta first
-
-Show, relative to the participant's own baseline:
-
-- what stays;
-- what moves earlier/later;
-- what receives more/less resources;
-- what stops;
-- what is added;
-- why.
-
-Do not begin with a large dashboard.
-
-## Step 5 — Reveal Authority Map as explanation
-
-Ask participant which dependencies they reject and what evidence would change trust.
-
-## Step 6 — Freeze revised intended allocation
-
-Before satisfaction questions, record what the participant now intends to do and allocate.
-
-## Step 7 — Execution follow-up
-
-At the preregistered horizon capture:
-
-- what was actually done;
-- actual resources spent when reasonably knowable;
-- which baseline actions were avoided/delayed;
-- new actions executed;
-- market/authority signals;
-- participant corrections;
-- whether the system now reverses or changes any prior allocation recommendation.
+Do not claim >95% superiority from a small qualitative sample. This wave determines whether the hypothesis deserves more investment, not a universal statistical truth claim.
 
 ---
 
-# Wave 2 evidence categories
+# 95% behind-the-scenes assurance layer
 
-## Discovery value
-Did the analysis reveal a meaningful asset, gap, audience, dependency or opportunity the user had not recognized?
+Use existing systems only for claim classes they can confirm/refute above the requested confidence threshold in a defined scope.
 
-## Decision value
-Did it materially change the intended action portfolio?
+## Deterministic guard / contract pattern — eligible
 
-## Allocation value
-Did time, cash or another scarce commitment move materially?
+Appropriate for claims such as:
 
-## Opportunity-cost value
-Did the user understand what they would be giving up by funding one action rather than another?
+- counterfactual captured before recommendation;
+- `STOP` emitted without rationale / O-link;
+- router mode invoked without required structural preconditions;
+- method escalation occurred without a recorded decision-changing reason;
+- blocked action recommended as immediately executable.
 
-## Dependency value
-Did sequencing prevent or expose premature work?
+These are finite structural properties and can be tested with deterministic traces, contract tests and mutation fixtures.
 
-## Trust value
-Did provenance / uncertainty visibility affect willingness to follow the allocation recommendation?
+## Refutation propagation — eligible
 
-## Execution value
-Did intended reallocation become actual behavior?
+If a load-bearing policy claim is refuted, dependent recommendations / route rules / user-facing claims should inherit block or scope restriction.
 
-## Learning value
-Did later evidence improve, preserve or reverse the allocation in a way the user could understand?
+Use this to prevent a fallen method-selection assumption from continuing silently.
 
-## Negative evidence
-Track recommendation regret / reversal explicitly.
+## Evidence / decision pipeline — eligible
 
----
+Use to preserve and test boundaries between:
 
-# Decision quality versus outcome
+- source observation;
+- stated counterfactual;
+- derived inference;
+- recommendation;
+- intended revised allocation;
+- actual execution;
+- observed outcome;
+- causal interpretation.
 
-Do not label a reallocation correct solely because a good outcome followed.
+## Blind reviewers / cross-model agreement — not eligible for strategic truth
 
-At follow-up assess separately:
+They can test reproducibility, ambiguity and rubric quality.
 
-1. quality of the decision process at the time;
-2. whether the user committed to the revised allocation;
-3. actual execution;
-4. observed outcome;
-5. what the outcome legitimately teaches.
-
-A lucky signal does not certify a weak decision. A weak signal does not automatically invalidate a well-grounded decision under uncertainty.
-
----
-
-# Competitive kill tests
-
-Revise or kill the mechanism if FIELD shows:
-
-- users understand the analysis but material allocation rarely changes;
-- a strong static roadmap creates comparable allocation change;
-- the system over-stops productive experimentation;
-- counterfactual capture creates prohibitive friction;
-- later evidence frequently reverses recommendations because the initial analysis was weak;
-- users mainly value execution/ghostwriting rather than allocation guidance;
-- dynamic reallocation feels unstable rather than intelligent.
+They do not establish that an allocation recommendation or decision method is strategically correct with >95% confidence unless independently calibrated for that exact claim class.
 
 ---
 
 # FIELD stop rule
 
-Continue collecting participants only when another session can plausibly discriminate among live hypotheses or change the next product action.
+After each wave re-run Telos Governance.
+
+Continue only when another case can plausibly change the product decision.
 
 Stop a wave when:
 
-1. material hypotheses have enough behavioral evidence to choose the next action;
-2. similar sessions no longer change that action;
-3. the next uncertainty requires another test type.
+1. the live hypotheses have enough evidence to choose the next product action;
+2. additional similar cases are no longer changing that action;
+3. the next uncertainty requires a different test rather than more of the same.
 
-Evidence saturation is relative to the decision, not an arbitrary N.
+Do not run additional participants to improve a vanity percentage.
 
 ---
 
@@ -391,20 +242,18 @@ Evidence saturation is relative to the decision, not an arbitrary N.
 Capture:
 
 - participant fit / context;
-- authority goal and planning horizon;
-- verbatim problem / promise interpretation;
-- **stated counterfactual action portfolio before advice**;
-- counterfactual contamination flag;
-- baseline time / cash / other material resources;
-- system-recommended action-level deltas;
-- revised intended allocation;
-- actual allocation at follow-up;
-- accepted / rejected recommendations and why;
-- map misunderstandings;
-- provenance use;
-- market signals;
-- recommendation reversals / regret;
-- new product hypothesis;
-- whether that hypothesis changes the next decision.
+- test wave;
+- planning horizon;
+- frozen counterfactual;
+- live decision frame;
+- arm / reasoning mode when relevant;
+- what changed intended allocation;
+- resource delta;
+- rejected/accepted recommendations and why;
+- evidence or information that could reverse the decision;
+- actual execution when followed up;
+- market evidence;
+- reversal/regret;
+- whether the evidence changes the next product decision.
 
-Do not reduce the session to satisfaction or one composite score.
+Do not reduce the session to satisfaction or sophistication scores.
