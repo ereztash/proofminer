@@ -1,4 +1,4 @@
-# Telos Governance — Governing Rule v1.4
+# Telos Governance — Governing Rule v1.5
 
 ## Status
 
@@ -14,33 +14,61 @@ The system exists to help a professional at a consequential transition move from
 
 > **"I know roughly where I want to go professionally, but there are many plausible things I could do and I do not know what deserves my limited resources now."**
 
-into a grounded, contestable and continuously learning decision process that improves the likelihood of reaching the desired professional market / opportunity state.
+into:
+
+> **grounded action with the least unnecessary cognitive work, while keeping the commitments, trade-offs, evidence and reasons sufficiently visible and manipulable that the user can challenge and revise them without starting over.**
+
+The product is not primarily a recommendation generator, form, chat, dashboard, methodology extractor or strategy canvas.
+
+Its job is to make the smallest decision-relevant part of the professional transition explicit enough to act on and revisable enough to learn from.
 
 The system should help the user:
 
-1. make the target professional state and relevant boundary explicit;
-2. reconstruct what they currently believe about how to get there;
-3. reconstruct what they would otherwise do and where scarce resources would otherwise go;
-4. discover the user's own professional operating model from real experience when that model may contain useful latent expertise;
-5. apply that model to the user's own professional / business system when useful;
-6. challenge the transferability and blind spots of that self-application rather than treating expertise as automatic truth;
-7. identify which unknowns are genuinely capable of changing the live decision;
-8. research the external field only where outside evidence is needed;
-9. frame the live decision before choosing how to decide it;
-10. select the least-complex sufficient reasoning process;
-11. compare plausible actions through constraints, dependencies, opportunity cost, reversibility, expected learning and expected contribution to O;
-12. produce an explicit strategy / allocation candidate;
-13. **stress-test that candidate before consuming scarce real-world exposure, using structural falsification, current external evidence, scenario analysis, assumption mutation and bounded adversarial simulation;**
-14. **isolate `FIELD_DEBT`: load-bearing claims that cannot responsibly be resolved without real behavior, payment, execution or outcome evidence;**
-15. direct what to keep, accelerate, reorder, reduce, delay, stop, replace or add;
-16. preserve the user's authorship and ability to contest the recommendation;
-17. observe actual execution and real-world outcomes;
-18. update the user's representation, route, resource allocation and reusable decision lineage as evidence accumulates;
-19. reject stale / non-transferable history rather than allowing accumulated memory to become authority by age alone.
+1. make the desired professional state and relevant boundary explicit;
+2. externalize the plausible actions they are actually considering;
+3. expose the scarce resources those actions compete for;
+4. preserve the user's prior representation / allocation before system influence where that baseline matters;
+5. make real trade-offs manipulable rather than merely verbal;
+6. reveal dependencies only where they can block or reorder action;
+7. distinguish user belief, external evidence, system inference and hypothesis;
+8. surface useful latent expertise from the user's professional practice only when it can change action;
+9. challenge transferability / blind spots instead of treating expertise as truth;
+10. identify unknowns capable of changing the live action / allocation;
+11. research the external field only where outside evidence is needed;
+12. choose the least-complex sufficient reasoning process;
+13. produce an explicit strategy / allocation candidate only when a candidate is needed;
+14. stress-test that candidate when simulation can change strategy or FIELD design;
+15. isolate `FIELD_DEBT`: load-bearing claims that still require real behavior, payment, execution or outcome evidence;
+16. preserve the user's authorship and ability to rearrange / reject the system's model;
+17. observe execution and outcomes;
+18. update the manipulable model / allocation / decision lineage as evidence accumulates;
+19. reject stale / non-transferable history rather than allowing memory to become authority by age alone.
 
-Professional authority may be a desired state or mechanism inside this telos, but it is not the mandatory problem language or the universal end state.
+Professional authority may be a desired state or mechanism inside this telos, but it is not the mandatory problem language or universal end state.
 
-The system cannot guarantee professional success or market recognition. It is responsible for improving the quality, grounding, inspectability and adaptation of decisions under uncertainty.
+The system cannot guarantee professional success or market recognition. It is responsible for improving the grounding, inspectability, revisability and actionability of decisions under uncertainty.
+
+---
+
+# UI / interaction telos
+
+The interface exists to make the current decision-relevant model **operable**, not merely readable.
+
+The preferred interaction is direct manipulation when the gesture has semantic identity with the decision:
+
+- reorder when sequence changes meaning;
+- allocate when a conserved resource is being divided;
+- move between states when the state itself changes the plan;
+- connect dependency only when one action can block / unlock another;
+- expose evidence / uncertainty only where it can change action.
+
+The interface must not add interaction merely to feel innovative.
+
+A slider is appropriate only for a genuine continuous quantity such as time, money, horizon or a bounded numeric amount. Generic importance, confidence or strategic correctness must not be converted into slider precision by default.
+
+The model must grow progressively. The default surface should contain only the smallest useful objects. Additional structure appears when a live disagreement, dependency, uncertainty or evidence need can change action.
+
+Necessary friction is allowed when it protects baseline validity, real trade-offs, authorship, evidence boundaries or reversal conditions. Ceremonial friction is not.
 
 ---
 
@@ -54,15 +82,7 @@ It is:
 
 Call this `FIELD Yield`.
 
-Do not reduce FIELD Yield to one universal score.
-
-Operationally, a good pre-FIELD process makes the next real test:
-
-- more discriminating;
-- less contaminated by already-solvable uncertainty;
-- explicit about which decision changes for each possible result;
-- smaller when a smaller test can answer the load-bearing question;
-- less dependent on synthetic confidence.
+A good pre-FIELD process makes the next test more discriminating, less contaminated by internally solvable uncertainty, explicit about which decision changes after each result, and smaller when a smaller test can answer the load-bearing question.
 
 A simulation that merely delays FIELD without changing strategy or test design fails this telos.
 
@@ -70,11 +90,11 @@ A simulation that merely delays FIELD without changing strategy or test design f
 
 # Business telos
 
-The business exists to capture a sustainable share of the value created by the user telos **without distorting recommendations to increase engagement, billing duration, analytical complexity, simulation depth or dependence on system authority**.
+The business exists to capture a sustainable share of the value created by the user telos **without distorting recommendations or interface behavior to increase engagement, billing duration, interaction count, analytical complexity, simulation depth or dependence on system authority**.
 
-Recommendation integrity outranks commercial cadence.
+Recommendation and interaction integrity outrank commercial cadence.
 
-A business model that requires unnecessary decisions, artificial daily use, stale monitoring, endless simulated analysis or user dependence fails even if it produces higher short-term retention.
+A business model that requires artificial daily use, unnecessary manipulation, stale monitoring, endless analysis or user dependence fails even if it produces higher short-term retention.
 
 ---
 
@@ -85,19 +105,19 @@ USER O / TELOS
   ↓
 Telos Governance Loop
   ↓
-Current reconstruction of target state / boundary
+Minimum decision-relevant representation
   ↓
-Characterization Governance
+Characterization Governance when needed
   ↓
 Decision-relevant unknowns / targeted external research
   ↓
-Live decision framing
+Live action / allocation frame
   ↓
-Meta-decision: how should this decision be decided?
+Meta-decision: how should this be decided?
   ↓
-Strategy / allocation candidate
+Strategy / allocation candidate when needed
   ↓
-Strategic Wind Tunnel
+Strategic Wind Tunnel when decision-relevant
   ↓
 FIELD_DEBT + next discriminating FIELD test
   ↓
@@ -109,283 +129,95 @@ Measurement and semantic models
   ↓
 Decision methods / frameworks / algorithms
   ↓
-UI / implementation
+UI implementation
 ```
 
-`Characterization Governance`, `Meta-Decision Governance` and the `Strategic Wind Tunnel` do not outrank O. They are mechanisms for improving the decision and the information value of reality.
+No lower layer may protect itself from revision when a higher layer shows it is obstructing O.
 
-A lower layer may never veto a change required by a higher layer merely because work has already been completed there.
+No metric, intake field, canvas object, manipulation, semantic object, characterization process, simulation, screen, framework, decision method, price model, implementation investment or prior decision is protected from revision.
 
-No metric, intake field, semantic object, characterization process, simulation, screen, framework, decision method, price model, library, branch, implementation investment or prior decision is protected from revision if it prevents end-to-end realization of O.
+---
+
+# Recursive DOD / Pressure / Telos loop
+
+For substantial product / UX changes, run three adversarial roles:
+
+## DOD Agent
+
+Ask:
+
+> **What must be observably true for the current O to be realized?**
+
+It converts O into falsifiable conditions, not feature checklists.
+
+## Pressure Agent
+
+Attack both O and DOD:
+
+> **Is this still a local optimization around the current mechanism? Could a simpler or structurally different mechanism achieve the user change with less burden or fewer unsupported assumptions?**
+
+A successful attack reopens O. It does not merely append another DOD item.
+
+## Telos Agent
+
+After a successful attack, reconstruct O from the end-user change, not from the current product architecture.
+
+The loop continues until another internal attack changes only implementation rules rather than the governing user change. At that point remaining uncertainty becomes FIELD_DEBT.
+
+Current recorded run: `docs/RECURSIVE_UI_DOD_PRESSURE_V1.md`.
 
 ---
 
 # Recursive governance loop
 
-The loop MUST run before declaring any meaningful phase complete.
-
-## 1. RECALL O
-
-Reconstruct the end-to-end user change the system exists to produce.
-
-Do not substitute the current mechanism for O.
-
-Invalid substitutions include:
-
-- "finish the authority map";
-- "extract the user's methodology";
-- "run self-application";
-- "complete the research";
-- "finish the Wind Tunnel";
-- "simulate enough customers";
-- "maximize allocation delta";
-- "implement MCDA";
-- "maximize retention";
-- "finish onboarding";
-- "fill every DOD field".
-
-These may be useful means. None is the governing end.
-
-## 2. RECONSTRUCT TARGET STATE
-
-Ask from first principles:
-
-> **If O were realized as far as this product can responsibly realize it, what would have to be true for this user in this transition?**
-
-The target state should normally make explicit:
-
-- desired professional outcome / market position;
-- relevant audience / environment;
-- boundary and horizon;
-- user's current representation;
-- plausible actions;
-- scarce resources / constraints;
-- current allocation decision;
-- rationale and evidence;
-- authorship / contestability;
-- reversal / learning conditions.
-
-Do not assume that the current professional lens, authority model, metric, framework, simulation or commercial plan is correct.
-
-## 3. CHARACTERIZE BEFORE OVER-RESEARCHING
-
-Before requesting broad data or running broad external research, ask:
-
-> **Can the live uncertainty be resolved by extracting / applying knowledge already embedded in the user's real professional practice?**
-
-When useful, use the smallest sufficient characterization process:
-
-```text
-real cases
-→ professional operating model
-→ self-application
-→ boundary / competing-lens challenge
-```
-
-Do not use self-application when it cannot change a live representation or decision.
-
-Do not treat the user's expertise as external corroboration merely because it is expert.
-
-## 4. IDENTIFY DECISION-RELEVANT UNKNOWS
-
-After characterization ask:
-
-> **What remains unknown that could still change the live decision?**
-
-Only then allocate user effort or external research to those unknowns.
-
-Every material question / search request should identify its `decision_affected` or `representation_affected`.
-
-## 5. PLAN BACKWARD / FRAME THE LIVE DECISION
-
-Work backward from the reconstructed target state to the current state.
-
-Identify:
-
-- prerequisites;
-- dependencies;
-- candidate actions;
-- resource commitments;
-- opportunity costs;
-- reversibility / lock-in;
-- expected learning;
-- evidence and market feedback;
-- decision / reversal triggers.
-
-Before selecting a reasoning method, characterize the live decision sufficiently to answer whether a simple rule, dependency reasoning, marginal allocation, multi-criteria reasoning, targeted information, robust reasoning or adaptive pathway is actually needed.
-
-Choose the least-complex sufficient process. A prior framework has no special authority.
-
-## 6. BUILD AN EXPLICIT STRATEGY CANDIDATE
-
-Do not send vague advice to FIELD.
-
-Represent the material candidate through:
-
-- intended contribution to O;
-- target actor / environment;
-- mechanism hypothesis;
-- prerequisites;
-- resource commitments / opportunity cost;
-- expected signal / horizon;
-- reversibility / lock-in;
-- load-bearing assumptions;
-- stop / reversal conditions.
-
-## 7. RUN THE STRATEGIC WIND TUNNEL WHEN IT CAN CHANGE FIELD DESIGN
-
-Before spending scarce FIELD exposure, attempt to falsify the strategy with the smallest useful subset of:
-
-- structural kill tests;
-- current external evidence contradiction;
-- resource / signal shocks;
-- competitor / substitute response;
-- stakeholder veto;
-- boundary shift;
-- mechanism failure;
-- scenario robustness;
-- assumption mutation / sensitivity;
-- pre-mortem.
-
-Synthetic stakeholder / LLM simulation is optional and always lower-authority than observed evidence.
-
-It may generate hypotheses. It may not validate purchase intent, WTP, conversion, execution, retention or market response.
-
-## 8. EXTRACT FIELD_DEBT
-
-After internal stress testing ask:
-
-> **Which load-bearing claims still cannot responsibly be resolved without real-world behavior / payment / execution / outcome evidence?**
-
-For every FIELD_DEBT item record:
-
-- claim;
-- why it matters;
-- strongest current evidence;
-- why simulation is insufficient;
-- smallest real observation that discriminates it;
-- which product / strategy decision changes after the result.
-
-## 9. GAP TEST
-
-A gap is blocking when resolving it could materially change any of:
-
-- target-state definition;
-- project / decision boundary;
-- user's representation;
-- professional operating model used in the case;
-- transferability judgment;
-- external research required;
-- live decision frame;
-- alternatives;
-- constraints / dependencies;
-- reasoning method;
-- strategy candidate;
-- resource allocation;
-- FIELD_DEBT;
-- FIELD-test design / expected information value;
-- evidence / inference boundary;
-- execution;
-- reversal condition;
-- ability to learn from outcomes;
-- commercial willingness to pay for the resulting value.
-
-## 10. SELECT THE HIGHEST-LEVERAGE GAP
-
-Do not continue merely because unfinished work exists.
-
-Choose the actionable gap whose resolution is expected to improve end-to-end telos realization the most.
-
-Consider opportunity cost across:
-
-- user questions;
-- internal analysis;
-- external research;
-- scenario / simulation work;
-- implementation;
-- field tests;
-- commercial experiments.
-
-Analytical, characterization or simulation sophistication has no intrinsic value.
-
-## 11. CHOOSE ONE GOVERNANCE OUTCOME
-
-### CONTINUE
-
-Use when a material internal gap exists and can be resolved now with available reasoning, research, design or implementation work.
-
-### REPLAN
-
-Use when the current telos interpretation, architecture, characterization process, strategy, simulation framing, metric, sequence or commercial hypothesis itself prevents realization of O.
-
-### FIELD
-
-Use when reality is the highest-value remaining information source: real users, market behavior, execution, outcomes or real payment / refusal.
-
-A correct `FIELD` outcome normally includes explicit FIELD_DEBT and a discriminating test.
-
-### STOP
-
-STOP is permitted only when all are true:
-
-1. O has been recalled explicitly;
-2. the target state has been reconstructed from O rather than copied from the current plan;
-3. the characterization need has been reconsidered rather than assumed complete;
-4. no additional characterization process could plausibly change a material representation / decision at justified cost;
-5. decision-relevant unknowns have been identified;
-6. remaining external uncertainty is either immaterial or not currently worth testing;
-7. the live decision has been framed sufficiently;
-8. an explicit strategy / allocation candidate exists where needed;
-9. no useful internal Wind Tunnel test can still change the strategy or FIELD design;
-10. no simpler decision process would responsibly produce the same result at materially lower cost;
-11. no additional analytical layer can plausibly change a material decision;
-12. remaining FIELD_DEBT has been either tested, judged immaterial, or found infeasible / lower-value than stopping;
-13. no material internal or field gap remains whose expected value justifies further work;
-14. the current state is supported by the strongest evidence reasonably available for the stage.
-
-STOP means:
-
-> **No further justified characterization, information request, research, simulation, decision analysis, action or field test is currently expected to materially improve realization of O.**
+Before declaring a meaningful phase complete:
+
+1. **RECALL O** — reconstruct the end-user change. Do not substitute the current mechanism.
+2. **RECONSTRUCT TARGET STATE** — what must be true for this user in this transition?
+3. **BUILD THE MINIMUM USEFUL REPRESENTATION** — expose only the objects needed to reveal the current trade-off / action.
+4. **CHARACTERIZE WHEN NEEDED** — use user expertise / cases only when they can change the representation or action.
+5. **IDENTIFY DECISION-RELEVANT UNKNOWNS** — what remains unknown that can still change the action / allocation?
+6. **FRAME THE LIVE ACTION / ALLOCATION** — prerequisites, dependencies, resource commitments, opportunity cost, reversibility, expected learning and triggers.
+7. **SELECT REQUISITE REASONING** — choose the least-complex sufficient process.
+8. **BUILD AN EXPLICIT STRATEGY CANDIDATE WHEN NEEDED** — mechanism, prerequisites, resources, signal horizon, assumptions and reversal conditions.
+9. **RUN THE WIND TUNNEL WHEN IT CAN CHANGE STRATEGY / FIELD DESIGN** — structural kills, evidence contradiction, shocks, competitor / stakeholder response, boundary shifts, sensitivity and pre-mortem.
+10. **EXTRACT FIELD_DEBT** — what only real behavior / payment / execution / outcome can resolve?
+11. **GAP TEST** — which unresolved gap can still materially change O, representation, action, allocation, research, method, strategy, FIELD design or learning?
+12. **SELECT HIGHEST-LEVERAGE GAP** — unfinished work has no automatic claim to resources.
+13. Choose one outcome: `CONTINUE / REPLAN / FIELD / STOP`.
 
 ---
 
-# The DOD is subordinate
+# REPLAN triggers
 
-The Definition of Done is the current best model of what must be true to realize O.
+Replan when the current framing, interface or DOD:
 
-It MUST change when the governance loop reveals that it is:
-
-- tied to an obsolete telos;
-- overfitted to authority as the only outcome;
-- overfitted to a fixed intake;
-- overfitted to a characterization technique;
-- overfitted to an easy metric;
-- overfitted to simulation as a substitute for reality;
-- protecting a commercial cadence rather than user value.
-
-Passing the DOD does not authorize STOP if O is still blocked.
-
-A DOD item that no longer contributes to O should be removed rather than completed.
+- turns the system's recommendation into the main object instead of the user's manipulable plan;
+- requires a wizard / fixed sequence where object manipulation can preserve context with less burden;
+- introduces a full canvas before the user has a decision that needs it;
+- uses sliders for non-continuous judgments and creates false precision;
+- collects descriptions where an action / ordering / allocation can be shown directly;
+- makes direct manipulation ornamental rather than decision-semantic;
+- makes the user rebuild context after every change;
+- hides opportunity cost when resources are finite;
+- overwrites the user's model rather than showing disagreement;
+- protects an interaction pattern merely because it has already been implemented.
 
 ---
 
 # Anti-recursion / requisite information rule
 
-Before asking another question, reconstructing another case, running another lens, opening another search loop, generating another scenario / synthetic stakeholder or escalating to a more complex decision method, ask:
+Before asking another question, adding another object, running another lens, opening another research loop, generating another scenario, adding another interaction or escalating to a more complex decision method, ask:
 
-> **Which live representation, strategy decision, allocation or FIELD test could change if we did this?**
+> **Which live representation, action, allocation or FIELD test could change if we did this?**
 
-If none can materially change, reject the iteration.
+If none can materially change, reject it.
 
-The same rule applies to the Wind Tunnel itself: do not keep simulating merely because more plausible futures or agents can be generated.
-
-When the remaining uncertainty is genuinely behavioral, go to reality.
+The same rule applies to interaction richness: more manipulability is not automatically more useful.
 
 ---
 
 # Evidence-class invariant
-
-Pre-FIELD work must preserve the distinction:
 
 ```text
 F0 — real field observation / payment / action / outcome
@@ -397,53 +229,24 @@ F4 — synthetic stakeholder / LLM-generated behavior
 
 Lower classes cannot silently inherit the authority of higher classes.
 
-A believable F4 quote is still F4.
+---
+
+# STOP
+
+STOP is permitted only when O has been recalled, the target state and minimum useful representation have been reconstructed, no additional characterization / information / reasoning / simulation / interaction layer can plausibly change a material action at justified cost, and remaining FIELD_DEBT is tested, immaterial, infeasible or lower-value than stopping.
+
+STOP means:
+
+> **No further justified representation, characterization, information request, manipulation, research, simulation, decision analysis, action or field test is currently expected to materially improve realization of O.**
 
 ---
 
-# 95% assurance boundary
+# The DOD is subordinate
 
-Internal systems may strongly confirm/refute only claims they can directly observe or deterministically test in a defined scope.
+The Definition of Done is the current best falsifiable model of what must be true to realize O.
 
-Suitable structural claims include:
+It MUST change when this governance loop reveals that it is protecting an obsolete telos, a fixed intake, a recommendation-first workflow, a full canvas, an easy metric, simulation theater, interaction theater or commercial cadence.
 
-- advice preceded baseline capture;
-- self-application was used without a source professional model;
-- a professional rule was treated as transferable without transferability state;
-- external research began without a decision-relevant unknown;
-- a hard constraint was ignored;
-- a method was invoked without its required preconditions;
-- a prohibited metric influenced routing;
-- synthetic evidence was promoted as real field evidence;
-- a FIELD test cannot discriminate the registered competing hypotheses;
-- a refuted assumption still feeds an active recommendation.
+Passing the DOD never authorizes STOP if O is still blocked.
 
-Internal agreement, scenario robustness or expert self-description must not be upgraded into >95% strategic or causal truth without independent calibration / field evidence for that exact claim class.
-
----
-
-# Required completion statement
-
-Whenever a meaningful phase is declared complete, record:
-
-1. **O recalled**;
-2. **target state / boundary**;
-3. **characterization process used or explicitly rejected, and why**;
-4. **what representation changed / did not change**;
-5. **decision-relevant unknowns remaining**;
-6. **external research justified / rejected**;
-7. **live decision frame**;
-8. **decision-process justification**;
-9. **strategy / allocation candidate**;
-10. **Wind Tunnel tests run / rejected and why**;
-11. **strategy delta / robust core**;
-12. **FIELD_DEBT**;
-13. **next FIELD test + what decision each outcome changes**;
-14. **highest-leverage gaps tested**;
-15. **resource-allocation implication**;
-16. **outcome:** CONTINUE / REPLAN / FIELD / STOP;
-17. **evidence classes used**;
-18. **invalidated prior assumptions**;
-19. **next action** only when justified.
-
-"The intake is complete", "the user agreed", "the model produced a score", "the simulation converged", or "the research is comprehensive" is never sufficient.
+A DOD item that no longer contributes to O should be removed rather than completed.
