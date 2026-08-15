@@ -6,7 +6,7 @@ This doctrine is subordinate to `docs/TELOS_GOVERNANCE.md`.
 
 It supersedes v2's assumption that `DecisionMoment -> ProofMove` is the top-level product job.
 
-Current lifecycle state: **REPLAN / ARCHITECTING**.
+Current lifecycle state: **ARCHITECTING / pre-FIELD**.
 
 The existing v2 Preview is evidence about one discarded framing. It is not the design target for the next build.
 
@@ -381,6 +381,79 @@ It is to reduce the gap between desired and perceived identity without fabricati
 
 ---
 
+# Differentiation hypothesis
+
+The category label is not the moat.
+
+Public products already claim combinations of personal-brand strategy, authority roadmaps, audience analysis, positioning, content systems, AI support and "authority, not just content". Therefore the product must not rely on **Authority OS**, **personalized roadmap**, **AI strategy**, **positioning**, **content planning**, or **not just content** as its primary differentiation.
+
+The current differentiated mechanism hypothesis is the combination of six behaviors:
+
+## 1. Dynamic state-based orchestration
+
+The product does not prescribe one authority curriculum.
+
+It reconstructs the person's current state and the target field, then produces a dependency-aware route where different users receive different prerequisites, parallel tracks, blocked moves and next actions.
+
+## 2. Inspectable recommendation provenance
+
+A recommendation is grounded in the user's sources, observed market/field data, explicit assumptions, comparable journeys with transferability limits, and prior market response where available.
+
+The product should be able to answer:
+
+> **"Why is this my next move?"**
+
+without falling back to a generic authority framework.
+
+## 3. Latent methodology extraction
+
+The system treats lived experience as recoverable authority capital.
+
+It can use guided inquiry to reconstruct recurring methodology even when the user has never named, packaged or published it.
+
+## 4. Multiple authority surfaces
+
+The product does not equate authority with social visibility.
+
+It can model authority in referral networks, professional communities, organizations, buyer shortlists, industry stages/media and public digital channels.
+
+## 5. Evidence discipline beneath authority claims
+
+The product may conclude that a claim, identity or move is premature, weakly transferable or unsupported.
+
+It preserves provenance, contradiction, privacy and inference boundaries instead of optimizing only for presentation.
+
+## 6. Outcome-linked re-planning
+
+The route is expected to change when material evidence from the market arrives.
+
+```text
+map → action → market signal → learning → changed map
+```
+
+The product is therefore not merely a strategy deliverable. Its long-term hypothesis is a continuously updated strategic map.
+
+### Current wedge hypothesis
+
+> **Not a blueprint for how experts generally build authority, but a continuously updated map of what this person should do next — based on what they have actually done, what their market currently signals, what the target field requires, and what prior actions changed.**
+
+This is a mechanism hypothesis, not validated positioning copy.
+
+### Competitive kill conditions
+
+This differentiation should be rejected or materially revised if field evidence shows that:
+
+- a high-quality fixed blueprint produces comparable value;
+- users mainly pay for execution/ghostwriting rather than adaptive strategy;
+- users cannot see material value in dependency-aware re-planning;
+- market signals are too noisy to improve later recommendations;
+- latent-methodology extraction does not change useful authority action;
+- recommendation provenance does not materially improve trust or decisions.
+
+These are FIELD questions, not reasons for more internal taxonomy work.
+
+---
+
 # Research-grounded mechanism hypotheses
 
 Current external research supports several working hypotheses, not immutable laws:
@@ -473,6 +546,6 @@ Early success should be evaluated in this order:
 
 The next implementation must not be derived from the v2 Decision Moment Preview.
 
-Before another UI build, the Authority Project, Authority Map, strategic diagnosis and first-session journey must be sufficiently specified and falsified against multiple user scenarios.
+The Authority Project, Authority Map, strategic diagnosis, evidence subsystem, first-session flow and differentiation mechanism are now specified sufficiently for the next falsification layer to be a low-fidelity field experience rather than another high-fidelity build.
 
 The governing stop rule is defined in `docs/TELOS_GOVERNANCE.md`.
