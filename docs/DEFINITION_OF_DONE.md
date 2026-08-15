@@ -1,378 +1,497 @@
-# ProofMiner — Definition of Done
+# ProofMiner — Definition of Done v3
 
-## Purpose
+## Governing rule
 
-This document defines the blocking acceptance gates for calling ProofMiner a usable product rather than a concept demo.
+This DOD is subordinate to `docs/TELOS_GOVERNANCE.md`.
 
-Passing CI, rendering a UI, or generating persuasive copy is not sufficient.
+It is the current best hypothesis about what must be true to realize the product telos. It is not the authority that defines the telos.
+
+**Passing every item in this document does not authorize STOP if the Telos Governance Loop still finds a material end-to-end gap.**
+
+**An item in this document should be removed rather than completed if the Telos Governance Loop shows that it no longer contributes materially to O.**
 
 ---
 
-## Gate 1 — Decision Moment
+# O recalled
 
-A user from the primary ICP can start with a real situation and describe what they are trying to make happen now.
+The product exists to help a person move from wanting to become recognized as an authority in a domain to an evidence-backed, personalized and continuously learning strategic journey that increases the likelihood that the relevant audience actually perceives that person as a credible, differentiated authority and acts accordingly.
 
-The product must successfully establish:
+The product is responsible for the quality of diagnosis, route, execution support and learning.
 
-- who is deciding
-- the desired next action
-- the relevant offer/context
-- the material uncertainty blocking that action
+It does not guarantee that the market grants authority.
+
+---
+
+# Current stage
+
+Current stage: **PRODUCT + UX ARCHITECTURE / REPLAN**.
+
+The next build must not begin merely because the prior Preview exists.
+
+The current phase is Done only when the product can be handed to a UX/product team without requiring that team to invent material product strategy in order to create a low-fidelity prototype.
+
+---
+
+# PHASE A — PRODUCT + UX ARCHITECTURE DOD
+
+## A1 — Authority Project is the stable top-level unit
+
+The product is organized around one desired authority position, not around one post, one proof, one Decision Moment or one session.
 
 ### Pass condition
 
-At least 8/10 field-test users can reach an adequate Decision Moment without facilitator interpretation.
+It is clear:
+
+- what belongs to an Authority Project;
+- what may persist across projects at Person level;
+- how multiple authority identities can coexist;
+- what the project is trying to change in audience perception and behavior.
 
 ---
 
-## Gate 2 — Minimal activation
+## A2 — Entry value is legible before system complexity
 
-The product must deliver useful output from:
+A first-time user should understand why entering the product is useful before being asked to understand an internal framework.
 
-- one Decision Moment
-- one real Source Asset
+The first substantive input can be expressed naturally as:
 
-It must not require the user to build a full evidence archive before receiving value.
+> "I want to become an authority in the field of ____."
 
 ### Pass condition
 
-At least 7/10 ICP users identify at least one Evidence Unit or possible use they had not previously considered deployable.
+The entry experience can be described without the terms EvidenceUnit, ProofMove, positioning framework, authority score or similar internal taxonomy.
 
 ---
 
-## Gate 3 — Grounded extraction
+## A3 — Audience strategy is assisted
 
-Every Evidence Unit must retain exact provenance.
+The user is not required to know the best audience in advance.
 
-For material evidence, the system must preserve:
+The system creates candidate audience paths from the intersection of:
 
-- source identity
-- exact span or location
-- speaker/author when available
-- evidence type
-- disclosure state
+- existing assets / right to speak;
+- market need;
+- commercial or career potential;
+- competitive difficulty;
+- credible distance / speed.
+
+It may express candidates as Natural / Commercial / Fast paths.
 
 ### Pass condition
 
-On the evaluation corpus, all material extracted facts used downstream can be traced back to the correct source location.
-
-No invented source spans are permitted.
+- The system recommends when one path is sufficiently supported.
+- It does not fabricate three options when one dominates.
+- It asks a discriminating question only when the answer can change the recommendation.
 
 ---
 
-## Gate 4 — Inference discipline
+## A4 — Minimum useful knowledge acquisition is defined
 
-The system must distinguish what a source says from what the system wants to claim.
+The system can start from public footprint, user-provided sources, guided interview or a combination.
 
-It must not silently convert:
-
-- self-report into third-party validation
-- sequence into causality
-- one case into broad generalization
-- prestige into buyer relevance
-- numeric specificity into truth
+It does not require a complete archive before value.
 
 ### Pass condition
 
-Zero known unsupported material claims in the release evaluation set.
+Every question or requested source in the initial journey has an explicit decision/capability justification:
 
-When evidence supports only a narrower claim, the system narrows the claim rather than overstating it.
+> "If we know this, what material decision becomes better?"
+
+If no answer exists, remove the request.
 
 ---
 
-## Gate 5 — Contradictions and qualifiers
+## A5 — Zero-data user has a productive path
 
-The evidence model must be able to express:
-
-- support
-- qualification
-- contradiction
-
-Contradicting or materially qualifying evidence cannot be silently dropped because it lowers recommendation quality.
+A user with no prepared files, case studies or content must not reach an empty dashboard.
 
 ### Pass condition
 
-All seeded contradiction cases in the evaluation suite surface the conflict before the ProofMove is accepted.
+The product has a guided interview/discovery route capable of surfacing experience, methodology hypotheses, desired authority field and initial audience options without requiring pre-packaged assets.
 
 ---
 
-## Gate 6 — Proof Move quality
+## A6 — Authority Asset Map is broader than proof
 
-For a real Decision Moment, the product recommends one primary ProofMove and explains:
+The system can model at least:
 
-- the claim
-- leading evidence
-- relevant corroboration
-- why it matters now
-- what the evidence does not justify claiming
+- evidence;
+- methodology;
+- experience;
+- perspective;
+- relationship/distribution assets;
+- market-response assets.
 
 ### Pass condition
 
-At least 8/10 ICP users can independently accept or reject the recommendation and explain why, without facilitator explanation of the internal model.
+A scenario such as "former bookstore team manager wants to become known for management" can produce useful methodology/experience assets even when no formal case study exists.
 
 ---
 
-## Gate 7 — Decision relevance
+## A7 — Desired identity and perceived identity remain distinct
 
-The best evidence is not automatically the most prestigious or numerically specific evidence.
-
-The system must rank ProofMoves relative to the current Decision Moment.
+The product does not confuse what the user wants to be known for with what the market currently appears to associate with them.
 
 ### Pass condition
 
-In a blinded evaluation set containing the same evidence under different Decision Moments, recommendation order changes when the buyer uncertainty materially changes.
+The system can record both states and can identify a meaningful gap between them without presenting the desired identity as established fact.
 
 ---
 
-## Gate 8 — Safe no-proof state
+## A8 — Field model is defined
 
-The product must be able to conclude:
+The product can develop a working model of the selected field and audience, including:
 
-> There is not enough evidence to support this move yet.
-
-It must then identify the narrowest useful evidence gap.
+- recognized authorities;
+- what they appear to be known for;
+- points of parity;
+- points of difference;
+- audience needs;
+- category norms;
+- channels / intermediaries;
+- comparable authority journeys;
+- under-served positions.
 
 ### Pass condition
 
-In low-evidence test cases, the system does not manufacture authority or produce an overstated claim merely to return a result.
+Observed facts, public self-reports and inferred mechanisms are distinguishable.
+
+The system does not turn chronology in a comparable journey into a causal recipe.
 
 ---
 
-## Gate 9 — Progressive evidence acquisition
+## A9 — Strategic model is selected by the gap
 
-When the first source is insufficient, the product requests only evidence that could resolve the identified gap.
+SWOT or any other framework is a tool, not a fixed product template.
 
 ### Pass condition
 
-Users are not asked for generic bulk uploads when a specific missing evidence type can be named.
+For materially different cases, the system can justify different diagnostic lenses or combinations of lenses.
 
-The requested next source is understandable in ordinary user language.
+The user sees the strategic conclusion first and can inspect "how this map was built" second.
 
 ---
 
-## Gate 10 — Correction loop
+## A10 — Authority Map is a dependency graph
 
-The user can correct:
+The strategic map distinguishes:
 
-- source extraction
-- interpretation
-- buyer relevance
-- inference strength
-- privacy/disclosure
-- representation wording
-
-Corrections persist and affect later recommendations where relevant.
+- available now;
+- sequential dependencies;
+- parallel actions;
+- blocked actions;
+- premature actions;
+- unlocks;
+- current highest-leverage action.
 
 ### Pass condition
 
-A corrected fact or inference does not reappear unchanged in the next semantically relevant recommendation.
+The route cannot be reduced to an unordered checklist without losing important meaning.
 
 ---
 
-## Gate 11 — Privacy and disclosure
+## A11 — One dominant next action exists
 
-Evidence can be marked at minimum as:
+The dashboard is a strategic navigation surface, not a wall of information.
 
-- publishable
-- private
-- anonymize before use
-- permission required
+At any main state, the system should be able to answer:
+
+> "What should I do now, and why?"
 
 ### Pass condition
 
-Private evidence never appears in a public representation unless the user explicitly moves through an allowed disclosure path.
-
-Users can delete sources and derived evidence.
+A user never needs to understand the whole system in order to identify the current primary action.
 
 ---
 
-## Gate 12 — Representation grounding
+## A12 — Progressive disclosure is specified
 
-The first supported wedge is LinkedIn, but the representation layer must remain downstream of ProofMove.
-
-Before a draft is considered ready:
-
-- every material fact is grounded
-- required qualifiers remain
-- no unsupported causal claim is introduced
-- private evidence is protected
-- the result provides reader/buyer value beyond self-promotion
+Most system complexity is hidden until relevant.
 
 ### Pass condition
 
-Zero fabricated material facts in the release corpus.
+For each primary screen/state, the architecture distinguishes:
 
-The user can inspect the evidence behind the draft without leaving the core flow.
+1. bottom line;
+2. meaning / rationale;
+3. action;
+4. optional deeper explanation.
+
+No essential decision depends only on low-contrast decoration, color, or specialist vocabulary.
 
 ---
 
-## Gate 13 — Deployment
+## A13 — Gamification represents strategic resolution
 
-The user can convert an accepted ProofMove into a real external action.
-
-For the first wedge this may be copy/export + mark as published/used.
-
-A scheduler is not required.
+The product does not reward activity merely because it increases engagement.
 
 ### Pass condition
 
-At least 6/10 beta users deploy one selected ProofMove as a real post, message, proposal element, profile change, or equivalent within seven days of selection.
+Every reward/progress state corresponds to at least one of:
+
+- reduced material uncertainty;
+- new usable AuthorityAsset;
+- new model capability;
+- newly unlocked AuthorityAction;
+- meaningful market feedback.
+
+"Uploaded five files" is not sufficient on its own.
 
 ---
 
-## Gate 14 — Outcome loop
+## A14 — Evidence / trust subsystem remains rigorous
 
-The product can record what happened after use without presenting correlation as causality.
-
-Supported early signals may include:
-
-- no observable response
-- meaningful comment
-- profile visit
-- reply / DM
-- qualified conversation
-- proposal movement
-- deal
+When an AuthorityAction requires a capability or outcome claim, the v2 evidence model applies beneath the Authority Project.
 
 ### Pass condition
 
-A deployed ProofMove can be linked to a later user-recorded outcome and attribution confidence.
+- factual claims retain exact provenance;
+- self-report is not external validation;
+- chronology is not causality;
+- contradictory evidence can surface;
+- private evidence cannot silently become public;
+- the system may conclude there is not enough evidence.
 
 ---
 
-## Gate 15 — Compounding value
+## A15 — Learning loop is end-to-end
 
-The second meaningful session must be better because the first happened.
+The canonical loop must reach reality and return:
 
-The product should reuse:
-
-- known sources
-- evidence units
-- corrections
-- disclosure rules
-- prior Decision Moments
-- accepted/rejected moves
-- outcomes
+```text
+Authority goal
+→ audience path
+→ current/field model
+→ diagnosis
+→ dependency map
+→ action
+→ artifact / behavior
+→ market signal / outcome
+→ learning
+→ revised model / map
+```
 
 ### Pass condition
 
-A returning user can create a new Decision Moment without rebuilding the evidence base from zero.
+A plausible new market signal can materially change a later recommendation in at least one scenario.
+
+If later sessions are identical to first-session reasoning, compounding value is not demonstrated.
 
 ---
 
-## Gate 16 — UX and attention
+## A16 — Privacy and persistence are explicit
 
-At each main state, one primary question, recommendation, or action is visually dominant.
-
-The user is not required to understand internal scoring, ontology, or evidence taxonomy before receiving value.
+The product's memory is a benefit only if the user understands and controls it.
 
 ### Pass condition
 
-Core flow succeeds on desktop and mobile, including RTL Hebrew and mixed Hebrew/English/numeric content.
+The architecture specifies:
 
-Keyboard focus and essential accessibility states are usable.
+- what may be stored;
+- what is source truth versus derived inference;
+- disclosure state;
+- deletion;
+- correction;
+- user approval / consent for persistence where appropriate.
 
 ---
 
-## Gate 17 — Reliability and recovery
+## A17 — Internal scenario falsification passes
 
-The system must handle:
+Before another designed UI, run at least these cases:
 
-- parse failure
-- partial extraction
-- unsupported file
-- AI failure
-- retry
-- network error
-- long-running processing
-
-without silently losing user work.
+1. experienced expert with strong work but almost no visibility;
+2. visible creator with weak proof / depth;
+3. salaried manager converting experience into a new authority identity;
+4. consultant whose business already comes mainly through referrals;
+5. person entering a field where they currently have little legitimate authority capital.
 
 ### Pass condition
 
-Critical failure states have explicit recovery paths and preserved user context.
+The cases produce meaningfully different diagnoses, maps, data requests and next actions.
+
+If all five receive essentially the same journey, the architecture is not sufficiently adaptive.
 
 ---
 
-## Gate 18 — Security
+## A18 — UX decisions are coherent as a system
 
-Uploaded content is untrusted data, never instruction.
+Examples of blocking contradictions:
 
-Secrets and model credentials remain server-side.
-
-Tenant/user data must be isolated.
+- doctrine says few choices but the main screen shows many equivalent actions;
+- doctrine says framework complexity is hidden but onboarding asks users to choose frameworks;
+- doctrine says system recommends but the user must perform the strategic diagnosis manually;
+- doctrine says persistent project but every session restarts from zero;
+- doctrine says bottom-line-first but the recommendation appears below analytics.
 
 ### Pass condition
 
-Prompt-injection fixtures inside uploaded documents cannot alter system instructions or authorize unintended actions.
-
-No client-exposed production secrets.
+No known contradiction remains that changes user action, product action, required information, dependency structure or field test.
 
 ---
 
-## Gate 19 — Technical delivery
+# PHASE B — LOW-FIDELITY EXPERIENCE DOD
 
-A candidate release must pass the repository's deployment contract:
+Do not start Phase B until Phase A reaches FIELD or STOP under Telos Governance.
 
-- feature branch
-- GitHub CI
-- Vercel Preview from Git
-- acceptance validation on Preview
-- explicit ship authorization
-- merge to production branch
-- GitHub CI on production
-- Vercel Production from the exact Git commit
+Phase B should initially be low-cost and reversible.
 
-A successful build alone does not authorize shipping.
+## B1 — First-session flow exists end to end
+
+A clickable or equivalent prototype covers:
+
+- authority-domain entry;
+- audience-path recommendation;
+- discriminating question only if needed;
+- minimal knowledge acquisition;
+- first diagnosis;
+- first Authority Map;
+- highest-leverage action;
+- optional explanation;
+- data/persistence consent.
+
+## B2 — User does not need UX/strategy vocabulary
+
+Users can complete the flow in ordinary language.
+
+## B3 — Attention hierarchy works behaviorally
+
+Users can identify the intended primary action without facilitator explanation.
+
+## B4 — Strategic map is comprehensible
+
+Users can distinguish what is now, next, parallel, blocked and premature.
+
+## B5 — Explanation creates trust without becoming the default workload
+
+Users who want to inspect rationale can do so; users who do not can still act.
+
+### Phase B exit evidence
+
+Use real target users.
+
+The exact sample size and thresholds are experimental design decisions, but the test must generate evidence about:
+
+- value comprehension;
+- audience recommendation credibility;
+- map comprehension;
+- next-action clarity;
+- trust;
+- cognitive load;
+- willingness to add more data;
+- perceived usefulness of compounding memory.
+
+Do not interpret compliments as pass evidence.
 
 ---
 
-## Gate 20 — Commercial proof
+# PHASE C — FUNCTIONAL PRODUCT DOD
 
-The product is not commercially validated because users say it is interesting.
+## C1 — Real data ingestion
 
-### Pass condition
+The product can ingest at least the sources needed for the first field experiment and preserve provenance.
 
-Real primary-ICP users pay for beta or continued usage at a price sufficient to justify continued product development.
+## C2 — Adaptive diagnosis
 
-The exact price threshold is a business experiment and is not fixed by this document.
+Different user states can produce different strategic diagnoses and route structures.
+
+## C3 — Real dependency-aware actions
+
+The system can update blocked/available/parallel states as information and actions change.
+
+## C4 — Authority asset creation
+
+At least one action can transform existing experience/evidence into a real usable authority asset without fabricating facts.
+
+## C5 — Real-world execution
+
+Users can perform or export a recommended action/artifact outside the product.
+
+## C6 — Market-signal return path
+
+Users can record or connect meaningful outcomes.
+
+## C7 — Learning changes the route
+
+New evidence or market response changes a subsequent map/recommendation when it should.
+
+## C8 — Reliability, recovery and security
+
+The product handles failure without silent work loss and treats uploaded/public content as untrusted data rather than instructions.
+
+## C9 — RTL/mobile/accessibility
+
+The core flow works in Hebrew, mixed Hebrew/English/numeric content, desktop and mobile, with usable keyboard/focus states.
 
 ---
 
-# Release decision
+# PHASE D — FIELD + COMMERCIAL VALIDATION DOD
 
-A release may be:
+The system is not validated because users understand the prototype or say they like it.
 
-### BUILD_AUTHORIZED
+Evidence should ultimately demonstrate a chain such as:
 
-Architecture is coherent enough to implement the next falsifiable Preview.
+1. user understands and accepts a strategic route;
+2. user performs a recommended real-world action;
+3. authority-relevant market signals can be observed;
+4. later recommendations improve from prior data;
+5. target users choose to continue using the product;
+6. some target users pay for the continuing strategic value.
 
-### SHIP_AUTHORIZED
-
-All blocking pre-production gates applicable to that release pass, with no unresolved architecture exception.
-
-### PRODUCTION_READY
-
-The authorized release has successfully passed the Git-to-Production delivery path.
-
-### REVISE
-
-Evidence shows a repairable implementation or architecture defect.
-
-### KILL
-
-Field evidence invalidates the core mechanism or commercial premise strongly enough that continued implementation is not justified.
+The exact business thresholds should be preregistered for each experiment rather than hardcoded permanently into doctrine.
 
 ---
 
-## Internal review stop rule
+# GLOBAL RELEASE / TERMINATION RULE
 
-A new internal critique opens another architecture iteration only if it changes at least one of:
+At the end of every phase, run the full Telos Governance Loop.
 
-- user action
-- product action
-- evidence requirement
-- field test
-- inference boundary
+A phase can produce only one of four outcomes:
 
-Otherwise, move to Preview and test the product in reality.
+## CONTINUE
+
+A material internal gap remains and can be resolved now.
+
+## REPLAN
+
+The current model, sequence, framework or product framing itself blocks O.
+
+Move backward. Previously closed decisions may be invalidated.
+
+## FIELD
+
+Internal work has reached diminishing epistemic returns and a material uncertainty can now be resolved only through users, market behavior, deployment or another external source.
+
+Do not substitute further internal refinement for FIELD.
+
+## STOP
+
+STOP is authorized only when:
+
+1. O has been explicitly recalled;
+2. the target state has been reconstructed from O rather than inherited from the current checklist;
+3. backward planning from target state has been re-run;
+4. no material internal gap remains that could improve end-to-end realization of O;
+5. no feasible, material field uncertainty remains unresolved for the current stage;
+6. all remaining work is lower-value than stopping or belongs to a later stage;
+7. the current state is supported by the strongest evidence reasonably obtainable now.
+
+**The location of STOP is therefore not the end of this file. It is the point at which the product has exhausted the justified path from O through reality and back to learning.**
+
+A completed checklist without that condition is not Done.
+
+---
+
+# Required DOD closeout record
+
+Any claim that a phase is Done must include:
+
+- O recalled;
+- reconstructed target state;
+- gaps tested;
+- invalidated assumptions;
+- evidence used;
+- governance outcome: CONTINUE / REPLAN / FIELD / STOP;
+- next action if not STOP.
+
+"All boxes checked" is explicitly invalid as a closeout argument.
