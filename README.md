@@ -39,75 +39,132 @@ Recommendation integrity wins when the two teloi conflict.
 
 ---
 
+# Pre-FIELD telos
+
+> **Maximize the decision value of the next real-world FIELD exposure by eliminating internally discoverable failure modes and isolating FIELD_DEBT.**
+
+Simulation exists to improve the next encounter with reality, never to replace it.
+
+---
+
 # Core architecture
 
 ```text
-PROFESSIONAL TRANSITION / O
-        ↓
-TARGET STATE + BOUNDARY
-        ↓
-FREEZE PRIOR REPRESENTATION + ALLOCATION
-        ↓
-CHARACTERIZE ONLY WHAT CAN CHANGE THE DECISION
-        ↓
-EXTRACT / SELF-APPLY PROFESSIONAL EXPERTISE WHEN USEFUL
-        ↓
-CHALLENGE TRANSFERABILITY / COMPETING LENS
-        ↓
-DECISION-RELEVANT UNKNOWNS
-        ↓
-TARGETED EXTERNAL RESEARCH
-        ↓
-LIVE DECISION + REQUISITE REASONING
-        ↓
-EXPLICIT STRATEGY / ALLOCATION CANDIDATE
-        ↓
-STRATEGIC WIND TUNNEL
-        ↓
-STRATEGY DELTA + ROBUST CORE + FIELD_DEBT
-        ↓
-CONTESTABLE USER DECISION
-        ↓
-REAL FIELD: PAYMENT / ACTION / OUTCOME
-        ↓
-LEARNING / NEXT DECISION
-        ↺
+Professional Transition / O
+→ target state + boundary
+→ frozen prior representation + allocation
+→ smallest justified characterization process
+→ professional-case extraction / self-application when useful
+→ transferability / competing-lens challenge
+→ decision-relevant unknowns
+→ targeted external research
+→ live decision + requisite reasoning
+→ explicit strategy / allocation candidate
+→ Strategic Wind Tunnel
+→ robust core + FIELD_DEBT
+→ contestable user decision
+→ payment / action / outcome
+→ learning / decision #2
 ```
 
 ---
 
-# Characterization intelligence
+# Current user interface — Progressive Decision Episode
 
-The product does not assume one universal intake.
+The previous ProofMiner v2 interface (`Decision Moment → Source → Proof Move → Draft`) is obsolete for the current telos.
 
-It chooses the characterization process most likely to reveal the next decision-relevant distinction.
+The canonical first-session prototype is now:
 
-When the user's own expertise is material:
+```text
+1. מה משתנה אצלך מקצועית עכשיו?
+      ↓
+2. אם לא היינו כאן — מה היית עושה ב־30 הימים הקרובים?
+      ↓
+3. העדשה המקצועית שלך — רק אם היא יכולה לשנות החלטה
+      ↓
+4. לוח החלטה
+   לעשות עכשיו / לא עכשיו / לברר לפני שמחליטים
+      ↓
+5. ההכרעה שלך
+   מה תעשה / על מה אתה מערער / מה ישנה את דעתך
+```
+
+The UI deliberately hides internal vocabulary such as `Personal Decision Intelligence`, `Characterization`, `FIELD_DEBT`, MCDA and router taxonomies from first-use buyer language.
+
+The first screen preserves unprompted struggling-moment language. The second freezes the pre-intervention baseline before advice.
+
+The professional mirror is explicitly **עדשה, לא תשובה** and may be skipped.
+
+The decision board does not reward novelty. `KEEP` is valid when the user's plan survives available evidence.
+
+`לברר לפני שמחליטים` is a first-class outcome when the missing information can change a live decision.
+
+The final record is the user's commitment, challenge and reversal condition — not an `Accept recommendation` event.
+
+See:
+
+- `docs/UX_STRATEGIC_WIND_TUNNEL_V1.md`
+- `docs/DOD_UI_DELTA_V1.md`
+
+---
+
+## Characterization before broad intake / research
+
+When the user's own professional expertise is material, the canonical characterization loop is:
 
 ```text
 REAL PROFESSIONAL CASES
-→ EXTRACT cues / criteria / constraints / sequence
+→ EXTRACT how the person diagnoses / decides / creates value
 → ABSTRACT minimum Professional Operating Model
-→ SELF-APPLY when useful
-→ CHALLENGE boundary / transferability / competing lens
-→ identify what remains unknown
+→ SELF-APPLY to the person's own transition when useful
+→ CHALLENGE transferability / competing lens
+→ GAP: what is still unknown that can change the decision?
+→ TARGETED EXTERNAL RESEARCH
 ```
 
-`SELF-APPLICATION` is a bounded hypothesis-generating mechanism, not a truth source.
+`SELF-APPLICATION` is not a default truth source. It is a bounded characterization mechanism.
 
-See `docs/CHARACTERIZATION_GOVERNANCE_V1.md`.
+At every additional question / process:
+
+> **What live representation or decision could this change?**
+
+If none, stop characterization.
 
 ---
 
-# Decision-directed research
+## Strategic Wind Tunnel
 
-The system should not begin with `research the market deeply`.
+Current runnable skill:
 
-Every material search originates in a live unknown:
+`skills/strategy-wind-tunnel/SKILL.md`
+
+Its job is not to simulate customers as ground truth.
+
+It uses a strict evidence ladder:
+
+```text
+F0 — real field behavior / payment / action / outcome
+F1 — current external observed evidence / real datasets
+F2 — structural / logical consequence
+F3 — plausible scenario assumption
+F4 — synthetic stakeholder / LLM behavior
+```
+
+Synthetic stakeholders may generate objections or hypotheses. They cannot validate WTP, conversion, retention, execution or market response.
+
+The Wind Tunnel must terminate in explicit `FIELD_DEBT` when only reality can resolve a load-bearing claim.
+
+---
+
+## Decision-directed research
+
+The product should not start with `research the market deeply`.
+
+Every material search must originate in a live unknown:
 
 ```text
 DECISION
-→ UNKNOWN THAT COULD CHANGE IT
+→ UNKNOWN THAT COULD FLIP / CHANGE IT
 → RESEARCH QUESTION
 → SOURCE / OBSERVATION
 → INFERENCE
@@ -119,203 +176,116 @@ Broad search volume is not a product objective.
 
 ---
 
-# Strategic Wind Tunnel
+## Measurement
 
-Before using scarce real user / market exposure, the system attempts to kill internally discoverable strategy failures.
+Observe separately:
 
-The purpose is **not to simulate reality until the system feels confident**.
+- Characterization Unique Contribution;
+- Professional-Model Transferability;
+- Representation Delta;
+- Decision Authorship / Contestability;
+- Decision Delta;
+- Priority Delta;
+- Resource Allocation Delta;
+- Research Avoided / Newly Required;
+- Wind Tunnel Strategy Delta;
+- FIELD Yield;
+- Reversal / Regret;
+- Decision #2 / #3 rate;
+- History Materiality Rate;
+- Stale-History Rejection Rate;
+- Paid Continuation / Reactivation.
 
-The purpose is:
-
-> **increase FIELD Yield — make the next real-world observation as decision-changing as possible.**
-
-The Wind Tunnel can use:
-
-- structural kill tests;
-- current external evidence;
-- scenario stress tests;
-- resource / signal shocks;
-- competitor / substitute response;
-- stakeholder veto hypotheses;
-- boundary / mechanism failure;
-- assumption mutation / sensitivity;
-- pre-mortem.
-
-Synthetic stakeholders / LLM agents may generate objections or hypotheses, but they cannot validate real buyer behavior.
-
-See:
-
-- `docs/STRATEGIC_WIND_TUNNEL_GOVERNANCE_V1.md`;
-- `skills/strategy-wind-tunnel/SKILL.md`;
-- `skills/strategy-wind-tunnel/contracts/wind-tunnel-run.schema.json`.
+These are evaluation measurements, not recommendation objectives.
 
 ---
 
-# Evidence ladder
+## Compounding state
 
-```text
-F0 — real field behavior / payment / action / outcome
-F1 — current external observed evidence / real datasets
-F2 — structural / logical consequence
-F3 — plausible scenario assumption
-F4 — synthetic stakeholder / LLM-generated behavior
-```
+The long-term object is a **versioned Personal Decision State + lineage**, not a timeless personality / Decision Profile.
 
-A believable synthetic buyer quote remains `F4`.
+It may contain:
 
-Multiple synthetic agents agreeing does not upgrade it.
+- goals / boundaries at the time;
+- representation snapshots;
+- Professional Operating Model hypotheses + source cases;
+- transferability state;
+- alternatives / decisions;
+- resource commitments;
+- actual execution;
+- outcomes;
+- reversals;
+- market / field changes.
 
----
+Strong test:
 
-# FIELD_DEBT
-
-Before a `FIELD` outcome, the system must state which load-bearing claims still belong to reality.
-
-Example:
-
-```text
-CLAIM
-A suitable participant will pay $1,500 after experiencing the intervention.
-
-CURRENT EVIDENCE
-Adjacent professional-positioning services have materially higher prices.
-
-WHY SIMULATION CANNOT CLOSE IT
-Synthetic purchase intent is not real willingness to pay.
-
-REAL TEST
-Make the exact offer after the frozen-baseline intervention.
-
-DECISION UPDATE
-Paid / refusal + reason changes price / scope / ICP / category hypothesis.
-```
-
-The Wind Tunnel exists to **shrink and sharpen FIELD_DEBT**, not hide it.
+> **Which prior evidence materially improves the next decision — and which prior evidence must be rejected because the context changed?**
 
 ---
 
-# Recursive self-run result
+## Business model hypothesis
 
-The Wind Tunnel was immediately run on ProofMiner's own strategy.
-
-It changed the strategy, so it was not redundant in this pass.
-
-Material changes:
-
-- characterization is explicitly routed rather than mandatory;
-- `Personal Decision Intelligence` remains architecture, not defensible differentiation;
-- the Wind Tunnel now sits between a strategy candidate and real FIELD;
-- synthetic stakeholders are demoted to hypothesis generators;
-- FIELD_DEBT + FIELD Yield are required;
-- unprompted buyer problem language is part of the real field test;
-- decision-support vs execution-service substitution is now a first-class commercial uncertainty;
-- `ProfessionalTransitionProject` remains above narrower authority / market-position specializations.
-
-Full recursive run: `docs/STRATEGIC_WIND_TUNNEL_SELF_RUN_V1.md`.
-
----
-
-# Current robust core
-
-After the self-run, the following remains:
-
-1. solve consequential professional decisions, not generic reflection;
-2. characterize only when it changes a live decision;
-3. use external evidence where introspection cannot know the world;
-4. compare actions through resources, dependencies, opportunity cost and learning;
-5. preserve human authorship / contestability;
-6. observe actual action and outcomes;
-7. reuse history only after transferability review;
-8. use simulation to improve FIELD, never to replace it.
-
----
-
-# Current FIELD_DEBT
-
-The highest-value unresolved claims are now:
-
-1. **Characterization unique contribution** — does it reveal a material distinction Strong Simple misses often enough to justify cost?
-2. **WTP** — will a suitable participant actually pay `$1,500` after experiencing value?
-3. **Decision density** — does a suitable transition naturally create decision #2 / #3 within an active episode?
-4. **Execution** — does the user actually act differently after the intervention?
-5. **Market response** — do the revised actions produce useful external signals / outcomes?
-6. **Longitudinal compounding** — does prior decision lineage materially improve decision #2?
-7. **Buyer language** — how do suitable participants describe the job before category vocabulary is introduced?
-8. **Decision support vs execution** — is the paid job better decisions or someone actually doing the work?
-
-These cannot be responsibly closed by more synthetic simulation.
-
----
-
-# Business model hypothesis
-
-Current frozen FIELD cell:
+Current executable FIELD cell:
 
 > **90-Day Professional Market Position Decision Intelligence Pilot — $1,500 total.**
 
 Human-in-loop is explicit.
 
-The pilot may include characterization and Wind Tunnel work internally only where they improve the real decision. The user is not paying for methodology-extraction or simulation theater.
-
-Other models remain live:
-
-- active/pause;
-- episodic paid Decision Review;
-- ongoing concierge if human judgment proves to be the durable product.
+Other models remain live: active/pause, episodic paid Decision Review, or ongoing concierge if human judgment proves to be the durable product.
 
 Monthly subscription is not an invariant.
 
 ---
 
-# Current lifecycle state
+## Current lifecycle state
 
-**FIELD — paid Professional Transition validation with pre-registered FIELD_DEBT.**
+**FIELD — characterization-first paid Professional Transition validation with pre-registered FIELD_DEBT.**
 
-Next valid case:
+The redesigned UI is an authorized FIELD instrument, not validated product UX.
 
-```text
-1. capture unprompted struggling-moment language
-2. freeze O / representation / intended allocation
-3. run Strong-Simple shadow analysis
-4. add the smallest justified characterization
-5. research only decision-relevant external unknowns
-6. create explicit strategy candidate
-7. run Strategic Wind Tunnel internally
-8. register FIELD_DEBT
-9. expose contestable recommendation
-10. record real decision / allocation change
-11. make exact $1,500 offer
-12. observe payment / refusal
-13. observe actual execution / outcome
-14. follow to decision #2 / episode end
-```
+Highest-value evidence now:
 
-Do not build another UI prototype, broad autonomous research agent or synthetic-customer platform before these field debts survive reality.
+1. unprompted first-screen struggling-moment language;
+2. baseline completion friction;
+3. Strong Simple shadow;
+4. characterization unique contribution where justified;
+5. decision-board comprehension;
+6. authorship / contestability;
+7. real $1,500 payment / refusal;
+8. execution / outcome;
+9. decision #2 and history materiality.
+
+Do not build multiple polished visual variants, a broad autonomous research agent or a synthetic-customer platform before these debts survive reality.
 
 ---
 
-# Source of truth
+## Source of truth
 
-1. `docs/TELOS_GOVERNANCE.md` — v1.4 user/business/pre-FIELD telos + recursive Stop Rule.
-2. `docs/DEFINITION_OF_DONE.md` — DOD v5.0.
-3. `docs/CHARACTERIZATION_GOVERNANCE_V1.md`.
-4. `docs/STRATEGIC_WIND_TUNNEL_GOVERNANCE_V1.md`.
-5. `skills/strategy-wind-tunnel/SKILL.md`.
-6. `docs/STRATEGIC_WIND_TUNNEL_SELF_RUN_V1.md`.
-7. `docs/FIELD_PROTOCOL_V3.md` — currently FIELD v5.0.
-8. `docs/CHARACTERIZATION_FIELD_PROTOCOL_V1.md`.
-9. `docs/PAID_FIELD_OFFER_V1.md`.
-10. `docs/DOD_BUSINESS_MODEL_DELTA_V1.md`.
-11. `docs/META_DECISION_GOVERNANCE.md`.
-12. `docs/COR_SYS_GRAPH_AUDIT_V1.md`.
-13. `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
-14. `docs/PRODUCT_MODEL_CHARACTERIZATION_DELTA_V4.md`.
-15. `docs/PRODUCT_MODEL.md`.
+1. `docs/TELOS_GOVERNANCE.md`
+2. `docs/DEFINITION_OF_DONE.md` + `docs/DOD_UI_DELTA_V1.md` (effective UI DOD v5.1)
+3. `docs/UX_STRATEGIC_WIND_TUNNEL_V1.md`
+4. `docs/CHARACTERIZATION_GOVERNANCE_V1.md`
+5. `docs/STRATEGIC_WIND_TUNNEL_GOVERNANCE_V1.md`
+6. `skills/strategy-wind-tunnel/SKILL.md`
+7. `docs/FIELD_PROTOCOL_V3.md`
+8. `docs/CHARACTERIZATION_FIELD_PROTOCOL_V1.md`
+9. `docs/PAID_FIELD_OFFER_V1.md`
+10. `docs/META_DECISION_GOVERNANCE.md`
+11. `docs/COR_SYS_GRAPH_AUDIT_V1.md`
+12. `docs/RESOURCE_REALLOCATION_CONTRACT.md`
+13. `docs/PRODUCT_MODEL_CHARACTERIZATION_DELTA_V4.md`
+14. `docs/PRODUCT_MODEL.md`
 
 ---
 
 ## Prototype status
 
-`public/authority-prototype-v3-2.html` is historical semantics evidence only.
+Current implementation:
 
-The next valid product evidence is a real paid Wizard-of-Oz Professional Transition episode governed by registered FIELD_DEBT, not another UI prototype.
+- `src/app.js` — progressive decision episode;
+- `src/style.css` — calm decision-workspace visual system;
+- `index.html` — current Professional Transition metadata.
+
+The prototype is intentionally explicit that it does **not** yet contain validated autonomous market research or strategic intelligence.
+
+A successful CI/build or Vercel Preview does not close UX FIELD_DEBT.
