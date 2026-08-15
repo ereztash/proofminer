@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofminer.local/schemas/wind-tunnel-run.schema.json",
+  "title": "Strategy Wind Tunnel Run",
+  "type": "object",
+  "required": ["input", "output"],
+  "properties": {
+    "input": {
+      "type": "object",
+      "required": [
+        "telos",
+        "strategy_decision",
+        "baseline_strategy",
+        "boundary",
+        "load_bearing_assumptions"
+      ],
+      "properties": {
+        "telos": {"type": "string", "minLength": 1},
+        "strategy_decision": {"type": "string", "minLength": 1},
+        "baseline_strategy": {"type": "string", "minLength": 1},
+        "boundary": {"type": "string", "minLength": 1},
+        "alternatives": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "resources_constraints": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "load_bearing_assumptions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["claim", "decision_affected"],
+            "properties": {
+              "claim": {"type": "string"},
+              "decision_affected": {"type": "string"},
+              "current_evidence_refs": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        },
+        "evidence_packet": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/evidenceItem"}
+        },
+        "current_field_questions": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": [
+        "strategy_delta",
+        "robust_core",
+        "field_debt",
+        "next_field_test",
+        "governance_outcome"
+      ],
+      "properties": {
+        "structural_failures": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "scenario_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scenario", "status", "decision_effect"],
+            "properties": {
+              "scenario": {"type": "string"},
+              "status": {
+                "enum": ["ROBUST", "CONDITIONAL", "FRAGILE", "BLOCKED", "FIELD_ONLY"]
+              },
+              "decision_effect": {"type": "string"},
+              "evidence_classes": {
+                "type": "array",
+                "items": {"enum": ["F0", "F1", "F2", "F3", "F4"]}
+              }
+            }
+          }
+        },
+        "synthetic_hypotheses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["hypothesis", "real_test"],
+            "properties": {
+              "hypothesis": {"type": "string"},
+              "real_test": {"type": "string"},
+              "evidence_class": {"const": "F4"}
+            }
+          }
+        },
+        "assumption_flips": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["assumption", "status"],
+            "properties": {
+              "assumption": {"type": "string"},
+              "status": {
+                "enum": ["ROBUST", "CONDITIONAL", "FRAGILE", "BLOCKED", "FIELD_ONLY"]
+              },
+              "flip_condition": {"type": "string"}
+            }
+          }
+        },
+        "strategy_delta": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["action", "delta_state", "rationale"],
+            "properties": {
+              "action": {"type": "string"},
+              "delta_state": {
+                "enum": ["KEEP", "ACCELERATE", "REORDER", "REDUCE", "DELAY", "STOP", "REPLACE", "ADD"]
+              },
+              "rationale": {"type": "string"},
+              "evidence_classes": {
+                "type": "array",
+                "items": {"enum": ["F0", "F1", "F2", "F3", "F4"]}
+              }
+            }
+          }
+        },
+        "robust_core": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "conditional_moves": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "field_debt": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/fieldDebt"}
+        },
+        "next_field_test": {
+          "type": "object",
+          "required": ["target_claim", "observation", "decision_update_rule"],
+          "properties": {
+            "target_claim": {"type": "string"},
+            "observation": {"type": "string"},
+            "decision_update_rule": {"type": "string"},
+            "baseline_required": {"type": "boolean"},
+            "field_burden_notes": {"type": "string"}
+          }
+        },
+        "governance_outcome": {
+          "enum": ["RECHARACTERIZE", "RESEARCH", "REPLAN", "FIELD", "STOP"]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceItem": {
+      "type": "object",
+      "required": ["id", "evidence_class", "observation", "source"],
+      "properties": {
+        "id": {"type": "string"},
+        "evidence_class": {"enum": ["F0", "F1", "F2", "F3", "F4"]},
+        "observation": {"type": "string"},
+        "source": {"type": "string"},
+        "decision_use": {"type": "string"}
+      }
+    },
+    "fieldDebt": {
+      "type": "object",
+      "required": [
+        "claim",
+        "why_load_bearing",
+        "strongest_current_evidence",
+        "why_simulation_insufficient",
+        "smallest_real_test",
+        "decision_update_rule"
+      ],
+      "properties": {
+        "claim": {"type": "string"},
+        "why_load_bearing": {"type": "string"},
+        "strongest_current_evidence": {"type": "string"},
+        "why_simulation_insufficient": {"type": "string"},
+        "smallest_real_test": {"type": "string"},
+        "decision_update_rule": {"type": "string"}
+      }
+    }
+  }
+}
