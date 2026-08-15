@@ -1,4 +1,4 @@
-# ProofMiner — Definition of Done v3.4
+# ProofMiner — Definition of Done v3.5
 
 ## Governing rule
 
@@ -8,6 +8,7 @@ It is the current best hypothesis about what must be true to realize O. It does 
 
 Use together with:
 
+- `docs/META_DECISION_GOVERNANCE.md`
 - `docs/UX_TRANSITION_CONTRACT.md`
 - `docs/RESOURCE_REALLOCATION_CONTRACT.md`
 - `docs/FIELD_PROTOCOL_V3.md`
@@ -20,6 +21,8 @@ The product exists to increase the likelihood that a relevant audience comes to 
 
 Because the user has scarce time, money and attention, the system must improve how those resources are allocated toward that end under uncertainty.
 
+The system must also avoid spending user/system resources on analytical machinery that does not improve the live decision.
+
 The system cannot guarantee authority. It is responsible for producing, explaining and adapting the best grounded allocation/route available and for learning responsibly from market evidence.
 
 ---
@@ -29,10 +32,10 @@ The system cannot guarantee authority. It is responsible for producing, explaini
 ```text
 A1 — authority need + plausible actions + uncertain allocation
 →
-B — grounded allocation decision supported by an Authority Map
+B — grounded allocation decision supported by the least-complex sufficient reasoning process and an Authority Map
 ```
 
-`B` is not "the user received a map".
+`B` is not "the user received a map" and not "the system ran an advanced framework".
 
 The user should be able to state:
 
@@ -45,7 +48,12 @@ The user should be able to state:
 - what is parallel, blocked or premature;
 - what information/evidence could change the allocation again.
 
-The Authority Map is the main explanatory/navigation artifact for this decision state.
+The system should be able to state:
+
+- what decision was actually live;
+- why the selected reasoning process was sufficient;
+- why a simpler method was insufficient, if escalation occurred;
+- why a more complex method was not justified, if escalation stopped.
 
 ---
 
@@ -55,20 +63,21 @@ The Authority Map is the main explanatory/navigation artifact for this decision 
 CONSCIOUS PAIN
 → AUTHORITY DIRECTION / OUTCOME
 → STATED COUNTERFACTUAL PLAN
+→ LIVE DECISION FRAME
 → MINIMUM DECISION-RELEVANT DATA
-→ DIAGNOSIS
-→ ALLOCATION DELTA
+→ DECIDE HOW TO DECIDE
+→ DIAGNOSIS / ALLOCATION DELTA
 → AUTHORITY MAP
 → EXECUTION
 → MARKET EVIDENCE
-→ RE-ALLOCATION
+→ RE-ALLOCATION / METHOD UPDATE IF NEEDED
 ```
 
-A lower-level model, metric, framework or UI element may not outrank this transition.
+A lower-level model, metric, framework, algorithm, library or UI element may not outrank this transition.
 
 ---
 
-# PHASE A — PRODUCT / UX ARCHITECTURE GATES
+# PHASE A — PRODUCT / DECISION / UX ARCHITECTURE GATES
 
 ## A1 — Stable project unit
 
@@ -84,17 +93,56 @@ The system can record what the user says they would otherwise do during the rele
 
 The counterfactual is labeled as stated/self-reported, not causal truth.
 
-## A4 — Material allocation change is representable
+## A4 — Live decision is framed before method selection
+
+Before invoking a decision framework, the system records the specific allocation decision being made and its link to O.
+
+**Fail:** running MCDA, optimization, VOI, robust analysis or another framework before the live decision is explicit.
+
+## A5 — DecisionProblemProfile is sufficient
+
+The system can characterize at least the decision-relevant subset of:
+
+- alternatives state;
+- objectives / trade-offs;
+- hard constraints;
+- dependencies;
+- uncertainty type;
+- reversibility / lock-in;
+- information gaps;
+- feedback speed;
+- stakes / opportunity cost;
+- decision horizon.
+
+Do not require every field when a simpler discriminator already resolves method choice.
+
+## A6 — Requisite method selection
+
+The system chooses the least-complex reasoning process sufficient to resolve the live decision responsibly.
+
+**Pass:** method escalation has an explicit decision-changing justification.
+
+**Hard fail:** method escalation exists only because the method is available, prestigious, technically interesting or easier to score.
+
+## A7 — Simple dominance / hard constraints can terminate escalation
+
+If hard constraints, prerequisites or clear dominance resolve the decision, the system can decide without invoking a more complex trade-off model.
+
+## A8 — Dependency reasoning precedes unnecessary scoring
+
+If sequence / feasibility / capacity determines what can happen now, the system does not hide that fact inside a weighted score.
+
+## A9 — Material allocation change is representable
 
 The product can represent `KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD` at action level.
 
 Stopping is not automatically valuable.
 
-## A5 — Opportunity cost is decision-relevant
+## A10 — Opportunity cost is decision-relevant
 
 When recommending one action over another, the system can explain what is displaced, delayed or forgone when material.
 
-## A6 — Data requests have value-of-information logic
+## A11 — Data requests have value-of-information logic
 
 Before requesting material new information, the system can answer:
 
@@ -102,27 +150,58 @@ Before requesting material new information, the system can answer:
 
 If none, the request has no default claim to user effort.
 
-## A7 — Strategy remains adaptive
+If an unknown can flip the decision and is reasonably obtainable, the system can choose targeted information gathering instead of false certainty.
 
-Different user states can produce different audience recommendations, diagnoses, dependencies, allocations and next actions.
+## A12 — Multi-criteria reasoning has preconditions
 
-## A8 — Map semantics remain explicit
+When multiple feasible alternatives remain with genuine conflicting objectives, the system may use MCDA-like reasoning.
+
+**Pass:** relevant criteria/trade-offs are explicit, preferences are not fabricated, and material sensitivity is inspectable.
+
+**Fail:** criteria are added merely to make the decision look rigorous.
+
+## A13 — Deep uncertainty does not receive fake precision
+
+When probabilities/forecasts are not defensible enough for expected-value optimization, the system can choose robust/vulnerability-oriented reasoning instead of manufacturing precise inputs.
+
+## A14 — Staged decisions can preserve options
+
+When the problem unfolds over time and future evidence can change the route, the system can represent:
+
+- action now;
+- options preserved;
+- signposts;
+- trigger conditions;
+- contingency actions.
+
+## A15 — Sensitivity controls analytical escalation
+
+After a material recommendation, plausible changes in assumptions are tested when useful.
+
+- If no plausible variation changes the recommendation, additional precision has low default value.
+- If small plausible changes flip the recommendation, that uncertainty becomes decision-relevant and should route to VOI, robust reasoning or FIELD as appropriate.
+
+## A16 — Strategy remains adaptive
+
+Different user states can produce different audience recommendations, diagnoses, dependencies, allocations, reasoning processes and next actions.
+
+## A17 — Map semantics remain explicit
 
 Available, sequential, parallel, blocked, premature and unlocked states remain distinguishable and inspectable.
 
-## A9 — Evidence/trust remains rigorous
+## A18 — Evidence/trust remains rigorous
 
 Observation, user report, stated counterfactual, inference, recommendation and market outcome remain distinct.
 
 Chronology is not causality; self-report is not external validation.
 
-## A10 — Learning can reverse prior advice
+## A19 — Learning can reverse prior advice
 
 New evidence may preserve, weaken or reverse a prior `STOP`, `DELAY`, `ACCELERATE` or other allocation decision.
 
 The system receives no credit for stubborn consistency.
 
-## A11 — No composite vanity metric
+## A20 — No composite vanity metric
 
 Time, cash and other scarce resources remain separately observable unless an explicit defensible conversion is defined.
 
@@ -130,7 +209,21 @@ Time, cash and other scarce resources remain separately observable unless an exp
 
 Current construct: **Counterfactual Resource Allocation Delta toward O**.
 
-## A12 — UX coherence
+## A21 — 95% assurance boundary is enforced
+
+Internal systems may strongly confirm/refute only claim classes for which the relevant evidence is directly observable / deterministically testable or independently calibrated above the required confidence threshold.
+
+Appropriate >95% assurance targets include finite structural claims such as:
+
+- baseline precedes recommendation;
+- hard constraint is represented;
+- router precondition is violated;
+- refuted policy assumption still reaches a recommendation;
+- route change has no recorded evidence trigger.
+
+Model confidence, reviewer agreement or cross-model consensus are not >95% strategic-truth evidence by default.
+
+## A22 — UX coherence
 
 Blocking contradictions include:
 
@@ -139,19 +232,42 @@ Blocking contradictions include:
 - recommendation contaminating the baseline;
 - "saved" claims merely because work was stopped;
 - adaptive doctrine with unexplained allocation changes;
+- complex decision method without a live decision-changing reason;
+- MCDA/optimizer output hiding a hard dependency;
 - UI elements with no user-state or live-decision job.
 
 ---
 
-# PHASE B — LOW-FIDELITY FIELD GATES
+# PHASE B — STRUCTURAL / FIXTURE FALSIFICATION GATE
 
-Current instrument:
+Before automating the full decision-policy router, use fixtures whose method-discriminating property is directly observable.
+
+Minimum fixture classes:
+
+1. **hard prerequisite absent** — constraint/dependency reasoning must precede scoring;
+2. **simple dominance** — complex method escalation must be rejected;
+3. **genuine multi-objective trade-off** — simplistic single-criterion ranking must be rejected;
+4. **cheap decision-changing unknown** — targeted VOI/information path must be considered;
+5. **deep uncertainty without defensible probabilities** — fake precise expected-value optimization must be rejected;
+6. **staged decision with observable future trigger** — adaptive-pathway reasoning must be considered;
+7. **irrelevant wording mutation** — selected reasoning mode should remain stable;
+8. **decision-relevant structural mutation** — selected reasoning mode should change.
+
+These fixtures validate the router contract, not the strategic truth of the resulting authority recommendation.
+
+A deterministic fixture pass can support >95% confidence about a finite implementation rule when the input property and expected rule are directly inspectable and mutation coverage is adequate.
+
+---
+
+# PHASE C — LOW-FIDELITY / PERSONALIZED FIELD GATE
+
+Current UI instrument remains:
 
 `public/authority-prototype-v3-2.html`
 
 It is scripted and intentionally low fidelity.
 
-Its job is to test the semantics of:
+It tests the semantics of:
 
 ```text
 what I would have done
@@ -161,49 +277,21 @@ what I would have done
 → what should change the allocation again
 ```
 
-It does **not** validate personalized strategic intelligence.
+It does **not** validate personalized strategic intelligence or meta-decision superiority.
 
-## B1 — Trigger comprehension
-
-User can explain the problem/decision the product is for.
-
-## B2 — Baseline capture
-
-User can state a plausible real counterfactual before recommendation without facilitator contamination.
-
-## B3 — Allocation-delta comprehension
-
-User can explain what changed and classify material action changes.
-
-## B4 — Dependency comprehension
-
-User distinguishes parallel, sequential, blocked and premature.
-
-## B5 — No false savings claim
-
-User understands that resources moved out of an action are initially **reallocated**, not automatically saved.
-
-## B6 — Replanning comprehension
-
-User understands why later evidence could reverse or change a prior allocation.
-
----
-
-# PHASE C — PERSONALIZED WIZARD-OF-OZ VALUE GATE
-
-Before building a full AI engine, run personalized analysis with target users.
-
-For each participant capture:
+For personalized Wizard-of-Oz participants capture:
 
 1. authority goal and planning horizon;
 2. stated counterfactual action portfolio **before reveal**;
 3. material baseline time/cash commitments;
-4. personalized person/field/diagnosis/dependency analysis;
-5. action-level recommended delta;
-6. revised intended allocation;
-7. actual allocation at follow-up;
-8. observed market/authority signals;
-9. recommendation reversal/regret when applicable.
+4. live decision frame;
+5. method / reasoning mode used and why;
+6. personalized person/field/diagnosis/dependency analysis;
+7. action-level recommended delta;
+8. revised intended allocation;
+9. actual allocation at follow-up;
+10. observed market/authority signals;
+11. recommendation reversal/regret when applicable.
 
 Track separately:
 
@@ -215,7 +303,11 @@ Track separately:
 - Recommendation Reversal / Regret;
 - later authority/business signals.
 
-A zero delta is not automatically failure: the original plan may have been strong. But repeated zero delta from generic analysis is evidence against additive value.
+Where feasible, compare the adaptive/meta-decision process against a simpler fixed advisory process on equivalent cases.
+
+The next empirical question is not whether users like the sophistication. It is:
+
+> **Does context-sensitive selection of the reasoning process materially improve allocation decisions versus a simpler fixed process?**
 
 ---
 
@@ -224,6 +316,9 @@ A zero delta is not automatically failure: the original plan may have been stron
 Only after personalized decision value survives FIELD should a functional product be expected to automate:
 
 - counterfactual capture;
+- live decision framing;
+- DecisionProblemProfile construction;
+- requisite decision-policy selection;
 - person/field research;
 - diagnosis;
 - dependency-aware allocation;
@@ -233,7 +328,7 @@ Only after personalized decision value survives FIELD should a functional produc
 - evidence-sensitive re-planning;
 - reliability, security, privacy, RTL/mobile/accessibility.
 
-Commercial validation ultimately requires users to return and some users to pay for continuing strategic allocation/learning value, not merely generated artifacts.
+Commercial validation ultimately requires users to return and some users to pay for continuing strategic allocation/learning value, not merely generated artifacts or sophisticated reasoning traces.
 
 ---
 
@@ -243,7 +338,7 @@ Do not label a decision good solely because a good outcome followed.
 
 Evaluate separately:
 
-1. quality of the decision process at the time;
+1. quality of the decision framing / process at the time;
 2. intended allocation change;
 3. actual allocation / execution;
 4. observed outcome;
@@ -260,66 +355,41 @@ At the end of every meaningful phase, run `TELOS_GOVERNANCE`.
 Possible outcomes:
 
 - `CONTINUE` — a material internal gap remains and can be resolved now;
-- `REPLAN` — current framing / architecture / metric / sequence blocks O;
+- `REPLAN` — current framing / architecture / metric / decision process itself blocks O;
 - `FIELD` — reality is now the highest-value source of information;
-- `STOP` — no further justified action or reallocation is currently expected to materially improve O.
+- `STOP` — no further justified action or analytical escalation is currently expected to materially improve O.
 
-A completed checklist, attractive prototype, changed plan or improved metric cannot authorize `STOP` on its own.
+A checklist cannot authorize `STOP`.
 
 ---
 
-# Current closeout — 2026-08-15, full resource-allocation iteration
+# Current closeout — 2026-08-15
 
 **O recalled**  
-Increase the likelihood that the relevant market grants the desired authority position and acts accordingly, while improving allocation of scarce user resources toward the strongest grounded path under uncertainty.
+Improve the user's allocation of scarce resources toward a desired authority state, learn from reality, and avoid analytical work that does not improve that allocation.
 
-**Target state reconstructed**  
-The user must not merely possess a map. They must make a defensible allocation decision relative to what they would otherwise have done, execute it, and allow later evidence to update it.
+**Material finding**  
+The prior architecture correctly introduced counterfactual resource allocation, but still left an important hidden assumption: that the system could choose its reasoning method ad hoc. Research on requisite decision modelling, Decision Quality, Value of Information and adaptive pathways supports treating method selection itself as a governed decision.
 
-**Highest-leverage gap found**  
-We had no uncontaminated before-state. Without a pre-advice counterfactual, we could not distinguish product-created decision value from a map that merely restated the user's existing plan.
+**Invalidated assumption**  
+"Choose a strong decision framework and apply it" is too coarse. No framework or algorithm has default authority.
 
-**Research challenge to the initial metric**  
-Stopping work can be valuable when it prevents escalation of commitment or exposes opportunity cost, but stopping can also occur too early. Therefore `Avoided Wrong Work` was rejected as a standalone North Star.
+**Governance action taken**  
+`REPLAN` was opened for the intelligence architecture and closed by:
 
-**Invalidated prior assumption**  
-`Decision-Ready Authority Map = sufficient first-session value` is false as a DOD claim.
+- adding `docs/META_DECISION_GOVERNANCE.md`;
+- making the selected decision process subordinate to O;
+- adopting least-complex-sufficient / requisite reasoning;
+- defining structural method-selection preconditions;
+- introducing a strict 95% assurance boundary for behind-the-scenes systems;
+- separating structural assurance from strategic truth.
 
-**Changes made**
+**Existing systems judged useful above the 95% boundary**  
+Deterministic guards, finite contract/mutation tests, refutation propagation and provenance/evidence separation can strongly falsify structural violations in their defined scope. Blind reviewers, model confidence and cross-model agreement do not qualify as >95% strategic-truth evidence without independent calibration for that claim class.
 
-- Telos Governance now explicitly governs scarce-resource allocation and opportunity cost;
-- `RESOURCE_REALLOCATION_CONTRACT.md` created;
-- UX B-state changed to grounded allocation decision;
-- first-session flow captures counterfactual before advice;
-- FIELD protocol captures baseline → revised allocation → actual allocation → learning;
-- DOD rewritten around measurable additive decision value;
-- low-fidelity `authority-prototype-v3-2.html` created;
-- README aligned.
+**Remaining highest-leverage uncertainty**  
+Whether adaptive selection of the reasoning process improves real allocation decisions more than a simpler fixed advisory process cannot be established internally.
 
-**Technical evidence**
+**Current governance outcome:** `FIELD` after structural fixture specification.
 
-- v3.2 deployment is `READY` on Vercel;
-- direct fetch returns HTTP 200;
-- GitHub CI for the v3.2 commit completed successfully.
-
-Interactive browser automation could not be run in the current runtime because the documented `agent-browser` CLI is unavailable; this is not being treated as completed evidence.
-
-**Remaining highest-leverage uncertainties**
-
-They now require reality:
-
-1. can target users state a usable counterfactual without excessive friction?
-2. does personalized analysis materially change allocation rather than merely explain it?
-3. how much time/cash/attention moves, and in which direction?
-4. do users actually execute the revised allocation?
-5. does later evidence support, weaken or reverse the recommendation?
-6. does a simpler static advisor produce comparable value?
-
-Further internal refinement cannot responsibly answer these.
-
-**Resource-allocation implication for the project itself**  
-Allocate no further effort to UI polish, taxonomy expansion or AI-engine implementation yet. Allocate the next effort to personalized Wizard-of-Oz FIELD sessions with pre-advice counterfactual capture.
-
-**Current governance outcome:** `FIELD`.
-
-**Next justified action:** run the preregistered personalized baseline → allocation-delta → follow-up test with target users.
+**Next justified action:** use structural fixtures for implementation assurance when a router exists, and test the adaptive meta-decision hypothesis in personalized Wizard-of-Oz cases before building a full MCDA/optimization/VOI stack.
