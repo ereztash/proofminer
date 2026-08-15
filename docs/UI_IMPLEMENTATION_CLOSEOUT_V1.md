@@ -1,69 +1,106 @@
-# UI Implementation Closeout — v1
+# UI Implementation Closeout — v2
 
 Date: 2026-08-16
 
 ## Outcome
 
-`REPLAN → IMPLEMENT → FIELD`
+`REPLAN_O → REPLAN_DOD → IMPLEMENT → FIELD`
 
-The Strategic Wind Tunnel invalidated the legacy ProofMiner v2 proof-selection interface for the current Professional Transition telos.
+The recursive DOD / Pressure / Telos loop invalidated both:
 
-The implemented first-session experience is now a Progressive Decision Episode:
+- the legacy ProofMiner v2 proof-selection flow;
+- the later five-step Progressive Decision Episode.
+
+The current first-session interface hypothesis is now:
+
+> **a progressively revealed manipulable decision workspace.**
+
+## Current O
+
+Help the user move from professional ambiguity to grounded action with the least unnecessary cognitive work, while keeping commitments, trade-offs, evidence and reasons sufficiently visible and manipulable that they can be challenged and revised without starting over.
+
+## Current interaction model
 
 ```text
-Transition
-→ frozen pre-advice baseline
-→ optional professional mirror
-→ NOW / NOT YET / LEARN FIRST decision board
-→ user-authored commitment / challenge / reversal condition
+TARGET TRANSITION
++
+ACTION OBJECTS
++
+FINITE RESOURCE / RESERVE
+
+→ direct reorder / state change / allocation
+→ freeze user baseline
+→ system challenge remains separate
+→ accept / reject challenge at action level
+→ real evidence / FIELD updates the model later
 ```
 
-## Files changed
+## Files changed in this replan
 
+- `docs/TELOS_GOVERNANCE.md` → v1.5
+- `docs/RECURSIVE_UI_DOD_PRESSURE_V1.md`
+- `skills/ui-dod-pressure-loop/SKILL.md`
+- `docs/DOD_UI_DELTA_V1.md` → effective UI DOD v5.2
 - `src/app.js`
 - `src/style.css`
 - `index.html`
 - `README.md`
-- `docs/UX_STRATEGIC_WIND_TUNNEL_V1.md`
-- `docs/DOD_UI_DELTA_V1.md`
 
-## DOD
+## Interaction rules now enforced
 
-Effective interface DOD: **v5.1** (`DEFINITION_OF_DONE v5.0` + `DOD_UI_DELTA_V1`).
+- action candidates are explicit editable objects;
+- action state is directly mutable (`עכשיו / אחר כך / לברר`);
+- action order can change without rewriting prose;
+- hours are a conserved finite resource with visible reserve;
+- hours sliders have plus/minus alternatives;
+- sliders are not used for generic importance / confidence;
+- system challenge cannot silently overwrite the user's arrangement;
+- model complexity is intended to grow only when another distinction can change action;
+- drag/drop is optional; buttons preserve the same semantic operation.
 
-## Implementation assurance
+## Pressure-agent implementation finding
 
-GitHub Actions run #107 completed successfully, including:
+The first direct-manipulation implementation re-rendered the entire DOM during slider movement. The Pressure Agent rejected this because the manipulation itself became unstable.
 
-- syntax check;
-- dependency install;
-- production Vite build.
+The implementation was changed so allocation receives local live feedback during `input` and only performs full reconciliation after `change`.
 
-## Vercel state
+## Current DOD
 
-Vercel successfully produced a READY Preview for the first redesigned UI chain at commit `5b3bc975f719849184487ab6013bf07c2ce9248a`.
+Effective UI DOD: **v5.2** (`DEFINITION_OF_DONE v5.0` + `DOD_UI_DELTA_V1 v2`).
 
-Later UI refinements through current head `540e05163e864a4c5220fe4e28599df1db60e039` are committed and CI-green but Vercel rejected further Preview builds with `build-rate-limit`.
+## Remaining UX FIELD_DEBT
 
-Therefore:
+Internal recursion can no longer establish whether the richer workspace is actually better for real users than a strong guided flow.
 
-- repository / CI state: current;
-- latest READY Vercel Preview: contains the main Progressive Decision UI rewrite and visual redesign;
-- latest authorship-language / metadata / legibility refinements: **not yet represented in a READY Vercel deployment because of platform build-rate limiting**.
+Required comparison:
 
-Do not report the current branch head as deployed until Vercel produces a READY deployment whose `githubCommitSha` equals the current head or a descendant.
+### Arm G — Strong Guided
+
+Concise guided interaction creating the same semantic objects.
+
+### Arm M — Manipulable Workspace
+
+Direct reordering, state changes and conserved allocation over the same objects.
+
+Compare:
+
+- cognitive burden;
+- time to coherent plan;
+- trade-off quality;
+- authorship / challenge quality;
+- interaction-caused decision errors;
+- actual execution / reversal behavior.
+
+Kill / collapse the richer workspace if it does not create enough material value to justify its complexity.
+
+## Deployment boundary
+
+GitHub / CI and Vercel deployment state must be reported separately.
+
+Vercel has recently returned `build-rate-limit` for new branch deployments. Do not claim the current head is deployed until a READY deployment reports the exact current commit SHA or a descendant.
 
 ## Visual verification boundary
 
-The configured `agent-browser` CLI was not available in the execution environment, so no claim is made that the current UI was visually browser-inspected pixel-by-pixel.
+The configured `agent-browser` CLI was not available in the execution environment during the previous pass. No pixel-level browser-inspection claim is made from that pass.
 
-Objective checks completed:
-
-- structure/code audit;
-- syntax check;
-- production build;
-- responsive CSS rules;
-- key color contrast audit;
-- Vercel READY state for the first redesign commit.
-
-The remaining visual/comprehension truth belongs to FIELD.
+FIELD remains the authority for comprehension, manipulation burden and decision value.
