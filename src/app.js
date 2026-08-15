@@ -1,396 +1,528 @@
-const STORAGE_KEY = 'proofminer-transition-v5-preview';
+const STORAGE_KEY = 'proofminer-transition-v6-workspace';
 
-const demo = {
-  transition: 'אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים, בלי לבזבז חודשים על מיתוג מחדש שלא יזיז את העסק.',
-  profession: 'יועץ עסקי',
-  desiredState: 'שמנהלים בארגונים יראו בי אופציה לגיטימית ויקבעו שיחות על תהליכי ייעוץ.',
-  baselinePlan: 'לשכתב את האתר\nלהתחיל לפרסם יותר בלינקדאין\nלבנות וובינר למנהלים',
-  hours: '50',
-  budget: '5000',
-  why: 'כי כרגע אני נראה כמו מישהו שעובד עם עצמאים, ואני מניח שצריך לשנות את הנראות לפני שאפנה לארגונים.',
-  bottleneck: 'אני לא יודע אם הבעיה האמיתית היא מיצוב, הוכחה, גישה למקבלי החלטות או פשוט חוסר עקביות.',
-  mirror: 'אם לקוח היה מגיע אליי במצב הזה, לא הייתי מתחיל מערוץ או אתר. הייתי מגדיר קודם מי צריך לבחור בו, לפי מה הוא בוחר, ומה חסר כדי שהבחירה תהיה סבירה.',
-};
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+const demoActions = [
+  { title: 'לשכתב את האתר', hours: 16, status: 'now' },
+  { title: 'להתחיל לפרסם יותר בלינקדאין', hours: 14, status: 'now' },
+  { title: 'לבנות וובינר למנהלים', hours: 10, status: 'later' },
+];
 
 const blank = {
-  step: 'transition',
   transition: '',
-  profession: '',
   desiredState: '',
-  baselinePlan: '',
-  hours: '',
-  budget: '',
-  why: '',
-  bottleneck: '',
-  mirror: '',
-  mirrorChoice: null,
-  decision: null,
-  commitment: '',
-  challenge: '',
-  reversal: '',
+  horizon: 3,
+  totalHours: 50,
+  actions: [],
+  baselineFrozen: false,
+  baselineSnapshot: null,
+  systemChallenge: null,
+  selectedActionId: null,
+  newAction: '',
 };
 
-const state = { ...blank, ...(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}) };
+const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+const state = { ...blank, ...(stored || {}) };
+if (!Array.isArray(state.actions)) state.actions = [];
+
 const app = document.querySelector('#app');
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function esc(v = '') { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
-function lines(v='') { return String(v).split(/\n+/).map(x => x.trim()).filter(Boolean); }
-function firstLine(v='') { return lines(v)[0] || ''; }
-
-function go(step) { state.step = step; save(); render(); window.scrollTo({top:0, behavior:'smooth'}); }
-function reset() { Object.assign(state, blank); save(); render(); }
-function loadDemo() { Object.assign(state, blank, demo); save(); render(); }
-
-function stepIndex() {
-  return ({transition:1, baseline:2, mirror:3, decision:4, commit:5}[state.step] || 1);
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function esc(value = '') {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[c]));
+}
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, Number(n) || 0));
+}
+
+function allocatedHours() {
+  return state.actions.reduce((sum, action) => sum + (Number(action.hours) || 0), 0);
+}
+
+function reserveHours() {
+  return Math.max(0, Number(state.totalHours || 0) - allocatedHours());
+}
+
+function actionById(id) {
+  return state.actions.find(action => action.id === id);
+}
+
+function addAction(title, status = 'now', hours = 0) {
+  const clean = String(title || '').trim();
+  if (!clean) return;
+  const available = reserveHours();
+  state.actions.push({
+    id: uid(),
+    title: clean,
+    status,
+    hours: Math.min(Number(hours) || 0, available),
+    source: 'user',
+  });
+  state.newAction = '';
+  state.systemChallenge = null;
+  save();
+  render();
+}
+
+function removeAction(id) {
+  state.actions = state.actions.filter(action => action.id !== id);
+  state.systemChallenge = null;
+  save();
+  render();
+}
+
+function moveAction(id, direction) {
+  const index = state.actions.findIndex(action => action.id === id);
+  if (index < 0) return;
+  const target = index + direction;
+  if (target < 0 || target >= state.actions.length) return;
+  const next = [...state.actions];
+  [next[index], next[target]] = [next[target], next[index]];
+  state.actions = next;
+  save();
+  render();
+}
+
+function setActionStatus(id, status) {
+  const action = actionById(id);
+  if (!action) return;
+  action.status = status;
+  save();
+  render();
+}
+
+function setActionHours(id, requested) {
+  const action = actionById(id);
+  if (!action) return;
+  const current = Number(action.hours) || 0;
+  const maxAllowed = current + reserveHours();
+  action.hours = clamp(requested, 0, maxAllowed);
+  save();
+  render();
+}
+
+function updateTotalHours(value) {
+  const next = Math.max(1, Number(value) || 1);
+  state.totalHours = next;
+  const totalAllocated = allocatedHours();
+  if (totalAllocated > next && totalAllocated > 0) {
+    const ratio = next / totalAllocated;
+    let used = 0;
+    state.actions.forEach((action, index) => {
+      if (index === state.actions.length - 1) {
+        action.hours = Math.max(0, next - used);
+      } else {
+        action.hours = Math.floor((Number(action.hours) || 0) * ratio);
+        used += action.hours;
+      }
+    });
+  }
+  save();
+  render();
+}
+
+function freezeBaseline() {
+  if (!state.transition.trim() || !state.actions.length) return;
+  state.baselineSnapshot = {
+    transition: state.transition,
+    desiredState: state.desiredState,
+    horizon: state.horizon,
+    totalHours: state.totalHours,
+    actions: state.actions.map(({ id, title, hours, status }) => ({ id, title, hours, status })),
+    frozenAt: new Date().toISOString(),
+  };
+  state.baselineFrozen = true;
+  state.systemChallenge = null;
+  save();
+  render();
+}
+
+function unfreezeBaseline() {
+  state.baselineFrozen = false;
+  state.baselineSnapshot = null;
+  state.systemChallenge = null;
+  save();
+  render();
+}
+
+function runChallenge() {
+  if (!state.baselineFrozen) return;
+  const text = `${state.transition} ${state.desiredState}`.toLowerCase();
+  const orgTransition = /ארגונ|מנהלים|חברות|enterprise|b2b/.test(text);
+  const suggestions = [];
+
+  state.actions.forEach((action, index) => {
+    const title = action.title.toLowerCase();
+    let suggestedStatus = action.status;
+    let reason = 'אין כרגע סיבה מבנית לשנות את המיקום שלך.';
+    let reverse = 'ראיה חדשה שמגלה dependency, קהל אחר או מנגנון אחר יכולה לשנות את ההמלצה.';
+
+    if (orgTransition && /אתר|פודקאסט|תוכן|לינקדאין|וובינר|מיתוג/.test(title)) {
+      suggestedStatus = 'later';
+      reason = 'זו פעולה סבירה, אבל היא מקבעת מסר/ערוץ לפני שנבדק מספיק טוב מי בוחר ולפי איזה קריטריון.';
+      reverse = 'אם כבר קיימת ראיה ישירה ועדכנית לגבי buyer, criterion ו-proof נדרש — אפשר להחזיר אותה קדימה.';
+    } else if (/שיח|ראיונ|לקוח|מנהלים|פנייה|outreach|מחקר/.test(title)) {
+      suggestedStatus = 'learn';
+      reason = 'הפעולה הזאת יכולה להחזיר מידע שמבדיל בין כמה מסלולים לפני התחייבות גדולה יותר.';
+      reverse = 'אם המידע כבר קיים ממקור חיצוני אמין, אין צורך לבצע את הלמידה שוב.';
+    } else if (index === 0) {
+      suggestedStatus = 'now';
+      reason = 'הפעולה הראשונה שלך נשארת ברירת המחדל כל עוד אין ראיה שמצדיקה להפוך אותה.';
+    }
+
+    if (suggestedStatus !== action.status || reason !== 'אין כרגע סיבה מבנית לשנות את המיקום שלך.') {
+      suggestions.push({ actionId: action.id, suggestedStatus, reason, reverse, applied: false, rejected: false });
+    }
+  });
+
+  const hasDiscoveryAction = state.actions.some(action => /שיח|ראיונ|לקוח|מנהלים|מחקר/.test(action.title.toLowerCase()));
+  const proposedAction = orgTransition && !hasDiscoveryAction ? {
+    id: uid(),
+    title: 'לקיים 5 שיחות קצרות עם בעלי תפקידים רלוונטיים לפני בניית המעטפת',
+    status: 'learn',
+    hours: Math.min(8, reserveHours()),
+    reason: 'החוב המרכזי כרגע הוא להבין מי בוחר, לפי מה, ואיזה proof מוריד סיכון. זו פעולה שמחזירה מידע לפני lock-in.',
+    reverse: 'אם המידע הזה כבר קיים ממקור חיצוני עדכני ואמין, אין צורך להוסיף את הפעולה.',
+  } : null;
+
+  state.systemChallenge = {
+    generatedAt: new Date().toISOString(),
+    suggestions,
+    proposedAction,
+  };
+  save();
+  render();
+}
+
+function applySuggestion(actionId) {
+  const challenge = state.systemChallenge?.suggestions?.find(item => item.actionId === actionId);
+  const action = actionById(actionId);
+  if (!challenge || !action) return;
+  action.status = challenge.suggestedStatus;
+  challenge.applied = true;
+  challenge.rejected = false;
+  save();
+  render();
+}
+
+function rejectSuggestion(actionId) {
+  const challenge = state.systemChallenge?.suggestions?.find(item => item.actionId === actionId);
+  if (!challenge) return;
+  challenge.rejected = true;
+  challenge.applied = false;
+  save();
+  render();
+}
+
+function acceptProposedAction() {
+  const proposed = state.systemChallenge?.proposedAction;
+  if (!proposed) return;
+  const available = reserveHours();
+  state.actions.push({
+    id: proposed.id,
+    title: proposed.title,
+    status: proposed.status,
+    hours: Math.min(proposed.hours, available),
+    source: 'system-proposal',
+  });
+  state.systemChallenge.proposedAction = null;
+  save();
+  render();
+}
+
+function reset() {
+  Object.assign(state, JSON.parse(JSON.stringify(blank)));
+  save();
+  render();
+}
+
+function loadDemo() {
+  Object.assign(state, JSON.parse(JSON.stringify(blank)));
+  state.transition = 'אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים בלי לבזבז חודשים על מיתוג שלא יזיז את העסק.';
+  state.desiredState = 'שמנהלים בארגונים יראו בי אופציה לגיטימית ויקבעו שיחות על תהליכי ייעוץ.';
+  state.horizon = 3;
+  state.totalHours = 50;
+  state.actions = demoActions.map(action => ({ id: uid(), source: 'user', ...action }));
+  save();
+  render();
+}
+
+const statusLabel = status => ({ now: 'עכשיו', later: 'אחר כך', learn: 'לברר' }[status] || status);
+
 function header() {
-  const labels = ['המעבר','לפני ההמלצה','העדשה שלך','מה עכשיו','ההכרעה שלך'];
-  const current = stepIndex();
   return `
     <header class="site-header">
       <div class="brand-lockup">
         <div class="logo-mark">P</div>
-        <div><b>ProofMiner</b><span>להחליט מה עכשיו</span></div>
+        <div><b>ProofMiner</b><span>מרחב החלטה מקצועי</span></div>
       </div>
       <div class="header-actions">
         <span class="preview-badge">Preview ניסויי</span>
-        <button class="text-btn" data-action="reset">התחל מחדש</button>
+        <button class="text-btn" data-action="demo">טען דוגמה</button>
+        <button class="text-btn" data-action="reset">אפס</button>
       </div>
-    </header>
-    <nav class="episode-progress" aria-label="שלבי התהליך">
-      ${labels.map((x,i)=>`<div class="episode-step ${i+1<current?'done':''} ${i+1===current?'active':''}"><span>${i+1}</span><b>${x}</b></div>`).join('')}
-    </nav>`;
+    </header>`;
 }
 
-function transitionScreen() {
+function setupPanel() {
   return `
-    <main class="stage focus-stage">
-      <div class="screen-kicker">מתחילים במה שקורה אצלך — לא בקטגוריה שלנו</div>
-      <h1>מה משתנה אצלך מקצועית עכשיו?</h1>
-      <p class="lead">ספר על שינוי אמיתי שאתה מנסה לייצר: לקוחות אחרים, תפקיד אחר, הצעה חדשה, קהל חדש או שלב חדש בעסק.</p>
-
-      <section class="paper primary-card">
-        <label class="big-field">
-          <span>מה קורה עכשיו?</span>
-          <textarea id="transition" rows="5" placeholder="לדוגמה: אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים, אבל לא ברור לי במה להשקיע קודם.">${esc(state.transition)}</textarea>
-        </label>
-        <div class="two-fields">
-          <label><span>מה אתה עושה מקצועית? <small>אופציונלי</small></span><input id="profession" value="${esc(state.profession)}" placeholder="יועץ, מנהל פרויקטים, משווק..." /></label>
-          <label><span>מה היית רוצה שיהיה נכון במקום? <small>אופציונלי</small></span><input id="desiredState" value="${esc(state.desiredState)}" placeholder="למשל: שמנהלים בארגונים יפנו אליי..." /></label>
+    <section class="setup-panel paper">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">01 · מגדירים את המעבר</span>
+          <h1>מה אתה מנסה לשנות מקצועית?</h1>
         </div>
-        <div class="card-actions">
-          <button class="primary" data-action="transition-next" ${state.transition.trim()?'':'disabled'}>המשך <span>←</span></button>
-          <button class="secondary" data-action="demo">טען מקרה לדוגמה</button>
-        </div>
-      </section>
-
-      <section class="quiet-principles">
-        <div><b>לא צריך לדעת מה הבעיה “באמת”</b><span>אנחנו שומרים את הניסוח שלך לפני שנשפיע עליו.</span></div>
-        <div><b>לא מתחילים במחקר רחב</b><span>נחפש רק מידע שיכול לשנות החלטה.</span></div>
-        <div><b>לא מחפשים תשובה מפתיעה</b><span>גם KEEP יכול להיות תוצאה טובה אם התוכנית שלך שורדת.</span></div>
-      </section>
-    </main>`;
-}
-
-function baselineScreen() {
-  return `
-    <main class="stage split-stage">
-      <aside class="context-rail">
-        <span>המעבר שלך</span>
-        <b>${esc(state.transition)}</b>
-        ${state.desiredState ? `<small>מצב רצוי: ${esc(state.desiredState)}</small>` : ''}
-        <button class="text-btn" data-action="back-transition">ערוך</button>
-      </aside>
-
-      <section class="content-column">
-        <div class="screen-kicker">לפני ההמלצה</div>
-        <h1>אם לא היינו כאן — מה היית עושה ב־30 הימים הקרובים?</h1>
-        <p class="lead">זה לא מבחן. אנחנו מקפיאים את התוכנית שלך לפני שהמערכת משנה אותה.</p>
-
-        <div class="baseline-banner"><b>לפני ההמלצה</b><span>נשמור את זה כנקודת ההתחלה, כדי שלא נכתוב בדיעבד סיפור נוח יותר.</span></div>
-
-        <section class="paper primary-card">
-          <label class="big-field">
-            <span>הפעולות שאתה מתכוון לעשות</span>
-            <textarea id="baselinePlan" rows="7" placeholder="כל פעולה בשורה חדשה\nלמשל: לשכתב אתר\nלהתחיל לפרסם יותר\nלקבוע 5 שיחות">${esc(state.baselinePlan)}</textarea>
-          </label>
-          <div class="two-fields resource-fields">
-            <label><span>כמה שעות בערך?</span><input id="hours" inputmode="numeric" value="${esc(state.hours)}" placeholder="30" /></label>
-            <label><span>כמה כסף בערך? <small>אם רלוונטי</small></span><input id="budget" inputmode="numeric" value="${esc(state.budget)}" placeholder="3000" /></label>
-          </div>
-          <label class="big-field compact-field"><span>למה אתה חושב שזה יעבוד?</span><textarea id="why" rows="3" placeholder="מה ההנחה שמחברת בין הפעולות לבין התוצאה שאתה רוצה?">${esc(state.why)}</textarea></label>
-          <label class="big-field compact-field"><span>מה לדעתך מעכב אותך כרגע?</span><textarea id="bottleneck" rows="3" placeholder="גם “אני לא יודע” זו תשובה טובה.">${esc(state.bottleneck)}</textarea></label>
-          <div class="card-actions">
-            <button class="primary" data-action="baseline-next" ${state.baselinePlan.trim()?'':'disabled'}>שמור את נקודת ההתחלה <span>←</span></button>
-          </div>
-        </section>
-      </section>
-    </main>`;
-}
-
-function mirrorScreen() {
-  const profession = state.profession || 'המקצוע שלך';
-  return `
-    <main class="stage split-stage">
-      <aside class="context-rail compact-rail">
-        <span>התוכנית שלך בלי המערכת</span>
-        <div class="baseline-list">${lines(state.baselinePlan).map(x=>`<em>${esc(x)}</em>`).join('')}</div>
-        <small>${state.hours ? `${esc(state.hours)} שעות` : ''}${state.hours && state.budget ? ' · ' : ''}${state.budget ? `₪${esc(state.budget)}` : ''}</small>
-      </aside>
-
-      <section class="content-column">
-        <div class="screen-kicker">עדשה אופציונלית</div>
-        <h1>בוא נבדוק רגע דרך העיניים המקצועיות שלך.</h1>
-        <p class="lead">לפעמים יש אצלך כלי אבחון שאתה מפעיל על אחרים אבל לא על עצמך. אם הוא לא מוסיף להחלטה — נדלג עליו.</p>
-
-        <section class="paper mirror-card">
-          <div class="lens-note"><span>עדשה, לא תשובה</span><p>אנחנו בודקים אם הדרך שבה אתה עובד כ־${esc(profession)} חושפת משהו שימושי. אחר כך נבדוק גם איפה האנלוגיה נשברת.</p></div>
-
-          <label class="big-field">
-            <span>אם אדם במצב שלך היה מגיע אליך כלקוח — מה היית בודק קודם?</span>
-            <textarea id="mirror" rows="6" placeholder="אל תספר את כל המתודולוגיה. כתוב רק מה היית בודק לפני שאתה ממליץ לו על פעולה.">${esc(state.mirror)}</textarea>
-          </label>
-
-          <div class="mirror-boundary">
-            <b>לפני שמשתמשים בעדשה</b>
-            <span>המקצוע שלך יכול לעזור לראות את הבעיה — והוא גם יכול להסתיר דברים. המערכת לא תתייחס למה שכתבת כעובדה על השוק.</span>
-          </div>
-
-          <div class="card-actions">
-            <button class="primary" data-action="use-mirror" ${state.mirror.trim()?'':'disabled'}>השתמש בעדשה הזאת <span>←</span></button>
-            <button class="secondary" data-action="skip-mirror">דלג — זה לא מוסיף כרגע</button>
-          </div>
-        </section>
-      </section>
-    </main>`;
-}
-
-function makeDecision() {
-  const planned = lines(state.baselinePlan);
-  const first = planned[0] || 'הפעולה הראשונה שתכננת';
-  const rest = planned.slice(1);
-  const mirrorUsed = state.mirrorChoice === 'use' && state.mirror.trim();
-  const transitionText = `${state.transition} ${state.desiredState} ${state.bottleneck}`.toLowerCase();
-  const demoLike = /ארגונ|מנהלים|עצמאים/.test(transitionText);
-
-  let now;
-  let later;
-  let learn;
-
-  if (demoLike) {
-    now = {
-      status:'ADD',
-      title:'לברר איך ההחלטה באמת מתקבלת לפני שבונים את כל המעטפת',
-      detail:'לקבוע 5 שיחות קצרות עם מנהלים / בעלי תפקידים רלוונטיים ולחלץ: מי מחזיק את הבעיה, לפי מה נבחר ספק, ואיזה proof מוריד סיכון.',
-      resource:'כ־8–10 שעות',
-      source:'מסקנה',
-      reason: mirrorUsed ? 'העדשה המקצועית שלך מצביעה על כך שאתה עצמך לא היית מתחיל מערוץ לפני שהגדרת buyer + criterion. זה משנה את סדר הפעולות.' : 'התוכנית הנוכחית משקיעה בנראות לפני שהוגדר מספיק טוב מי צריך לבחור ובאיזה קריטריון.',
-      reverse:'אם כבר קיימת אצלך ראיה ישירה ועדכנית שמגדירה buyer, criterion ו־proof נדרש — הצעד הזה יכול להתקצר או להיעלם.'
-    };
-    later = {
-      status:'DELAY',
-      title: rest.length ? rest.join(' · ') : first,
-      detail:'לא מבטלים. דוחים עד שנדע מה המסר וה־proof צריכים לעשות עבור הקונה הרלוונטי.',
-      resource: state.hours ? `מתוך ${esc(state.hours)} השעות שתכננת` : 'המשאב שתכננת',
-      source:'ממך',
-      reason:'אלה פעולות סבירות, אבל כרגע הן יוצרות lock-in לפני שהנחות הקנייה נבדקו.',
-      reverse:'אם השיחות מראות שהבעיה אינה buyer/criterion אלא רק distribution — מחזירים את פעולות הנראות קדימה.'
-    };
-    learn = {
-      status:'LEARN',
-      title:'מה באמת מונע את המעבר לשוק הארגוני?',
-      detail:'להבדיל בין ארבע השערות: מיצוב, proof, access למקבלי החלטות, או עקביות / capacity.',
-      resource:'שאלה שמסוגלת לשנות את ההקצאה',
-      source:'השערה לבדיקה',
-      reason:'כל אחת מהשערות מובילה לתוכנית אחרת. כרגע אין הצדקה לבחור אחת רק כי היא נשמעת סבירה.',
-      reverse:'הסיגנל הראשון שמבדיל בין ההשערות צריך לשנות את התוכנית — לא לחזק אותה בכוח.'
-    };
-  } else {
-    now = {
-      status:'KEEP',
-      title:first,
-      detail:'ב־Preview אין כרגע ראיה חיצונית שמצדיקה להפוך את הפעולה הראשונה שלך. לכן היא נשארת — אבל עם תנאי עצירה ברור.',
-      resource: state.hours ? `חלק מתוך ${esc(state.hours)} השעות שתכננת` : 'משאב מוגבל',
-      source:'ממך',
-      reason: mirrorUsed ? `העדשה שהבאת מוסיפה קריטריון: ${firstLine(state.mirror) || 'בדיקה מקצועית משלך'}. היא לא מספיקה לבדה כדי לבטל את התוכנית.` : 'המערכת לא מייצרת שינוי רק כדי להראות ערך.',
-      reverse:'ראיה חדשה שמראה שהפעולה תלויה ב־prerequisite אחר או שהקהל אינו מגיב למנגנון הזה.'
-    };
-    later = {
-      status: rest.length ? 'DELAY' : 'REDUCE',
-      title: rest.length ? rest.join(' · ') : 'להרחיב את התוכנית לפני שיש signal ראשון',
-      detail:'שמור את שאר המשאבים עד שהפעולה הראשונה מחזירה מידע שמצדיק הרחבה.',
-      resource: state.budget ? `הגן כרגע על ₪${esc(state.budget)}` : 'הגן על הזמן והקשב שנותרו',
-      source:'מסקנה',
-      reason:'כאשר אי־הוודאות גבוהה, staged commitment שומר option value ומקטין lock-in.',
-      reverse:'signal מוקדם וחזק שמאשר שהמנגנון עובד יכול להצדיק האצה.'
-    };
-    learn = {
-      status:'LEARN',
-      title: state.bottleneck || 'מהו צוואר הבקבוק שבאמת משנה את סדר הפעולות?',
-      detail:'נדרש מידע חיצוני רק אם התשובה יכולה להפוך את הפעולה הראשונה או לשנות את המשאב שמוקצה לה.',
-      resource:'לא לחקור מעבר למה שמשנה החלטה',
-      source:'השערה לבדיקה',
-      reason:'זהו החוב שנותר לפני שאפשר לתת המלצה חזקה יותר בלי להמציא ודאות.',
-      reverse:'כאשר מתקבלת ראיה שמבדילה בין החלופות, החוב נסגר ונדרשת הקצאה מחדש.'
-    };
-  }
-
-  state.decision = { now, later, learn, mirrorUsed };
-  save();
-}
-
-function evidenceBadge(source) {
-  const cls = source === 'ממך' ? 'from-user' : source === 'מהשטח' ? 'from-field' : source === 'מסקנה' ? 'inference' : 'hypothesis';
-  return `<span class="evidence-badge ${cls}">${esc(source)}</span>`;
-}
-
-function decisionCard(type, card) {
-  return `
-    <article class="decision-card ${type}">
-      <div class="decision-card-head">
-        <span class="status-pill">${esc(card.status)}</span>
-        ${evidenceBadge(card.source)}
+        <span class="quiet-badge">לא צריך לדעת עדיין מה הפתרון</span>
       </div>
-      <h3>${esc(card.title)}</h3>
-      <p>${esc(card.detail)}</p>
-      <div class="resource-line"><span>משאב</span><b>${card.resource}</b></div>
-      <details>
-        <summary>למה?</summary>
-        <p>${esc(card.reason)}</p>
-      </details>
-      <details>
-        <summary>מה יגרום לנו לשנות כיוון?</summary>
-        <p>${esc(card.reverse)}</p>
-      </details>
+      <label class="big-field">
+        <span>המעבר במילים שלך</span>
+        <textarea id="transition" rows="4" placeholder="לדוגמה: אני רוצה לעבור מייעוץ לעצמאים לייעוץ לארגונים, ולא ברור לי במה להשקיע קודם.">${esc(state.transition)}</textarea>
+      </label>
+      <div class="two-fields">
+        <label><span>מה היית רוצה שיהיה נכון במקום? <small>אופציונלי</small></span><input id="desiredState" value="${esc(state.desiredState)}" placeholder="למשל: שמנהלים יפנו אליי..." /></label>
+        <label class="horizon-field"><span>אופק החלטה: <b>${esc(state.horizon)} חודשים</b></span><input id="horizon" type="range" min="1" max="12" step="1" value="${esc(state.horizon)}" /></label>
+      </div>
+    </section>`;
+}
+
+function actionComposer() {
+  return `
+    <section class="action-composer paper">
+      <div>
+        <span class="eyebrow">02 · מה באמת על השולחן?</span>
+        <h2>הוסף את הפעולות שאתה שוקל</h2>
+        <p>לא צריך תוכנית מלאה. רק דברים שבאמת מתחרים עכשיו על הזמן שלך.</p>
+      </div>
+      <div class="composer-row">
+        <input id="newAction" value="${esc(state.newAction)}" placeholder="למשל: לשכתב אתר" />
+        <button class="primary" data-action="add-action">הוסף פעולה</button>
+      </div>
+    </section>`;
+}
+
+function resourceBar() {
+  const total = Math.max(1, Number(state.totalHours) || 1);
+  const segments = state.actions.filter(action => action.hours > 0).map(action => {
+    const width = Math.max(2, (action.hours / total) * 100);
+    return `<div class="resource-segment" style="--segment:${width}%" title="${esc(action.title)} · ${esc(action.hours)} שעות"><span>${esc(action.hours)}h</span></div>`;
+  }).join('');
+  const reserve = reserveHours();
+  const reserveWidth = Math.max(0, (reserve / total) * 100);
+  return `
+    <section class="resource-panel paper">
+      <div class="resource-head">
+        <div><span class="eyebrow">03 · משאב מוגבל</span><h2>יש לך ${esc(total)} שעות להקצות</h2></div>
+        <label class="total-hours"><span>סה״כ שעות</span><input id="totalHours" type="number" min="1" max="500" value="${esc(total)}" /></label>
+      </div>
+      <div class="allocation-bar" aria-label="חלוקת שעות">${segments}<div class="reserve-segment" style="--segment:${reserveWidth}%"><span>${esc(reserve)}h פנויות</span></div></div>
+      <p class="resource-rule">כשאתה נותן יותר שעות לפעולה אחת, הן נגרעות מהיתרה. אי אפשר לתת לכולן עדיפות מלאה.</p>
+    </section>`;
+}
+
+function actionCard(action) {
+  const max = (Number(action.hours) || 0) + reserveHours();
+  const challenge = state.systemChallenge?.suggestions?.find(item => item.actionId === action.id);
+  return `
+    <article class="action-card" draggable="true" data-action-id="${esc(action.id)}">
+      <div class="drag-handle" aria-hidden="true">⋮⋮</div>
+      <div class="action-main">
+        <input class="action-title-input" data-action-title="${esc(action.id)}" value="${esc(action.title)}" aria-label="שם הפעולה" />
+        <div class="status-switch" role="group" aria-label="מצב הפעולה">
+          ${['now','later','learn'].map(status => `<button class="status-btn ${action.status === status ? 'active' : ''}" data-set-status="${status}" data-id="${esc(action.id)}">${statusLabel(status)}</button>`).join('')}
+        </div>
+        <div class="hours-control">
+          <div class="hours-label"><span>שעות</span><b>${esc(action.hours)}h</b><small>מקסימום זמין עכשיו: ${esc(max)}h</small></div>
+          <input type="range" min="0" max="${esc(max)}" step="1" value="${esc(action.hours)}" data-hours="${esc(action.id)}" aria-label="שעות לפעולה ${esc(action.title)}" />
+          <div class="hours-buttons"><button data-hours-step="-1" data-id="${esc(action.id)}">−</button><button data-hours-step="1" data-id="${esc(action.id)}">+</button></div>
+        </div>
+      </div>
+      <div class="action-tools">
+        <button class="icon-btn" data-move="-1" data-id="${esc(action.id)}" title="הזז למעלה">↑</button>
+        <button class="icon-btn" data-move="1" data-id="${esc(action.id)}" title="הזז למטה">↓</button>
+        <button class="icon-btn danger" data-remove="${esc(action.id)}" title="מחק">×</button>
+      </div>
+      ${challenge ? challengeBlock(action, challenge) : ''}
     </article>`;
 }
 
-function decisionScreen() {
-  if (!state.decision) makeDecision();
-  const d = state.decision;
+function challengeBlock(action, challenge) {
+  const changed = challenge.suggestedStatus !== action.status;
   return `
-    <main class="stage decision-stage">
-      <section class="decision-intro">
-        <div class="screen-kicker">זו לא תוכנית עבודה מלאה</div>
-        <h1>ההחלטה עכשיו היא איפה לשים את המשאב הבא.</h1>
-        <p class="lead">ה־Preview מפריד בין מה שכדאי לעשות, מה סביר אבל מוקדם מדי, ומה צריך לברר לפני שמתחייבים.</p>
-      </section>
-
-      <section class="before-after paper">
-        <div>
-          <span>לפני</span>
-          <b>${lines(state.baselinePlan).map(x=>esc(x)).join(' · ') || 'לא הוגדרה תוכנית'}</b>
-        </div>
-        <div class="ba-arrow">←</div>
-        <div>
-          <span>אחרי</span>
-          <b>${esc(d.now.title)}</b>
-        </div>
-      </section>
-
-      <section class="decision-board">
-        <div class="lane lane-now"><div class="lane-title"><span>01</span><b>לעשות עכשיו</b></div>${decisionCard('now', d.now)}</div>
-        <div class="lane lane-later"><div class="lane-title"><span>02</span><b>לא עכשיו</b></div>${decisionCard('later', d.later)}</div>
-        <div class="lane lane-learn"><div class="lane-title"><span>03</span><b>לברר לפני שמחליטים</b></div>${decisionCard('learn', d.learn)}</div>
-      </section>
-
-      <section class="trust-strip">
-        <div><span class="dot from-user-dot"></span><b>ממך</b><small>מה שאמרת או תכננת</small></div>
-        <div><span class="dot inference-dot"></span><b>מסקנה</b><small>פירוש של המערכת</small></div>
-        <div><span class="dot hypothesis-dot"></span><b>השערה לבדיקה</b><small>עדיין לא ראיה מהשוק</small></div>
-      </section>
-
-      <div class="decision-footer">
-        <button class="primary" data-action="decision-next">אני רוצה להכריע בעצמי <span>←</span></button>
-        <button class="secondary" data-action="back-mirror">חזור ושנה את העדשה</button>
+    <div class="challenge-block ${challenge.applied ? 'accepted' : ''} ${challenge.rejected ? 'rejected' : ''}">
+      <div class="challenge-head"><span>אתגר של המערכת</span>${changed ? `<b>${statusLabel(action.status)} → ${statusLabel(challenge.suggestedStatus)}</b>` : '<b>בדיקת הנחה</b>'}</div>
+      <p>${esc(challenge.reason)}</p>
+      <details><summary>מה יגרום לאתגר הזה להיעלם?</summary><p>${esc(challenge.reverse)}</p></details>
+      <div class="challenge-actions">
+        <button class="mini-primary" data-apply-suggestion="${esc(action.id)}">החל את השינוי</button>
+        <button class="mini-secondary" data-reject-suggestion="${esc(action.id)}">אני לא מקבל</button>
       </div>
-    </main>`;
+    </div>`;
 }
 
-function commitScreen() {
-  const d = state.decision || {};
+function lane(status, title, subtitle) {
+  const actions = state.actions.filter(action => action.status === status);
   return `
-    <main class="stage commit-stage">
-      <div class="screen-kicker">המערכת המליצה. עכשיו ההכרעה חוזרת אליך.</div>
-      <h1>מה אתה באמת הולך לעשות?</h1>
-      <p class="lead">אנחנו לא מסמנים “המלצה התקבלה”. אנחנו שומרים מה אתה בוחר, מה אתה משנה, ומה יגרום לך להפוך את ההחלטה.</p>
+    <section class="lane" data-lane="${status}">
+      <header><div><span>${title}</span><small>${subtitle}</small></div><b>${actions.length}</b></header>
+      <div class="lane-dropzone" data-drop-status="${status}">
+        ${actions.length ? actions.map(actionCard).join('') : '<div class="empty-lane">גרור לכאן פעולה או השתמש בכפתורי המצב</div>'}
+      </div>
+    </section>`;
+}
 
-      <div class="commit-grid">
-        <section class="paper commit-form">
-          <label class="big-field"><span>הפעולה הראשונה שלך</span><textarea id="commitment" rows="4" placeholder="כתוב במילים שלך — גם אם זה שונה מההמלצה.">${esc(state.commitment)}</textarea></label>
-          <label class="big-field compact-field"><span>מה בהמלצה אתה לא מקבל או רוצה לשנות?</span><textarea id="challenge" rows="4" placeholder="אפשר גם לכתוב: כרגע אני מקבל הכול, אבל אני לא בטוח לגבי...">${esc(state.challenge)}</textarea></label>
-          <label class="big-field compact-field"><span>איזו ראיה תגרום לך לשנות כיוון?</span><textarea id="reversal" rows="4" placeholder="למשל: אם 5 שיחות יראו ש...">${esc(state.reversal)}</textarea></label>
-          <div class="card-actions"><button class="primary" data-action="finish" ${state.commitment.trim()?'':'disabled'}>שמור כהחלטה שלי <span>✓</span></button></div>
+function baselineStrip() {
+  if (!state.baselineFrozen || !state.baselineSnapshot) return '';
+  const count = state.baselineSnapshot.actions.length;
+  return `
+    <section class="baseline-strip">
+      <div><span>נקודת ההתחלה נשמרה</span><b>${count} פעולות · ${esc(state.baselineSnapshot.totalHours)} שעות</b></div>
+      <button class="text-btn" data-action="unfreeze">פתח מחדש</button>
+    </section>`;
+}
+
+function proposedActionBlock() {
+  const proposed = state.systemChallenge?.proposedAction;
+  if (!proposed) return '';
+  return `
+    <section class="proposed-action paper">
+      <span class="eyebrow">פעולה שהמערכת מציעה להוסיף — לא עובדה מהשטח</span>
+      <h3>${esc(proposed.title)}</h3>
+      <p>${esc(proposed.reason)}</p>
+      <div><b>${esc(proposed.hours)} שעות מוצעות</b><button class="primary" data-action="accept-proposed">הוסף למרחב שלי</button></div>
+    </section>`;
+}
+
+function workspaceScreen() {
+  const canFreeze = state.transition.trim() && state.actions.length > 0;
+  return `
+    ${header()}
+    <main class="workspace-shell">
+      ${setupPanel()}
+      ${actionComposer()}
+      ${state.actions.length ? resourceBar() : ''}
+      ${baselineStrip()}
+
+      ${state.actions.length ? `
+        <section class="board-head">
+          <div><span class="eyebrow">04 · תזיז את התוכנית, לא את הטקסט</span><h2>איפה כל פעולה נמצאת עכשיו?</h2><p>גרור בין אזורים, סדר מחדש, או השתמש בכפתורים. המודל נשמר תוך כדי.</p></div>
+          <div class="board-actions">
+            ${!state.baselineFrozen ? `<button class="primary" data-action="freeze" ${canFreeze ? '' : 'disabled'}>שמור את התוכנית שלי לפני האתגר</button>` : `<button class="primary" data-action="challenge">${state.systemChallenge ? 'הרץ אתגר מחדש' : 'אתגר את התוכנית שלי'}</button>`}
+          </div>
         </section>
+        <section class="decision-board direct-board">
+          ${lane('now', 'עכשיו', 'משהו שאתה באמת מתכוון לבצע')}
+          ${lane('later', 'אחר כך', 'סביר, אבל לא צריך משאב עכשיו')}
+          ${lane('learn', 'לברר', 'פעולה שמטרתה להחזיר מידע')}
+        </section>
+        ${proposedActionBlock()}
+      ` : '<section class="empty-workspace"><b>המרחב ייבנה מתוך הפעולות שלך.</b><span>הוסף פעולה אחת כדי להתחיל.</span></section>'}
 
-        <aside class="paper authorship-card">
-          <span>ההחלטה נשארת שלך</span>
-          <h3>המערכת לא מקבלת בעלות על ההחלטה.</h3>
-          <p>אם אתה לא יכול להסביר למה בחרת, לערער על הנחה, או לומר מה ישנה את דעתך — עוד לא סיימנו.</p>
-          <div class="mini-summary"><span>המלצת המערכת</span><b>${esc(d.now?.title || '')}</b></div>
-        </aside>
-      </div>
-    </main>`;
-}
-
-function doneScreen() {
-  return `
-    <main class="stage done-stage">
-      <div class="done-mark">✓</div>
-      <div class="screen-kicker">החלטה נשמרה</div>
-      <h1>עכשיו יש למה לחזור כשהעולם יענה.</h1>
-      <p class="lead">השווי העתידי של המערכת יגיע רק אם נוכל להשוות בין מה שחשבת, מה שבחרת, מה שביצעת ומה שקרה — ולדעת מה עדיין רלוונטי בהחלטה הבאה.</p>
-      <section class="paper decision-record">
-        <div><span>המעבר</span><b>${esc(state.transition)}</b></div>
-        <div><span>מה בחרת לעשות</span><b>${esc(state.commitment)}</b></div>
-        <div><span>מה אתה מערער עליו</span><b>${esc(state.challenge || 'לא נרשם ערעור')}</b></div>
-        <div><span>מה ישנה את ההחלטה</span><b>${esc(state.reversal)}</b></div>
-      </section>
-      <div class="done-actions"><button class="primary" data-action="reset">פתח החלטה חדשה</button></div>
+      <footer class="workspace-footer">
+        <span>Preview ניסויי · האתגרים כאן הם מסקנות/השערות של המערכת, לא מחקר שוק מאומת.</span>
+      </footer>
     </main>`;
 }
 
 function render() {
-  const body = state.step === 'transition' ? transitionScreen()
-    : state.step === 'baseline' ? baselineScreen()
-    : state.step === 'mirror' ? mirrorScreen()
-    : state.step === 'decision' ? decisionScreen()
-    : state.step === 'commit' ? commitScreen()
-    : doneScreen();
-
-  app.innerHTML = `<div class="app-shell" dir="rtl">${header()}${body}<footer>Preview ניסויי · אין כאן עדיין מחקר שוק אוטונומי או המלצה אסטרטגית מאומתת</footer></div>`;
+  app.innerHTML = workspaceScreen();
   bind();
 }
 
-function persistInputs() {
-  ['transition','profession','desiredState','baselinePlan','hours','budget','why','bottleneck','mirror','commitment','challenge','reversal'].forEach(k => {
-    const el = document.querySelector(`#${k}`); if (el) state[k] = el.value;
-  });
-  save();
-}
-
 function bind() {
-  document.querySelectorAll('textarea,input').forEach(el => el.addEventListener('input', () => {
-    persistInputs();
-    document.querySelectorAll('[data-action="transition-next"]').forEach(b=>b.disabled=!state.transition.trim());
-    document.querySelectorAll('[data-action="baseline-next"]').forEach(b=>b.disabled=!state.baselinePlan.trim());
-    document.querySelectorAll('[data-action="use-mirror"]').forEach(b=>b.disabled=!state.mirror.trim());
-    document.querySelectorAll('[data-action="finish"]').forEach(b=>b.disabled=!state.commitment.trim());
-  }));
+  document.querySelector('#transition')?.addEventListener('input', e => { state.transition = e.target.value; save(); });
+  document.querySelector('#desiredState')?.addEventListener('input', e => { state.desiredState = e.target.value; save(); });
+  document.querySelector('#horizon')?.addEventListener('input', e => { state.horizon = Number(e.target.value); save(); render(); });
+  document.querySelector('#newAction')?.addEventListener('input', e => { state.newAction = e.target.value; save(); });
+  document.querySelector('#newAction')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addAction(e.target.value); } });
+  document.querySelector('#totalHours')?.addEventListener('change', e => updateTotalHours(e.target.value));
 
-  document.querySelector('[data-action="reset"]')?.addEventListener('click', reset);
-  document.querySelector('[data-action="demo"]')?.addEventListener('click', () => { loadDemo(); go('transition'); });
-  document.querySelector('[data-action="transition-next"]')?.addEventListener('click', () => { persistInputs(); go('baseline'); });
-  document.querySelector('[data-action="back-transition"]')?.addEventListener('click', () => go('transition'));
-  document.querySelector('[data-action="baseline-next"]')?.addEventListener('click', () => { persistInputs(); go('mirror'); });
-  document.querySelector('[data-action="use-mirror"]')?.addEventListener('click', () => { persistInputs(); state.mirrorChoice='use'; state.decision=null; save(); makeDecision(); go('decision'); });
-  document.querySelector('[data-action="skip-mirror"]')?.addEventListener('click', () => { persistInputs(); state.mirrorChoice='skip'; state.decision=null; save(); makeDecision(); go('decision'); });
-  document.querySelector('[data-action="back-mirror"]')?.addEventListener('click', () => go('mirror'));
-  document.querySelector('[data-action="decision-next"]')?.addEventListener('click', () => go('commit'));
-  document.querySelector('[data-action="finish"]')?.addEventListener('click', () => { persistInputs(); state.step='done'; save(); render(); window.scrollTo({top:0,behavior:'smooth'}); });
+  document.querySelectorAll('[data-action-title]').forEach(input => {
+    input.addEventListener('change', e => {
+      const action = actionById(e.target.dataset.actionTitle);
+      if (!action) return;
+      action.title = e.target.value.trim() || action.title;
+      save();
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-hours]').forEach(input => {
+    input.addEventListener('input', e => setActionHours(e.target.dataset.hours, e.target.value));
+  });
+
+  document.querySelectorAll('[data-hours-step]').forEach(button => {
+    button.addEventListener('click', () => {
+      const action = actionById(button.dataset.id);
+      if (!action) return;
+      setActionHours(action.id, (Number(action.hours) || 0) + Number(button.dataset.hoursStep));
+    });
+  });
+
+  document.querySelectorAll('[data-set-status]').forEach(button => {
+    button.addEventListener('click', () => setActionStatus(button.dataset.id, button.dataset.setStatus));
+  });
+
+  document.querySelectorAll('[data-move]').forEach(button => {
+    button.addEventListener('click', () => moveAction(button.dataset.id, Number(button.dataset.move)));
+  });
+
+  document.querySelectorAll('[data-remove]').forEach(button => {
+    button.addEventListener('click', () => removeAction(button.dataset.remove));
+  });
+
+  document.querySelectorAll('[data-apply-suggestion]').forEach(button => {
+    button.addEventListener('click', () => applySuggestion(button.dataset.applySuggestion));
+  });
+
+  document.querySelectorAll('[data-reject-suggestion]').forEach(button => {
+    button.addEventListener('click', () => rejectSuggestion(button.dataset.rejectSuggestion));
+  });
+
+  document.querySelectorAll('[data-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.action;
+      if (action === 'add-action') addAction(state.newAction);
+      if (action === 'freeze') freezeBaseline();
+      if (action === 'unfreeze') unfreezeBaseline();
+      if (action === 'challenge') runChallenge();
+      if (action === 'accept-proposed') acceptProposedAction();
+      if (action === 'demo') loadDemo();
+      if (action === 'reset') reset();
+    });
+  });
+
+  let draggedId = null;
+  document.querySelectorAll('.action-card[draggable="true"]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      draggedId = card.dataset.actionId;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      draggedId = null;
+      card.classList.remove('dragging');
+      document.querySelectorAll('.lane').forEach(x => x.classList.remove('drag-over'));
+    });
+  });
+
+  document.querySelectorAll('[data-drop-status]').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      zone.closest('.lane')?.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => zone.closest('.lane')?.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetStatus = zone.dataset.dropStatus;
+      if (draggedId && targetStatus) setActionStatus(draggedId, targetStatus);
+    });
+  });
 }
 
 render();
