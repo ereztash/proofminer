@@ -1,132 +1,185 @@
 # ProofMiner
 
-ProofMiner is being rebuilt around a broader job than proof selection.
+ProofMiner is being rebuilt around a broader job than proof selection or authority planning.
 
-The current product hypothesis is:
+The current conscious problem hypothesis is:
 
-> **I know I need to build authority / professional standing, but I do not know what is actually right for me to do, or what should come first.**
+> **I know I need to build authority / professional standing, but I do not know where my limited time, money and attention should go first — or what I should not do yet.**
 
-The product aims to move that user from an authority ambition without a route to a **Decision-Ready Authority Map**: a personalized strategic path that explains who to build authority with, what the main gap is, what to do now, what can happen in parallel, what is blocked or premature, and why.
+The current product-value hypothesis is not "give the user an Authority Map".
+
+It is:
+
+> **Improve the user's allocation of scarce resources toward the strongest grounded path to the authority position they want.**
+
+That requires measuring what the user would have done without the product before showing any recommendation.
+
+---
 
 ## Current user-state model
 
 ```text
 A0 — capability / market-response mismatch
   ↓ recognition
-A1 — "I need to build authority, but I do not know the right path or sequence"
-  ↓ activation
-B  — Decision-Ready Authority Map
+A1 — authority need + plausible actions + uncertain allocation
+  ↓ counterfactual capture + analysis
+B  — grounded allocation decision
+     KEEP / ACCELERATE / REORDER / REDUCE / DELAY / STOP / REPLACE / ADD
   ↓ execution
-C  — real authority-building action in the world
+C  — actual resource allocation + action in the world
   ↓ market evidence + learning
-D  — revised map / next best action
+D  — revised allocation / next best action
   ↺
 ```
 
-The primary first-session job is currently **A1 → B**.
+The **Authority Map is the explanation/navigation artifact supporting B**. It is not sufficient evidence of value by itself.
 
-The acquisition / first-screen hierarchy should therefore begin with the user's conscious pain, not with our internal product model:
+---
 
-```text
-conscious pain
-→ promise of a personalized route
-→ minimal input
-→ first strategic value
-→ explanation
-→ deeper mechanism
-→ compounding learning
-```
+## Measurement primitive
+
+Before advice, capture:
+
+> **If this product did not exist, what would you actually do over the next relevant planning window?**
+
+That stated counterfactual becomes the before-state.
+
+After recommendation, compare action by action:
+
+- `KEEP`
+- `ACCELERATE`
+- `REORDER`
+- `REDUCE`
+- `DELAY`
+- `STOP`
+- `REPLACE`
+- `ADD`
+
+Track time, cash and other scarce commitments separately when material.
+
+Do **not** call stopped or delayed work "saved" merely because the system recommended stopping it.
+
+The current North-Star candidate is the construct:
+
+> **Counterfactual Resource Allocation Delta toward O**
+
+It is intentionally not one universal composite score.
+
+See `docs/RESOURCE_REALLOCATION_CONTRACT.md`.
+
+---
 
 ## Current product model
 
-The top-level unit is an **Authority Project**, not a post, score, Proof Move or isolated Decision Moment.
+The top-level unit remains an **Authority Project**.
 
 ```text
 Authority goal
-→ audience path
+→ stated counterfactual allocation
 → person + field model
+→ audience path
 → strategic diagnosis
+→ allocation decision
 → dependency-aware Authority Map
-→ next highest-leverage action
-→ artifact / real-world behavior
+→ real-world action
 → market signal / outcome
 → learning
-→ revised map
+→ revised allocation / map
 ```
 
-The Authority Map must distinguish:
+The system should be able to say not only "do X", but also:
 
-- available now;
-- sequential dependencies;
-- parallel work;
-- blocked actions;
-- premature actions;
-- unlocks;
-- the current highest-leverage action.
+- keep doing X;
+- move Y earlier;
+- reduce Z;
+- delay a reasonable action until a prerequisite exists;
+- stop an action when the opportunity cost is no longer justified;
+- add a higher-leverage action the user had not planned.
 
-It is a dependency graph, not a generic checklist.
+Stopping is not inherently good. Evidence may later reverse a prior `STOP` or `DELAY`.
+
+---
 
 ## ProofMiner remains as a trust subsystem
 
-The v2 evidence work is not discarded. It now sits below the Authority Project when an action requires a capability, outcome or credibility claim.
+The v2 evidence architecture remains useful beneath Authority Actions when a claim needs grounding.
 
-`DecisionMoment`, `EvidenceUnit`, `CandidateClaim`, `EvidenceRelation` and `ProofMove` remain useful for provenance, contradiction handling, privacy and inference discipline.
+`DecisionMoment`, `EvidenceUnit`, `CandidateClaim`, `EvidenceRelation` and `ProofMove` support provenance, contradiction handling, privacy and inference discipline.
 
-Proof is one authority-building mechanism. It is no longer the product's top-level telos.
+Proof is one authority-building mechanism, not the product's top-level telos.
+
+---
 
 ## Governing rule
 
 The repository is governed by a telos-first recursive stop rule.
 
-The current DOD, product model, UX plan and implementation are hypotheses about how to realize the end-to-end telos. They may be rewritten when they block it.
+Every meaningful phase ends with one of:
 
-Every meaningful phase ends with one of four outcomes:
+- `CONTINUE` — a material internal gap remains and is resolvable now;
+- `REPLAN` — the current framing / architecture / metric / sequence blocks O;
+- `FIELD` — reality is now the highest-value information source;
+- `STOP` — no further justified action or reallocation is currently expected to materially improve O.
 
-- `CONTINUE` — a material internal gap remains and can be resolved now;
-- `REPLAN` — the current framing / sequence / architecture itself blocks the telos;
-- `FIELD` — reality is now the highest-value source of information;
-- `STOP` — no further justified action is currently expected to materially improve telos realization.
+The Stop Rule now explicitly asks not only "what should happen next?" but also **where further resources are justified and where they are not**.
 
-A completed checklist is not sufficient for `STOP`.
+A completed checklist or improving metric cannot authorize `STOP`.
+
+---
 
 ## Current lifecycle state
 
-**FIELD — trigger + A1→B comprehension**
+**FIELD — counterfactual → allocation-delta validation**
 
-The latest DOD re-run changed the entry hierarchy: starting directly with "I want to become an authority in X" remains a useful input, but the experience must first meet the ICP at the consciously recognized problem:
+The latest Telos Governance iteration invalidated `Decision-Ready Authority Map` as a sufficient B-state. A user can understand a map perfectly while receiving no additive value if they would execute the same plan anyway.
 
-> **I know I need to build authority, but I do not know what is right for me to do or what should come first.**
+The current field question is therefore:
 
-The current low-fidelity field instrument tests:
+> **Does a grounded personalized analysis materially change where a target user intends to allocate scarce resources — and does later evidence support, weaken or reverse that reallocation?**
 
-> **conscious pain → promise → input → Decision-Ready Authority Map**
+The scripted low-fidelity prototype tests whether the before/after semantics are understandable. Personalized strategic value must be tested with Wizard-of-Oz analysis, not simulated intelligence.
 
-The next justified action is target-user evidence, not unrelated UI polish or more internal architecture refinement.
+---
 
 ## Source of truth
 
 Read these before changing product behavior:
 
 1. `docs/TELOS_GOVERNANCE.md` — highest-authority governing rule.
-2. `PRODUCT_DOCTRINE.md` — current product doctrine and mechanism hypotheses.
-3. `docs/UX_TRANSITION_CONTRACT.md` — trigger, A0→A1→B→C→D transitions and measurable UX lenses.
-4. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates, subordinate to telos governance.
-5. `docs/FIRST_SESSION_FLOW_V3.md` — current pain-first first-session flow.
-6. `docs/FIELD_PROTOCOL_V3.md` — preregistered trigger, comprehension and personalized value tests.
-7. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
-8. `docs/ARCHITECTURE_DECISION_LOG.md` — important invalidated assumptions and architecture decisions.
+2. `docs/RESOURCE_REALLOCATION_CONTRACT.md` — counterfactual baseline, allocation delta and validation contract.
+3. `docs/UX_TRANSITION_CONTRACT.md` — A0→A1→B→C→D user-state transitions.
+4. `docs/DEFINITION_OF_DONE.md` — current falsifiable gates.
+5. `docs/FIRST_SESSION_FLOW_V3.md` — current counterfactual-first session flow.
+6. `docs/FIELD_PROTOCOL_V3.md` — preregistered comprehension + personalized allocation-value tests.
+7. `PRODUCT_DOCTRINE.md` — broader product doctrine and mechanism hypotheses.
+8. `docs/PRODUCT_MODEL.md` — Authority Project, Authority Map and evidence/trust subsystem.
+9. `docs/ARCHITECTURE_DECISION_LOG.md` — invalidated assumptions and architecture decisions.
 
 Deployment/orchestration contracts live under `skills/`.
 
+---
+
 ## Prototype status
 
-The current FIELD instrument is:
+Current FIELD instrument:
 
-`public/authority-prototype-v3-1.html`
+`public/authority-prototype-v3-2.html`
 
-It is intentionally low fidelity. It is **not production UI** and must not be treated as validated intelligence.
+It is intentionally low fidelity and its strategic recommendation is scripted.
 
-A low-fidelity test passes because users recognize the problem and can reconstruct the recommendation, dependencies and next action — not because they say the interface is interesting or attractive.
+It is **not production UI** and **not validated intelligence**.
+
+Its job is to test whether users understand:
+
+```text
+what I planned to do without the product
+→ what changed
+→ where resources moved
+→ why
+→ what evidence should change the allocation again
+```
+
+The personalized Wizard-of-Oz test is the next evidence gate.
 
 ## Run locally
 
