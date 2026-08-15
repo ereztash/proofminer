@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofminer.local/schemas/build-evidence.schema.json",
+  "title": "BuildEvidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "project", "source", "ci", "deployment", "acceptance", "result"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "project": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "commitSha"],
+      "properties": {
+        "branch": { "type": "string", "minLength": 1 },
+        "commitSha": { "type": "string", "minLength": 7 },
+        "pullRequest": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "ci": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["success", "failure", "pending", "not_applicable"] },
+        "runId": { "type": ["integer", "null"] },
+        "details": { "type": ["string", "null"] }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment", "status", "source"],
+      "properties": {
+        "environment": { "enum": ["preview", "production"] },
+        "status": { "enum": ["READY", "ERROR", "BUILDING", "PENDING"] },
+        "source": { "enum": ["git", "api", "cli", "unknown"] },
+        "deploymentId": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] },
+        "httpStatus": { "type": ["integer", "null"], "minimum": 100, "maximum": 599 }
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criterionId", "status"],
+        "properties": {
+          "criterionId": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["pass", "fail", "not_tested", "not_applicable"] },
+          "evidence": { "type": ["string", "null"] },
+          "failureClass": {
+            "type": ["string", "null"],
+            "enum": [null, "IMPLEMENTATION_DEFECT", "ARCHITECTURE_DEFECT", "EVIDENCE_GAP", "ENVIRONMENT_FAILURE"]
+          }
+        }
+      }
+    },
+    "architectureException": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["contradiction", "affectedRequirement", "decisionNeeded"],
+      "properties": {
+        "contradiction": { "type": "string", "minLength": 1 },
+        "affectedRequirement": { "type": "string", "minLength": 1 },
+        "implementationEvidence": { "type": ["string", "null"] },
+        "decisionNeeded": { "type": "string", "minLength": 1 }
+      }
+    },
+    "result": { "enum": ["PREVIEW_READY", "PRODUCTION_READY", "REVISE", "BLOCKED"] }
+  }
+}

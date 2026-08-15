@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofminer.local/schemas/build-contract.schema.json",
+  "title": "BuildContract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "project",
+    "architect",
+    "product",
+    "scope",
+    "acceptance",
+    "delivery",
+    "authorization"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "repository": { "type": ["string", "null"] },
+        "productionBranch": { "type": ["string", "null"] }
+      }
+    },
+    "architect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "decisionId"],
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "decisionId": { "type": "string", "minLength": 1 },
+        "sourceRef": { "type": ["string", "null"] }
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["telos", "primaryActor", "desiredStateChange", "coreMechanism"],
+      "properties": {
+        "telos": { "type": "string", "minLength": 1 },
+        "primaryActor": { "type": "string", "minLength": 1 },
+        "desiredStateChange": { "type": "string", "minLength": 1 },
+        "coreMechanism": { "type": "string", "minLength": 1 },
+        "promise": { "type": ["string", "null"] }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inScope", "nonGoals"],
+      "properties": {
+        "inScope": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "nonGoals": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criteria"],
+      "properties": {
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement", "kind", "blocking"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "statement": { "type": "string", "minLength": 1 },
+              "kind": {
+                "enum": ["behavior", "ux", "evidence", "technical", "visual", "business"]
+              },
+              "blocking": { "type": "boolean" },
+              "verification": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["builder", "target"],
+      "properties": {
+        "builder": { "const": "vercel-app-builder" },
+        "target": { "enum": ["preview", "production"] },
+        "framework": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "blockingIssues"],
+      "properties": {
+        "status": { "enum": ["DRAFT", "BUILD_AUTHORIZED", "REVOKED"] },
+        "blockingIssues": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

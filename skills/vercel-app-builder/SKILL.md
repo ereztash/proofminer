@@ -1,32 +1,71 @@
 ---
 name: vercel-app-builder
-description: Build or wire a web application from GitHub to Vercel with GitHub as the source of truth, automatic CI, Preview deployments for branches/PRs, Production deployments from main, and an end-to-end canary that proves the pipeline really works. Use when the user asks to create, publish, deploy, host, or continue developing an app on Vercel, especially when GitHub and Vercel are connected.
+description: Implement and wire a web application from GitHub to Vercel with GitHub as the source of truth, automatic CI, Preview deployments for branches/PRs, Production deployments from the production branch, and an end-to-end canary that proves the pipeline. In orchestrated product work, consume a BUILD_AUTHORIZED BuildContract from app-orchestrator/AGT Architect and return BuildEvidence without redefining product intent.
 ---
 
 # Vercel App Builder
 
 ## Purpose
 
-Create a durable development pipeline, not a one-off deployment.
+Be the implementation/deployment authority, not the product authority.
 
-The invariant is:
+Deployment invariant:
 
-`feature branch -> GitHub CI -> Vercel Preview -> PR -> merge to main -> GitHub CI -> Vercel Production`
+`feature branch -> GitHub CI -> Vercel Preview -> PR -> merge to production branch -> GitHub CI -> Vercel Production`
 
 GitHub is the source of truth. Vercel is downstream deployment infrastructure.
 
 Do not report the pipeline as complete until it has been proven end to end with a real branch/commit.
 
+## Orchestrated mode
+
+When invoked by `app-orchestrator`, the Builder receives a BuildContract conforming to:
+
+`../app-orchestrator/contracts/build-contract.schema.json`
+
+Before substantive implementation, require:
+
+- `authorization.status = BUILD_AUTHORIZED`
+- no blocking architecture issue
+- product telos, primary actor, desired state change, scope and acceptance criteria present
+
+Treat those fields as upstream authority.
+
+The Builder may choose implementation details inside the authorized scope, including component boundaries, file organization, framework-appropriate patterns, CI mechanics and Vercel configuration.
+
+The Builder must **not** silently change:
+
+- product telos
+- target actor/ICP
+- desired user state change
+- product promise
+- in-scope behavior/non-goals
+- blocking product acceptance criteria
+
+If implementation reveals a contradiction in those fields, return an `ARCHITECTURE_EXCEPTION` rather than patching around the contradiction.
+
+After implementation/validation, return BuildEvidence conforming to:
+
+`../app-orchestrator/contracts/build-evidence.schema.json`
+
+## Direct mode
+
+Direct invocation is valid for infrastructure-only work or implementation work that does not alter product intent, behavior, promise, scope or acceptance criteria.
+
+If the requested change would alter one of those, route back through `app-orchestrator` / Architect.
+
 ## Required inputs
 
-Resolve these from the conversation or connected tools whenever possible instead of asking the user to repeat them:
+Resolve from conversation or connected tools whenever possible instead of asking the user to repeat them:
 
-- GitHub owner/account.
-- Repository name or desired app name.
-- Existing repository URL, if one already exists.
-- Existing Vercel project, if one already exists.
-- Production branch; default to `main` only when the repository actually uses `main`.
-- Framework/build system from the repository; detect rather than guess.
+- GitHub owner/account
+- repository/app identity
+- existing Vercel project
+- production branch
+- framework/build system
+- BuildContract when orchestrated
+
+Detect rather than guess.
 
 ## Tool prerequisites
 
@@ -34,47 +73,49 @@ Prefer connected GitHub and Vercel apps.
 
 1. Load the relevant GitHub skill before repository/PR publishing work.
 2. Load the Vercel API skill before Vercel project/deployment work.
-3. Use Vercel native Git integration when available. Do not default to GitHub Actions deployments with long-lived Vercel tokens when native Git integration can provide the same behavior.
+3. Use Vercel native Git integration when available. Do not default to long-lived Vercel tokens in GitHub Actions when native Git integration provides the required behavior.
 
 ## Workflow
 
-### 1. Establish the source of truth
+### 1. Establish source of truth
 
-- Inspect the target GitHub repository.
-- If no repository exists, create one if the available GitHub tool exposes repository creation. If it does not, ask the user for the single unavoidable manual creation action, then continue automatically.
-- Confirm the default/production branch.
-- Never create a duplicate repository when an intended repository already exists.
+- inspect the target GitHub repository
+- reuse intended repositories/projects instead of creating duplicates
+- confirm default/production branch
+- inspect existing code patterns before writing
 
-### 2. Keep product and infrastructure changes separable
+### 2. Separate product and infrastructure changes
 
-- Work on a feature branch, not directly on `main`, unless the user explicitly requests otherwise and the change is trivial/safe.
-- Keep CI/CD infrastructure changes in a separate PR from substantive product changes when possible.
-- This allows infrastructure to be activated without accidentally shipping unfinished product work.
+- work on a feature branch for substantive changes
+- keep CI/CD infrastructure separable from unfinished product changes when useful
+- do not merge product work merely to activate infrastructure
 
-### 3. Add the build gate
+### 3. Implement only authorized scope
 
-Add `.github/workflows/ci.yml` that runs on:
+- map each blocking acceptance criterion to implementation/verification work
+- keep traceability from requirement to code/test/evidence
+- if a product contradiction emerges, raise `ARCHITECTURE_EXCEPTION`
 
-- `pull_request`
-- pushes to the production branch
+### 4. Add/maintain build gate
 
-Minimum checks:
+CI should run on PRs and production-branch pushes.
+
+Minimum applicable checks:
 
 1. checkout
-2. set up the Node version appropriate for the project
-3. syntax/static check when applicable
-4. deterministic dependency install (`npm ci` when a lockfile exists; otherwise use the project's package manager correctly)
+2. runtime setup
+3. syntax/static/type/lint checks appropriate to the stack
+4. deterministic dependency install
 5. production build
+6. tests when the repository has meaningful automated tests
 
-Use concurrency cancellation for superseded commits on the same branch when appropriate.
+Do not claim CI works merely because workflow YAML exists. Verify a real workflow run succeeds.
 
-Do not claim CI works merely because the YAML file exists. Verify that GitHub registered a workflow run and that the build job completed successfully.
+### 5. Pin Vercel configuration only when useful
 
-### 4. Pin Vercel project configuration in the repository
+Keep `vercel.json` minimal and framework-specific.
 
-Add `vercel.json` only when useful for the detected framework/project. Keep it minimal.
-
-For a simple Vite app this generally includes:
+For a simple Vite app it may contain:
 
 ```json
 {
@@ -82,100 +123,89 @@ For a simple Vite app this generally includes:
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "git": {
-    "deploymentEnabled": true
-  }
+  "git": { "deploymentEnabled": true }
 }
 ```
 
-Do not blindly apply this template to Next.js, Nuxt, SvelteKit, monorepos, or projects with custom roots. Detect and adapt.
-
-### 5. Create or identify the Vercel project
-
-- List the user's Vercel teams and projects.
-- Reuse an existing intended project instead of creating duplicates.
-- If a project must be created, create/deploy it under the correct team and detected framework.
-- Record the Vercel project ID and stable production aliases/domains.
+Do not blindly apply this to Next.js, Nuxt, SvelteKit, monorepos or custom roots.
 
 ### 6. Ensure native Git integration
 
-The desired relationship is:
+Desired relationship:
 
 - Vercel project -> GitHub repository
-- Production branch -> repository production branch
-- feature branches/PRs -> Preview deployments
-- production branch -> Production deployments
+- production branch -> Vercel Production
+- feature branches/PRs -> Vercel Preview
 
-If the connected Vercel tools expose Git repository linking, perform it directly.
+If the connector cannot link Git directly, request only the unavoidable one-time UI action. Then prove the link with a canary; do not trust configuration intent alone.
 
-If they do not expose that write action, give the user only the minimal one-time UI step needed to connect the existing Vercel project to the existing GitHub repository. Do not ask them to create another Vercel project.
+### 7. Prove Preview path
 
-After the user reports the link is complete, do not trust the report alone. Prove it with a canary.
+For a new pipeline or materially changed deployment setup:
 
-### 7. Run the end-to-end canary
+1. create a harmless branch/commit
+2. open a PR
+3. verify GitHub CI starts and succeeds
+4. verify Vercel creates a Git-origin Preview automatically
+5. verify repo/branch/commit metadata
+6. fetch Preview and confirm successful HTTP/app shell
 
-Create a harmless branch such as `agent/deployment-canary` from the production branch.
+### 8. Validate product acceptance in orchestrated mode
 
-Make a harmless, durable change, preferably documentation (for example `DEPLOYMENT.md`).
+Evaluate BuildContract criteria that are testable in Preview.
 
-Open a PR.
+Classify failures as:
 
-Verify all of the following independently:
+- `IMPLEMENTATION_DEFECT`
+- `ARCHITECTURE_DEFECT`
+- `EVIDENCE_GAP`
+- `ENVIRONMENT_FAILURE`
 
-1. GitHub CI starts for the branch/PR.
-2. GitHub CI completes successfully.
-3. Vercel creates a new Preview deployment automatically.
-4. Vercel deployment metadata identifies the expected GitHub repo, branch, commit SHA, and PR when available.
-5. Fetch the Preview URL and confirm HTTP 200 / expected application HTML.
-6. Merge the canary PR only after Preview + CI are healthy.
-7. Confirm the merge commit on the production branch starts a new Vercel Production deployment automatically.
-8. Confirm that Production deployment reaches `READY`.
-9. Confirm Production metadata points to the exact merge commit SHA and reports `source: git` (or equivalent Git source evidence).
-10. Confirm CI on the production branch succeeds.
+Repair implementation defects locally. Route architecture defects upstream.
 
-Only then declare the pipeline complete.
+A green build does not equal product acceptance.
 
-### 8. Final state to preserve
+### 9. Prove Production path
 
-The repository should contain, when applicable:
+Only after ship authorization when orchestration applies:
 
-- `.github/workflows/ci.yml`
-- `vercel.json`
-- a short `DEPLOYMENT.md` or equivalent deployment contract
-
-The Vercel project should have:
-
-- native GitHub repository connection
-- correct production branch
-- automatic Preview deployments
-- automatic Production deployments
-- stable production alias/domain
+1. merge/push to production branch
+2. confirm exact production SHA
+3. verify GitHub CI
+4. verify Vercel creates Production automatically from Git
+5. verify READY
+6. verify deployment metadata points to exact SHA and Git source
+7. verify stable production alias/domain
 
 ## Non-negotiable checks
 
-- Never say “connected to Vercel” merely because a manual/API deployment succeeded.
-- A direct Vercel API deployment does not prove Git integration.
-- Never say “automatic” before a new Git commit demonstrably produces a Vercel deployment without a manual deploy call.
-- Never confuse a Vercel Preview URL with the stable production domain.
-- Never add Vercel tokens/secrets to GitHub unless native Git integration is unavailable and the user explicitly chooses a token-based alternative.
-- Never merge substantive product work merely to activate infrastructure.
-- Keep deployment configuration versioned in Git wherever possible.
+- A manual/API Vercel deployment does not prove Git integration.
+- Never say “automatic” before a Git commit demonstrably triggers Vercel without a manual deploy call.
+- Never confuse Preview URL with stable production domain.
+- Never add Vercel tokens/secrets unless native Git integration is unavailable and the user explicitly chooses the alternative.
+- Never redefine upstream product authority to make implementation easier.
+- Never report “app complete” solely because deployment is READY.
 
-## Output after completion
+## Output
 
-Report compactly:
+In direct mode, report compactly:
 
-- GitHub repository.
-- Production branch.
-- CI status and what it validates.
-- Vercel project ID/name.
-- Stable production domain.
-- Evidence that Preview automation was tested.
-- Evidence that Production automation was tested.
-- Any remaining manual dependency, if one genuinely remains.
+- repository/branch/commit
+- CI status
+- Vercel project/deployment
+- Preview/Production URLs as applicable
+- evidence that automation was tested
 
-Do not present configuration intent as verified behavior.
+In orchestrated mode, return BuildEvidence with:
 
-## Reference
+- exact source branch/SHA/PR
+- CI evidence
+- deployment evidence
+- acceptance-criterion results
+- architecture exception if any
+- result: `PREVIEW_READY`, `PRODUCTION_READY`, `REVISE`, or `BLOCKED`
 
-For the exact acceptance test used to prove the pipeline, read `references/acceptance-test.md`.
+## References
+
+- Deployment acceptance test: `references/acceptance-test.md`
+- Orchestration state machine: `../app-orchestrator/references/state-machine.md`
