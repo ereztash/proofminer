@@ -1,406 +1,457 @@
-# First Session Flow v3 — Low-Fidelity Product Architecture
+# First Session Flow v3.1 — Conscious Pain → Decision-Ready Authority Map
 
 ## Purpose
 
 This is not visual design.
 
-It defines the minimum end-to-end first-session experience that should be represented in a low-fidelity prototype before another high-fidelity UI or production build.
+It defines the minimum first-session experience that must be represented in the next low-fidelity FIELD instrument before another high-fidelity UI or production build.
 
-The flow is subordinate to Telos Governance and the UX Decision Log.
+The flow is subordinate to:
+
+1. `docs/TELOS_GOVERNANCE.md`
+2. `docs/UX_TRANSITION_CONTRACT.md`
+3. `docs/DEFINITION_OF_DONE.md`
+
+The material change from v3 is that the experience no longer assumes the first user-facing frame should be the system's concept of an Authority Project.
+
+---
+
+# Primary first-session transition
+
+The current conscious-job hypothesis is:
+
+```text
+A1
+"I know I need to build authority / professional standing,
+but I do not know what is actually right for me to do,
+or what should come first."
+
+        ↓
+
+B
+Decision-Ready Authority Map
+```
+
+The user should leave the first session able to explain:
+
+- what they want to become known for;
+- by whom;
+- what the main strategic gap is;
+- what to do now;
+- why that action has priority;
+- what can happen in parallel;
+- what is blocked;
+- what is premature;
+- what additional information could change the map.
 
 ---
 
 # Design invariant
 
-At every state the user should understand:
+At every state the user should understand, in this order when relevant:
 
-1. why this matters;
-2. what the system currently thinks;
-3. what the one useful next action is.
+1. why this matters to the problem they came with;
+2. the current bottom line;
+3. what the system wants from them now;
+4. what the system recommends;
+5. why;
+6. optional deeper reasoning.
 
-The user should not need to understand the full authority model.
+Internal sophistication must not outrank conscious user pain.
 
 ---
 
-# State 0 — Value + authority intention
+# State 0 — Problem recognition
 
 ## User sees
 
-A concise promise explaining the pain/gain, followed by one dominant input equivalent to:
+A short statement that mirrors the problem the current ICP is expected to recognize, equivalent in function to:
 
-> **I want to become known as an authority in ______.**
+> **There are dozens of ways to build authority. The hard part is knowing which ones are right for you — and what should happen first.**
 
-Do not open with a generic dashboard.
+Alternative formulations should be tested. Exact copy is not doctrine.
 
-Do not require account configuration, evidence taxonomy or framework selection before this moment.
+The screen must make it possible for the user to think:
+
+> "Yes. That is the problem I have."
+
+without first understanding Authority Project, personal branding frameworks, dependency graphs or evidence systems.
+
+## Primary action
+
+A transition equivalent to:
+
+> **Build my route**
+
+## Pass question
+
+Before clicking, the user can answer:
+
+> "What problem do you think this product is trying to solve for you?"
+
+A response such as "write posts for me" is a material failure unless that participant is outside the ICP.
+
+---
+
+# State 1 — Promise + authority intention
+
+Only after problem recognition does the system ask for the user's desired direction.
+
+## User sees
+
+A promise equivalent in function to:
+
+> **I will help you understand the route that is most defensible for you, what is missing, and what should come first.**
+
+Then one dominant input:
+
+> **I want to become known for ______.**
+
+or
+
+> **I want to become an authority in ______.**
+
+The exact wording should be tested for naturalness and audience fit.
 
 ## User provides
 
-`authority_domain`
+`authority_domain / desired_association`
 
 Natural language is allowed.
 
 ## System learns
 
-Initial AuthorityGoal domain hypothesis.
-
-## Progress condition
-
-The system can interpret the field well enough to begin audience/field discovery, or asks one narrowing question if the field is too broad to generate meaningfully different strategies.
+Initial AuthorityGoal hypothesis.
 
 ---
 
-# State 1 — What should authority create for you?
+# State 2 — What should this authority create?
 
-This question is asked only when the answer is not already sufficiently inferable and can change audience-path selection.
+Ask only when the answer can materially change audience-path selection or strategic priorities.
 
-## User sees
+Possible ordinary-language outcomes:
 
-A small set of outcome intentions in ordinary language, for example:
+- more warm client inquiries;
+- stronger career opportunities;
+- invitations / stages / collaborations;
+- professional influence / recognition;
+- another concrete outcome.
 
-- more warm client inquiries
-- stronger career opportunities
-- invitations / stages / media
-- professional influence / recognition
-- something else
-
-Exact options depend on ICP and should be field-tested.
-
-## Why this exists
-
-The system cannot define a meaningful "commercial path" or career path without understanding what value the user wants authority to unlock.
-
-## System learns
-
-`desired_business_or_career_outcomes[]`
+Do not force this question if the desired consequence is already clear from context.
 
 ---
 
-# State 2 — Give the system a starting point
+# State 3 — Minimum starting data
 
 ## User sees
 
-A low-friction choice, not a data-management screen.
+A low-friction set of ways for the system to understand the current state.
 
 Possible routes:
 
 ### Use what already exists
+- LinkedIn / profile;
+- CV;
+- website;
+- case / testimonial / document.
 
-- connect / paste LinkedIn
-- upload CV
-- provide website
-- provide another source
+### Learn through conversation
+- guided authority interview.
 
-### Let the system learn through conversation
+### Research public footprint
+- only through an appropriate consent path.
 
-- guided authority interview
+## Required explanation
 
-### Research my public footprint
-
-- only through a consented public-research path
-
-## Key UX rule
-
-The product explains what it will be able to learn from the selected source.
+Each option explains what capability it unlocks.
 
 Examples:
 
-> "Your LinkedIn profile helps me see what you already signal publicly."
+> "LinkedIn helps me see what the market can currently infer about you."
 
-> "A CV helps me find experience you may not currently be using as authority capital."
+> "A CV helps me find experience you may not be using as authority capital."
 
 > "A short interview can surface methodology that has never been written down."
 
-## Progress condition
-
-Enough information exists to create an initial PersonState and begin FieldModel research.
+The UX must not reward data volume for its own sake.
 
 ---
 
-# State 3 — Initial field + person reconstruction
+# State 4 — Person + field reconstruction
 
 This is primarily a system-working state.
 
-Do not expose an analytics dashboard while the system is processing.
+Do not expose a large analytics dashboard merely to prove that work is happening.
 
-## System works on two models in parallel
+The system develops two provisional models in parallel.
 
-### Person model
+## Person model
 
-- current experience / assets
-- apparent public associations
-- possible methodology / perspective assets
-- existing proof / validation
-- existing authority surfaces
-- current distribution / relationships
-- client acquisition patterns if known
+- experience / authority assets;
+- public associations;
+- evidence / validation;
+- latent methodology / perspective;
+- current authority surfaces;
+- distribution / relationships;
+- client-acquisition patterns when known.
 
-### Field model
+## Field model
 
-- relevant audiences
-- recognized authorities
-- what they are known for
-- points of parity / category expectations
-- meaningful opportunities for differentiation
-- channels / intermediaries
-- comparable journeys where useful
+- plausible audiences;
+- recognized authorities;
+- what they appear to be known for;
+- points of parity / category expectations;
+- meaningful points of difference;
+- channels / intermediaries;
+- comparable journeys where useful.
 
 ## User-facing progress
 
-Prefer meaningful progress statements over fake percentage completion.
-
-Example:
-
-> "I found enough to compare where your current experience gives you the strongest right to speak."
+Show meaningful discoveries or capabilities, not fake completion percentages.
 
 ---
 
-# State 4 — Audience path recommendation
+# State 5 — Assisted audience-path recommendation
 
-## User sees
+## Bottom line first
 
-A bottom-line recommendation first:
+Equivalent to:
 
 > **If I were choosing where to build first, I would start here.**
 
-Then show why.
+The recommendation compares:
 
-Potential strategic path roles:
+- existing authority capital / right to speak;
+- audience need;
+- commercial or career value;
+- competitive difficulty;
+- credible distance / speed.
 
-- Natural
-- Commercial
-- Fast
+Potential route roles include Natural / Commercial / Fast, but these are internal organizing roles rather than a requirement to show three cards.
 
-But do not force three distinct cards if the same audience dominates multiple roles.
+If one audience wins across several dimensions, say so.
 
-## For each meaningful alternative show only
+If one missing answer can genuinely change the recommendation, ask one discriminating question.
 
-- who the audience is;
-- why the user has / lacks a right to speak there;
-- why the audience matters;
-- what makes the route easier/harder;
+For each real alternative show only:
+
+- who;
+- why this user;
+- why this audience;
+- what makes it easier/harder;
 - the key tradeoff.
-
-## If evidence is tied
-
-Ask one `DiscriminatingQuestion`.
-
-Example:
-
-> "Two routes are almost equally strong. Which kind of work do you actually want more of next year?"
-
-## Primary action
-
-Accept recommended route.
-
-Secondary action
-
-Choose another route / specify another audience.
 
 ---
 
-# State 5 — Authority Project created
+# State 6 — Authority Project becomes explicit
 
-This is the first meaningful "project" moment.
+Only now does the persistent project model need to become visible.
 
 ## User sees
 
-A compact project header equivalent to:
+A compact formulation:
 
 > **Become known for:** [desired association]
 >
 > **Among:** [selected audience]
 >
 > **So that:** [desired outcome]
->
-> **Where:** [authority surface(s), if material]
 
-The system should communicate that this project will accumulate learning.
+If the relevant authority surface matters, expose it too.
 
-The user confirms persistence / storage according to the consent design.
+The product explains that future sources, actions and market signals will accumulate into this project.
 
----
-
-# State 6 — Strategic diagnosis
-
-## User sees bottom line first
-
-Example structure:
-
-> **Your main gap is not expertise. It is that the market cannot currently see the method behind your results.**
-
-Then:
-
-- strongest current advantage;
-- main limiting gap;
-- why this diagnosis matters;
-- what evidence/data supports it.
-
-## Secondary affordance
-
-> "How was this map built?"
-
-This opens the selected strategic lenses, assumptions, evidence and uncertainty.
-
-Do not ask the user to choose SWOT, positioning matrix or other professional frameworks.
+Persistence / storage consent occurs through the appropriate user-control path.
 
 ---
 
-# State 7 — Authority Map
+# State 7 — Strategic diagnosis
 
-## The map answers
-
-- where you are;
-- where you are trying to get;
-- what can begin now;
-- what is sequential;
-- what is parallel;
-- what is blocked;
-- what is premature;
-- what each action unlocks.
-
-## Required visual semantics
-
-Even before final visual design, the prototype must make these states distinguishable without relying on color alone:
-
-- available now
-- in progress
-- parallel
-- blocked / prerequisite missing
-- premature
-- complete / learned
-
-## Important
-
-The map is not presented as deterministic truth.
-
-The user should be able to inspect why a dependency exists when it matters.
-
----
-
-# State 8 — Highest-leverage action
-
-Above or within the map, one action dominates.
+## Bottom line first
 
 Example:
 
-> **The thing I would do first:** interview you on three management cases and extract the method that repeats across them.
+> **Your main gap is not expertise. It is that the market cannot currently see the method behind your results.**
 
 Then show:
 
-### Why now
+- strongest current advantage;
+- primary limiting gap;
+- why the gap matters to the desired route;
+- what supports the interpretation.
 
-What gap it resolves.
+## Secondary affordance
 
-### What it unlocks
+> **How was this map built?**
 
-Which map nodes become available afterward.
+This may reveal strategic lenses, assumptions, evidence and uncertainty.
 
-### What I need from you
-
-Only required input.
-
-### Primary action
-
-Start.
+The user never has to choose SWOT or another framework simply because the system uses one internally.
 
 ---
 
-# State 9 — Progressive data unlock
+# State 8 — Decision-Ready Authority Map
 
-When new data would materially improve the route, the product may surface a small opportunity rather than a generic "complete your profile" progress bar.
+The map must answer:
+
+- where I am;
+- where I am trying to get;
+- what can begin now;
+- what is sequential;
+- what can run in parallel;
+- what is blocked;
+- what is premature;
+- what each important step unlocks.
+
+Required semantic states must remain distinguishable without color alone:
+
+- available now;
+- in progress;
+- parallel;
+- blocked / prerequisite missing;
+- premature;
+- complete / learned.
+
+The map is a strategic hypothesis, not deterministic truth.
+
+Dependencies should be inspectable when challenged.
+
+---
+
+# State 9 — Highest-leverage action
+
+One action dominates.
+
+The user sees:
+
+### What to do now
+The specific action.
+
+### Why now
+What material gap it resolves.
+
+### What it unlocks
+Which parts of the route become more credible / available afterward.
+
+### What is not worth doing yet
+When useful, explicitly name a tempting but premature action.
+
+### What the system needs
+Only information necessary to execute or sharpen this move.
+
+The user should be able to leave the product at this point and still know what to do.
+
+---
+
+# State 10 — Progressive data unlock
+
+New data is requested only when it can change a material decision, diagnosis or capability.
 
 Example:
 
 > **One thing could sharpen this map.**
 >
-> If you add how your last five clients found you, I can test whether the market already associates you with a narrower problem than your profile suggests.
+> If you add how your last five clients found you, I can test whether the market already associates you with a narrower problem than your public profile suggests.
 
-The user sees the capability unlocked, not points for uploading.
+The benefit is the new strategic capability, not a completion badge.
 
 ---
 
-# State 10 — First action completion and return loop
+# State 11 — Execution bridge
 
-After an action is performed or an artifact is deployed:
+The product helps turn the recommendation into a real authority-building action or asset.
 
-## Product records
+Depending on the map this may mean:
+
+- conduct a methodology extraction interview;
+- build a case study;
+- change positioning;
+- request a testimonial;
+- run a pilot;
+- contact an intermediary;
+- publish a framework;
+- pitch a stage / podcast;
+- perform another action justified by the route.
+
+Content is only one possible means.
+
+---
+
+# State 12 — Return signal + re-plan
+
+After the action occurs, the product asks for relevant evidence of what happened.
+
+It records:
 
 - what was done;
-- what was produced;
-- where it was used;
+- where / with whom;
+- what signal appeared;
+- attribution uncertainty;
 - what the system expected to learn.
 
-## Later return prompt
-
-> **What happened after this?**
-
-Possible signals depend on the action.
-
-The product then explains if and how the map changed.
+If the new evidence changes the route, the system explains why.
 
 Example:
 
-> "Three referrals described you using the same phrase. I am increasing confidence that this is already part of your perceived identity, so the next step changed from proving it to making it more visible."
+> "Four referral sources independently described you using the same phrase. That increases confidence that this is already part of your perceived identity, so the next move changed from proving the association to making it more legible."
 
-Do not present this as causal certainty.
+A map change that cannot be explained to the user counts as a product/UX failure.
 
 ---
 
 # Persistent project navigation — low-fidelity hypothesis
 
-The full product should feel like one persistent Authority Project.
-
-The minimum secondary information architecture to prototype is:
+The persistent product may expose four secondary functions:
 
 ### Map
-
-Current diagnosis, route and next action.
+Current diagnosis, dependencies and next action.
 
 ### Assets
-
-Evidence, methodology, experience, perspective, distribution/relationship and market-response assets.
+Evidence, methodology, experience, perspective, relationship/distribution and market-response assets.
 
 ### Field
-
-Audience, recognized authorities, category expectations, comparable journeys and strategic opportunities.
+Audience, recognized authorities, norms, comparable journeys and strategic opportunities.
 
 ### Learning
+Actions, signals and map changes.
 
-Actions performed, signals observed and changes made to the map.
-
-This navigation is a **HYPOTHESIS**. The final number/names of sections should be tested; the semantic functions should not disappear silently.
+These names and navigation structure are hypotheses. The semantic functions are more important than the labels.
 
 ---
 
 # What the first session must NOT contain
 
+- a first screen that starts from internal product vocabulary;
 - universal authority score;
-- evidence score dashboard;
+- evidence-score dashboard;
+- framework chooser;
 - generic content calendar;
 - large action library;
-- framework chooser;
-- "upload everything" requirement;
-- empty dashboard when no data exists;
-- three fake choices when one recommendation is clearly stronger;
-- social-media posting as a universal first action;
-- a completion percentage that has no strategic meaning.
+- bulk-upload requirement;
+- fake three-choice theater;
+- empty dashboard for zero-data users;
+- social posting as the default universal recommendation;
+- meaningless completion percentage;
+- explanation before value recognition.
 
 ---
 
 # Low-fidelity acceptance questions
 
-Before visual polish, test whether a target user can answer without facilitator help:
+After the participant leaves the interface, test without showing the screens again:
 
-1. What is this product going to help me achieve?
-2. Why did it recommend this audience?
-3. What does it think my main strategic gap is?
-4. What should I do first?
-5. Why should I do that before something else?
-6. What can happen in parallel?
-7. What information would improve the map, and why?
-8. What did the system infer versus what did it observe?
-9. What will the product remember next time?
-10. If I do the recommended action, how will the system learn whether to change course?
+1. What problem is this product for?
+2. What does it promise to help you decide?
+3. What are you trying to become known for?
+4. Among whom?
+5. What does the system think your main strategic gap is?
+6. What should you do first?
+7. Why does that action have priority?
+8. What can happen in parallel?
+9. What is blocked?
+10. What is merely premature?
+11. What additional information could improve the map, and why?
+12. What was observed versus inferred?
+13. If the map changes later, what should cause that change?
 
 If these cannot be answered, do not solve the problem with visual polish.
