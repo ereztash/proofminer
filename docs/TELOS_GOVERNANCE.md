@@ -1,52 +1,68 @@
-# Telos Governance — Governing Rule v1.2
+# Telos Governance — Governing Rule v1.3
 
 ## Status
 
-This document has higher authority than the current product doctrine, UX plan, semantic model, implementation plan, measurement plan, decision method, or Definition of Done.
+This document has higher authority than the current product doctrine, category, commercial model, UX plan, characterization process, semantic model, decision method, measurement plan, implementation plan or Definition of Done.
 
-Those artifacts are working hypotheses about how to realize the telos. They are not allowed to become substitutes for it.
+Those artifacts are working hypotheses about how to realize the telos. They are not substitutes for it.
 
 ---
 
-## O — End-to-end telos
+# O — End-to-end user telos
 
-The system exists to help a person move from:
+The system exists to help a professional at a consequential transition move from:
 
-> **"I want to become recognized as an authority in this domain."**
+> **"I know roughly where I want to go professionally, but there are many plausible things I could do and I do not know what deserves my limited resources now."**
 
-into an evidence-backed, strategically directed and continuously learning process that increases the likelihood that a chosen audience actually comes to perceive that person as a credible, differentiated authority — and acts accordingly.
+into a grounded, contestable and continuously learning decision process that improves the likelihood of reaching the desired professional market position / opportunity state.
 
-Because the user has scarce time, money and attention, realizing O also requires improving how those resources are allocated: toward actions with the strongest grounded expected contribution to the desired authority state, and away from work that is currently blocked, premature or lower-leverage.
+The system should help the user:
 
-The system must do this by:
+1. make the target professional state and relevant boundary explicit;
+2. reconstruct what they currently believe about how to get there;
+3. reconstruct what they would otherwise do and where scarce resources would otherwise go;
+4. **discover the user's own professional operating model from real experience when that model may contain useful latent expertise;**
+5. apply that model to the user's own professional / business system when useful;
+6. challenge the transferability and blind spots of that self-application rather than treating expertise as automatic truth;
+7. identify which unknowns are genuinely capable of changing the live decision;
+8. research the external field only where outside evidence is needed;
+9. frame the live decision before choosing how to decide it;
+10. select the least-complex sufficient reasoning process;
+11. compare plausible actions through constraints, dependencies, opportunity cost, reversibility, expected learning and expected contribution to O;
+12. direct what to keep, accelerate, reorder, reduce, delay, stop, replace or add;
+13. preserve the user's authorship and ability to contest the recommendation;
+14. observe actual execution and real-world outcomes;
+15. update the user's representation, route, resource allocation and reusable decision lineage as evidence accumulates;
+16. reject stale / non-transferable history rather than allowing accumulated memory to become authority by age alone.
 
-1. understanding the authority position the person wants to occupy;
-2. identifying the audience whose perception matters;
-3. reconstructing the person's real starting position from existing experience, assets, public footprint, relationships and past market response;
-4. understanding the relevant field, alternatives, recognized authorities, audience needs and category expectations;
-5. framing the live allocation decision before choosing a decision method;
-6. selecting the **least-complex sufficient reasoning process** for that decision rather than forcing one universal framework or algorithm;
-7. selecting or composing the strategic model best suited to the actual gap;
-8. producing a dependency-aware route from current state to desired state, distinguishing what is sequential, parallel, blocked and premature;
-9. when a material decision is being made, reconstructing the user's stated counterfactual plan: what they would otherwise do and where they would otherwise spend scarce resources;
-10. directing not only the next highest-leverage action, but also which plausible actions should be continued, accelerated, reordered, reduced, delayed, stopped or newly added;
-11. converting latent experience, evidence and tacit methodology into usable authority assets when that serves the route;
-12. observing market signals and business outcomes after actions are taken;
-13. updating the route, reasoning process and resource allocation as evidence accumulates;
-14. preserving provenance, uncertainty, privacy, opportunity-cost awareness and inference boundaries throughout.
+Professional authority may be a desired state or mechanism inside this telos, but it is not the mandatory problem language or the universal end state.
 
-The system cannot guarantee that the market will grant authority. It is responsible for producing and adapting the best grounded path available, improving allocation decisions under uncertainty, and distinguishing observed market response from causal claims.
+The system cannot guarantee professional success or market recognition. It is responsible for improving the quality, grounding, inspectability and adaptation of decisions under uncertainty.
+
+---
+
+# Business telos
+
+The business exists to capture a sustainable share of the value created by the user telos **without distorting recommendations to increase engagement, billing duration, analytical complexity or dependence on system authority**.
+
+Recommendation integrity outranks commercial cadence.
+
+A business model that requires unnecessary decisions, artificial daily use, stale monitoring or user dependence fails even if it produces higher short-term retention.
 
 ---
 
 # Governing hierarchy
 
 ```text
-O / Telos
+USER O / TELOS
   ↓
 Telos Governance Loop
   ↓
-Current reconstruction of target state
+Current reconstruction of target state / boundary
+  ↓
+Characterization Governance
+  ↓
+Decision-relevant unknowns / external research
   ↓
 Live decision framing
   ↓
@@ -54,7 +70,7 @@ Meta-decision: how should this decision be decided?
   ↓
 Current Definition of Done
   ↓
-Product / UX architecture
+Product / UX / commercial architecture
   ↓
 Measurement and semantic models
   ↓
@@ -63,9 +79,11 @@ Decision methods / frameworks / algorithms
 UI / implementation
 ```
 
+`Characterization Governance` does not outrank O. It is a mechanism for discovering the representation / information required to serve O.
+
 A lower layer may never veto a change required by a higher layer merely because work has already been completed there.
 
-No metric, semantic field, screen, object model, framework, decision method, library, branch, implementation investment or prior decision is protected from revision if it prevents end-to-end realization of O.
+No metric, intake field, semantic object, characterization process, screen, framework, decision method, price model, library, branch, implementation investment or prior decision is protected from revision if it prevents end-to-end realization of O.
 
 ---
 
@@ -75,120 +93,165 @@ The loop MUST run before declaring any meaningful phase complete.
 
 ## 1. RECALL O
 
-Reconstruct the end-to-end change the system exists to produce.
+Reconstruct the end-to-end user change the system exists to produce.
 
-Do not substitute the local task for O.
+Do not substitute the current mechanism for O.
 
-Examples of invalid substitutions:
+Invalid substitutions include:
 
-- "finish the UX"
-- "finish the dashboard"
-- "complete the evidence graph"
-- "maximize work avoided"
-- "implement MCDA"
-- "build the optimizer"
-- "ship the Preview"
-- "fill every DOD field"
+- "finish the authority map";
+- "extract the user's methodology";
+- "run self-application";
+- "complete the research";
+- "maximize allocation delta";
+- "implement MCDA";
+- "maximize retention";
+- "finish onboarding";
+- "fill every DOD field".
 
-These may be means or measurements. They are never the governing end.
+These may be useful means. None is the governing end.
 
 ## 2. RECONSTRUCT TARGET STATE
 
 Ask from first principles:
 
-> If O were realized as far as this product can responsibly realize it, what would have to be true for the user and in the system?
+> **If O were realized as far as this product can responsibly realize it, what would have to be true for this user in this transition?**
 
-Reconstruct this state without assuming that the current architecture, metric, map, decision method or plan is correct.
+The target state should normally make explicit:
 
-For a resource-constrained user, the target state must include not only a route, but a defensible allocation decision: what receives resources now, what waits, what is rejected, and what evidence could change that allocation.
+- desired professional outcome / market position;
+- relevant audience / environment;
+- boundary and horizon;
+- user's current representation;
+- plausible actions;
+- scarce resources / constraints;
+- current allocation decision;
+- rationale and evidence;
+- authorship / contestability;
+- reversal / learning conditions.
 
-## 3. PLAN BACKWARD
+Do not assume that the current professional lens, authority model, metric, framework or commercial plan is correct.
+
+## 3. CHARACTERIZE BEFORE OVER-RESEARCHING
+
+Before requesting broad data or running broad external research, ask:
+
+> **Can the live uncertainty be resolved by extracting / applying knowledge already embedded in the user's real professional practice?**
+
+When useful, use the smallest sufficient characterization process:
+
+```text
+real cases
+→ professional operating model
+→ self-application
+→ boundary / competing-lens challenge
+```
+
+Do not use self-application when it cannot change a live representation or decision.
+
+Do not treat the user's expertise as external corroboration merely because it is expert.
+
+## 4. IDENTIFY DECISION-RELEVANT UNKNOWNS
+
+After characterization ask:
+
+> **What remains unknown that could still change the live decision?**
+
+Only then allocate user effort or external research to those unknowns.
+
+Every material question / search request should be able to identify its `decision_affected` or `representation_affected`.
+
+## 5. PLAN BACKWARD
 
 Work backward from the reconstructed target state to the current state.
 
-Identify dependencies, required information, candidate actions, opportunity costs, resource commitments, evidence and market feedback.
+Identify:
 
-Before selecting a reasoning method, characterize the live decision sufficiently to answer:
+- prerequisites;
+- dependencies;
+- candidate actions;
+- resource commitments;
+- opportunity costs;
+- reversibility / lock-in;
+- expected learning;
+- evidence and market feedback;
+- decision / reversal triggers.
 
-- do hard constraints or dominance already resolve it?
-- are dependencies / capacity the actual problem?
-- are multiple objectives genuinely in trade-off?
-- could one information gap change the choice?
-- is uncertainty probabilistic enough for expected-value reasoning, or too deep for a single forecast?
-- can the decision be staged and revised after future signals?
+Before selecting a reasoning method, characterize the live decision sufficiently to answer whether a simple rule, dependency reasoning, marginal allocation, multi-criteria reasoning, targeted information, robust reasoning or adaptive pathway is actually needed.
 
-Choose the least-complex sufficient decision process. A prior framework has no special authority.
+Choose the least-complex sufficient process. A prior framework has no special authority.
 
-## 4. GAP TEST
+## 6. GAP TEST
 
-Compare the current state to the reconstructed target state.
+A gap is blocking when resolving it could materially change any of:
 
-A gap is blocking if resolving it could materially change any of:
+- target-state definition;
+- project / decision boundary;
+- user's representation;
+- professional operating model used in the case;
+- transferability judgment;
+- external research required;
+- live decision frame;
+- alternatives;
+- constraints / dependencies;
+- reasoning method;
+- resource allocation;
+- evidence / inference boundary;
+- execution;
+- reversal condition;
+- ability to learn from outcomes;
+- commercial willingness to pay for the resulting value.
 
-- the user's path;
-- the user's allocation of time, money, attention or other scarce capacity;
-- the system's path;
-- the framing of the live decision;
-- the required decision method;
-- the required information;
-- the strategic diagnosis;
-- the dependency map;
-- a continue / accelerate / reorder / reduce / delay / stop / add decision;
-- the evidence or inference boundary;
-- the next experiment;
-- the ability to learn from market response;
-- the ability to realize O end to end.
-
-## 5. SELECT THE HIGHEST-LEVERAGE GAP
+## 7. SELECT THE HIGHEST-LEVERAGE GAP
 
 Do not continue merely because unfinished work exists.
 
-Choose the actionable gap whose resolution is expected to increase end-to-end telos realization the most.
+Choose the actionable gap whose resolution is expected to improve end-to-end telos realization the most.
 
-When two gaps compete, explicitly consider opportunity cost: working on one prevents using the same scarce resources elsewhere.
+Consider opportunity cost across:
 
-Analytical sophistication also has an opportunity cost. A more complex method is justified only if it can plausibly change a material decision, reveal a decision-relevant uncertainty, or prevent an error that a simpler method would miss.
+- user questions;
+- internal analysis;
+- external research;
+- implementation;
+- field tests;
+- commercial experiments.
 
-Elegance, completeness, taxonomy depth, metric availability, framework prestige and cosmetic polish do not justify work on their own.
+Analytical or characterization sophistication has no intrinsic value.
 
-## 6. CHOOSE ONE GOVERNANCE OUTCOME
+## 8. CHOOSE ONE GOVERNANCE OUTCOME
 
 ### CONTINUE
 
-Use when a material internal gap exists and can be resolved with available reasoning, research, design, data or implementation work.
+Use when a material internal gap exists and can be resolved now with available reasoning, research, design or implementation work.
 
 ### REPLAN
 
-Use when the current architecture, model, framing, metric, decision method, sequence or plan itself prevents realization of O.
-
-REPLAN explicitly authorizes moving backward and invalidating previously closed decisions.
+Use when the current telos interpretation, architecture, characterization process, model, framing, metric, sequence or commercial hypothesis itself prevents realization of O.
 
 ### FIELD
 
-Use when no further internal reasoning can responsibly resolve the blocking uncertainty and evidence from real users, market behavior, external systems or deployment is required.
-
-FIELD is not failure and is not an excuse to keep refining internally.
-
-It is the correct transition when reality has become the highest-value source of information.
+Use when reality is the highest-value remaining information source: real users, market behavior, execution, outcomes or real payment / refusal.
 
 ### STOP
 
-STOP is permitted only when all of the following are true:
+STOP is permitted only when all are true:
 
 1. O has been recalled explicitly;
 2. the target state has been reconstructed from O rather than copied from the current plan;
-3. a backward plan has been regenerated or revalidated;
-4. the live decision has been framed sufficiently to justify the current reasoning process;
-5. no simpler decision process would responsibly produce the same decision with materially lower cost;
-6. no additional analytical layer has a plausible path to changing a material allocation decision;
-7. no material internal gap remains whose resolution could improve end-to-end telos realization or materially improve resource allocation toward O;
-8. no unresolved field uncertainty remains that is both material and feasible to test at the current stage;
-9. remaining improvements are cosmetic, theoretical, duplicative or lower-value than stopping;
-10. the current state is supported by the strongest evidence reasonably available for the current stage.
+3. the characterization need has been reconsidered rather than assumed complete;
+4. no additional characterization process could plausibly change a material representation / decision at justified cost;
+5. decision-relevant unknowns have been identified;
+6. remaining external uncertainty is either immaterial or not currently worth testing;
+7. the live decision has been framed sufficiently;
+8. no simpler decision process would responsibly produce the same result at materially lower cost;
+9. no additional analytical layer can plausibly change a material decision;
+10. no material internal or field gap remains whose expected value justifies further work;
+11. the current state is supported by the strongest evidence reasonably available for the stage.
 
-STOP never means "nothing could ever be improved." It means:
+STOP means:
 
-> **No further justified action, reallocation, information request, or analytical escalation is available now that is expected to materially improve realization of O.**
+> **No further justified characterization, information request, research, decision analysis, action or field test is currently expected to materially improve realization of O.**
 
 ---
 
@@ -196,65 +259,69 @@ STOP never means "nothing could ever be improved." It means:
 
 The Definition of Done is the current best model of what must be true to realize O.
 
-It MUST be rewritten when the governance loop reveals that it is incomplete, overfitted to a prior solution, overfitted to an easy metric, or contains requirements that no longer serve O.
+It MUST change when the governance loop reveals that it is:
 
-Therefore:
+- tied to an obsolete telos;
+- overfitted to authority as the only outcome;
+- overfitted to a fixed intake;
+- overfitted to a characterization technique;
+- overfitted to an easy metric;
+- protecting a commercial cadence rather than user value.
 
-> **Passing the DOD does not authorize STOP if O is still blocked.**
+Passing the DOD does not authorize STOP if O is still blocked.
 
-And conversely:
-
-> **A DOD item that no longer contributes to O may be removed rather than completed.**
+A DOD item that no longer contributes to O should be removed rather than completed.
 
 ---
 
-# Anti-recursion, requisite-model and value-of-information rule
+# Anti-recursion / requisite information rule
 
-Recursive telos governance must not become infinite refinement.
+Before asking another question, reconstructing another case, running another lens, opening another search loop or escalating to a more complex decision method, ask:
 
-A new iteration is justified only when it can change an end-to-end decision, behavior, resource allocation, requirement, dependency, evidence boundary, experiment, field action, or the reasoning process required for one of those.
+> **Which live representation, decision, allocation or field action could change if we did this?**
 
-Before requesting material new information, opening another research/refinement loop, or escalating to a more complex decision method, ask:
+If none can materially change, reject the iteration.
 
-> **Which live decision or resource allocation could change if we did this?**
-
-If no material decision can change, the request or analytical escalation has no default claim to resources.
-
-The reasoning process should be *requisite*: sufficient for the live problem, not maximally elaborate. Sensitivity or adversarial testing should continue only while it produces a material new distinction, exposes a decision-changing uncertainty, or changes the recommendation.
-
-If a proposed iteration only makes the model more elegant, more complete, more academically satisfying, more granular, easier to score, more technically impressive, or more visually polished without changing one of those, reject the iteration.
+The same rule applies to characterization itself: do not keep eliciting expertise merely because more tacit knowledge exists.
 
 ---
 
 # 95% assurance boundary
 
-Internal systems may be used as strong assurance only for claims they can directly observe or deterministically test with >95% confidence in the defined scope.
+Internal systems may strongly confirm/refute only claims they can directly observe or deterministically test in a defined scope.
 
-Suitable claims include structural / mechanism assertions such as:
+Suitable structural claims include:
 
-- whether baseline capture preceded recommendation;
-- whether a hard constraint was represented;
-- whether a decision method was invoked without its required preconditions;
-- whether a refuted assumption still feeds an active recommendation;
-- whether a route change has a recorded evidence trigger.
+- advice preceded baseline capture;
+- self-application was used without a source professional model;
+- a professional rule was treated as transferable without transferability state;
+- external research began without a decision-relevant unknown;
+- a hard constraint was ignored;
+- a method was invoked without its required preconditions;
+- a prohibited metric influenced routing;
+- a refuted assumption still feeds an active recommendation.
 
-Internal agreement, model confidence, reviewer consensus or framework prestige must not be upgraded into >95% confidence about strategic or causal truth without independent calibration/evidence for that exact claim class.
+Internal agreement or expert self-description must not be upgraded into >95% strategic or causal truth without independent calibration / field evidence for that exact claim class.
 
 ---
 
 # Required completion statement
 
-Whenever a phase is declared complete, the responsible agent must record:
+Whenever a meaningful phase is declared complete, record:
 
-1. **O recalled:** the end-to-end telos used for the decision;
-2. **Target state:** what had to be true;
-3. **Live decision frame:** what was actually being decided;
-4. **Decision-process justification:** why the selected reasoning process was sufficient and why a simpler or more complex one was not justified;
-5. **Highest-leverage gaps tested:** what could still have blocked O;
-6. **Resource-allocation implication:** what should receive more, less or no further resources now;
-7. **Outcome:** CONTINUE / REPLAN / FIELD / STOP;
-8. **Evidence:** why that outcome is justified;
-9. **Invalidated prior assumptions:** if any;
-10. **Next action:** only if outcome is CONTINUE, REPLAN or FIELD.
+1. **O recalled**;
+2. **target state / boundary**;
+3. **characterization process used or explicitly rejected, and why**;
+4. **what representation changed / did not change**;
+5. **decision-relevant unknowns remaining**;
+6. **external research justified / rejected**;
+7. **live decision frame**;
+8. **decision-process justification**;
+9. **highest-leverage gaps tested**;
+10. **resource-allocation implication**;
+11. **outcome:** CONTINUE / REPLAN / FIELD / STOP;
+12. **evidence**;
+13. **invalidated prior assumptions**;
+14. **next action** only when justified.
 
-A statement such as "the checklist is complete", "the metric improved", or "the model produced a score" is never sufficient.
+"The intake is complete", "the user agreed", "the model produced a score", or "the research is comprehensive" is never sufficient.
