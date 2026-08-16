@@ -4,7 +4,16 @@ import { computeLayers, receptionScore } from '../../src/engine/layers.js';
 import { archetypeCoverage, acquisitionPlays } from '../../src/engine/gaps.js';
 import { scorePositioning } from '../../src/engine/positioning.js';
 import { isDemoMode } from '../../src/engine/mine.js';
-import { NOW, DAY, STRONG_HE, artifact, proofFrom, reception, stateWith } from '../helpers.js';
+import {
+  NOW,
+  DAY,
+  STRONG_HE,
+  artifact,
+  minedSource,
+  proofFrom,
+  reception,
+  stateWith,
+} from '../helpers.js';
 
 const POSITIONING = {
   audience: 'מנהלי כספים בחברות תעשייה בינוניות',
@@ -206,8 +215,9 @@ describe('visibility gap and diagnosis', () => {
     expect(diagnose(70, 20, measured)).toBe('BURIED');
     expect(diagnose(20, 70, measured)).toBe('HOLLOW');
     expect(diagnose(70, 70, measured)).toBe('COMPOUNDING');
-    // Balanced but modest is compounding, not "not started".
-    expect(diagnose(30, 28, measured)).toBe('COMPOUNDING');
+    // Balanced but modest is neither "not started" nor "now scale and convert".
+    expect(diagnose(30, 28, measured)).toBe('EARLY');
+    expect(diagnose(18, 18, measured)).toBe('EARLY');
   });
 
   it('has no cliff: one point of foundation cannot flip the verdict', () => {
@@ -221,6 +231,49 @@ describe('visibility gap and diagnosis', () => {
 
   it('says uncatalogued rather than hollow when the foundation is unmeasured', () => {
     expect(diagnose(20, 70, { confidence: 0.1 })).toBe('UNCATALOGUED');
+  });
+
+  it('never delivers a verdict about a person from bundled fixtures', () => {
+    const demoOnly = stateWith({
+      proofs: [proofFrom(STRONG_HE, { demo: true })],
+      conversions: Array.from({ length: 6 }, (_, i) => ({
+        id: `c${i}`, type: 'deal', artifactId: null, note: 'x', at: NOW - i * DAY,
+      })),
+      recognitions: Array.from({ length: 5 }, (_, i) => ({
+        id: `g${i}`, type: 'feature', by: 'x', url: '', at: NOW - i * DAY,
+      })),
+    });
+    const result = computeAuthority(demoOnly, NOW);
+    expect(result.demo).toBe(true);
+    expect(result.diagnosis).toBe('DEMO');
+    expect(result.lowConfidence).toBe(true);
+  });
+
+  it('does not let a published fixture raise the artifact layer', () => {
+    const demo = proofFrom(STRONG_HE, { demo: true });
+    const real = proofFrom('קיצרתי סגירת רבעון של לקוח תעשייתי לשישה ימים ב-2025');
+    const state = stateWith({
+      proofs: [real, demo],
+      artifacts: Array.from({ length: 6 }, (_, i) =>
+        artifact({ id: `a${i}`, proofIds: [demo.id] }),
+      ),
+    });
+    expect(computeLayers(state, NOW).L3.locked).toBe(true);
+  });
+
+  it('does not punish the user for answering the positioning form', () => {
+    // Typing one character used to unlock L2 at a low score, blend it in at
+    // full weight, and drop the headline by 20 points — as a direct result of
+    // obeying the product's own instruction.
+    const proofs = buriedState().proofs;
+    const blank = computeAuthority(stateWith({ proofs }), NOW).foundation;
+    const oneChar = computeAuthority(
+      stateWith({ proofs, positioning: { audience: 'x', transformation: '', claim: '', offer: '', nonGoals: [] } }),
+      NOW,
+    ).foundation;
+    const full = computeAuthority(stateWith({ proofs, positioning: POSITIONING }), NOW).foundation;
+    expect(blank - oneChar).toBeLessThan(6);
+    expect(full).toBeGreaterThanOrEqual(blank);
   });
 
   it('flags low confidence for a nearly-empty state', () => {
@@ -252,7 +305,7 @@ describe('next move', () => {
     const weak = proofFrom('ניהלתי צוות במחלקה במשך כמה שנים', { sourceId: 's1' });
     const state = stateWith({
       proofs: [weak],
-      sources: [{ id: 's1', name: 'cv', text: 'x', demo: false, addedAt: NOW }],
+      sources: [minedSource({ text: 'x' })],
     });
     expect(nextMove(state, NOW).id).toBe('move.setAudience');
   });
@@ -264,7 +317,7 @@ describe('next move', () => {
     );
     const state = stateWith({
       proofs: [strong],
-      sources: [{ id: 's1', name: 'cv', text: 'x', demo: false, addedAt: NOW }],
+      sources: [minedSource({ text: 'x' })],
     });
     // They arrived invisible. The first instruction must not be a five-field form.
     expect(nextMove(state, NOW).id).toBe('move.publishFirst');
@@ -273,7 +326,7 @@ describe('next move', () => {
   it('notices sources added after the first mine', () => {
     const state = buriedState();
     state.sources = [
-      { id: 's_new', name: 'testimonial', text: STRONG_HE, demo: false, addedAt: NOW },
+      minedSource({ id: 's_new', name: 'testimonial', minedAt: null }),
     ];
     // Evidence acquired through a gap play comes back in as a new source; the
     // guidance has to notice it or the acquisition loop has no return path.
@@ -283,7 +336,7 @@ describe('next move', () => {
   it('never points the primary action at bundled fixtures', () => {
     const demoOnly = stateWith({
       profile: { ...stateWith().profile, onboarded: true },
-      sources: [{ id: 's_d', name: 'sample', text: 'x', demo: true, addedAt: NOW }],
+      sources: [minedSource({ id: 's_d', name: 'sample', text: 'x', demo: true })],
       proofs: [proofFrom(STRONG_HE, { demo: true, sourceId: 's_d' })],
     });
     const move = nextMove(demoOnly, NOW);
@@ -292,7 +345,7 @@ describe('next move', () => {
 
   it('tells a BURIED user to publish', () => {
     const state = buriedState();
-    state.sources = [];
+    state.sources = [minedSource()];
     const move = nextMove(state, NOW);
     expect(move.id).toBe('move.publishFirst');
     expect(move.payload.proofId).toBeTruthy();
@@ -321,7 +374,7 @@ describe('next move', () => {
 
   it('asks for reception data once something is published', () => {
     const state = buriedState();
-    state.sources = [];
+    state.sources = [minedSource()];
     state.artifacts = [artifact({ proofIds: [state.proofs[0].id] })];
     expect(nextMove(state, NOW).id).toBe('move.logReception');
   });

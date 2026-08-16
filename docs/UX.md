@@ -30,8 +30,12 @@ churn immediately, and they are the majority of this ICP.
 
 This product resolves it structurally: **you are not being asked to promote
 yourself. You are being asked to stop hiding evidence.** The Liebig gate makes
-that a mechanical guarantee, not a promise — the system will not let the user
-inflate, and it tells them so on the first screen.
+part of that mechanical: the system will not let visibility run ahead of
+evidence, and it says so on the first screen. It cannot verify what the user
+types, and the first screen says that too — see `README.md`, "what the gate
+does not prevent". The other half of the answer is the authorship readout in
+the studio, which measures how much of a draft the tool wrote rather than
+denying that it wrote any of it.
 
 ## The hero metric is the pain, quantified
 

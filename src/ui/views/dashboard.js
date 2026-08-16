@@ -86,7 +86,12 @@ function moveCard(move, t) {
     <div class="move__foot">
       ${button('goto', t('moves.do'), {
         variant: 'primary',
-        payload: { view: move.view, proof: move.payload?.proofId || '', artifact: move.payload?.artifactId || '' },
+        payload: {
+          view: move.view,
+          proof: move.payload?.proofId || '',
+          artifact: move.payload?.artifactId || '',
+          archetype: move.payload?.play?.archetype || '',
+        },
       })}
       <span class="move__meta">
         ${t('moves.minutes', move.effortMinutes)} · ${t(`layers.${move.layer}.name`)}

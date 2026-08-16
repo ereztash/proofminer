@@ -69,9 +69,15 @@ export function measureView(state, t, { parsed = {} } = {}) {
                 textInput('rc-substantive', '', { type: 'number', hint: true }),
                 t('measure.substantiveHint'),
               )}
-              ${field('rc-saves', t('measure.saves'), textInput('rc-saves', parsed.saves ?? '', { type: 'number' }))}
+              ${field(
+                'rc-saves',
+                t('measure.saves'),
+                textInput('rc-saves', parsed.saves ?? '', { type: 'number', hint: true }),
+                t('measure.savesHint'),
+              )}
               ${field('rc-shares', t('measure.shares'), textInput('rc-shares', parsed.shares ?? '', { type: 'number' }))}
             </div>
+            <p class="hint">${t('measure.minimum')}</p>
             <div class="row row--end">
               ${button('saveReception', t('measure.save'), { variant: 'primary' })}
             </div>

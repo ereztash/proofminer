@@ -11,7 +11,7 @@ import { button, meter, scoreChip, section, select } from '../components.js';
 import { daysUntilStale, decayedScore, extremes } from '../../engine/score.js';
 import { activeProofs } from '../../engine/mine.js';
 import { DIMENSION_KEYS } from '../../engine/dimensions.js';
-import { reasonFor } from '../../engine/explain.js';
+import { inventorySignals, reasonFor } from '../../engine/explain.js';
 
 export function inventoryView(state, t, { now, filter, expanded }) {
   const active = activeProofs(state);
@@ -20,6 +20,9 @@ export function inventoryView(state, t, { now, filter, expanded }) {
   const archetypes = [...new Set(active.flatMap((p) => p.archetypes))];
   const filtered =
     filter === 'all' ? active : active.filter((p) => p.archetypes.includes(filter));
+
+  // One extraction pass for the whole list, reused by every row.
+  const signalCache = inventorySignals(active);
 
   const sorted = [...filtered].sort(
     (a, b) =>
@@ -33,7 +36,7 @@ export function inventoryView(state, t, { now, filter, expanded }) {
       '',
       sorted.length
         ? html`<div class="inventory">
-            ${sorted.map((p) => row(p, t, now, expanded, active))}
+            ${sorted.map((p) => row(p, t, now, expanded, active, signalCache))}
           </div>`
         : html`<p class="prose">${t('inventory.empty')}</p>`,
       html`<div class="row">
@@ -47,12 +50,12 @@ export function inventoryView(state, t, { now, filter, expanded }) {
   </div>`;
 }
 
-function row(proof, t, now, expanded, inventory) {
+function row(proof, t, now, expanded, inventory, signalCache) {
   const decayed = Math.round(decayedScore(proof, now));
   const { strongest, weakest } = extremes(proof.breakdown);
   const staleDays = daysUntilStale(proof, now);
   const isOpen = expanded.has(proof.id);
-  const reason = reasonFor(proof, inventory);
+  const reason = reasonFor(proof, inventory, signalCache);
 
   return html`<article class="proof ${proof.pinned ? 'is-pinned' : ''}">
     <div class="proof__score">

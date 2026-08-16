@@ -42,7 +42,7 @@ confidence 0–1.
 | L1 | **PROOF** — הון הוכחות | What evidence do you actually hold? | proof units, their scored quality, archetype coverage, decay |
 | L2 | **POSITION** — מיצוב | What single claim do you own? | claim specificity, audience specificity, transformation clarity, non-genericity |
 | L3 | **ARTIFACT** — תוצר | What have you put into the world? | publish cadence, groundedness ratio, format mix |
-| L4 | **RECEPTION** — קליטה | How did it land? | engagement rate vs. own baseline, comment depth, saves |
+| L4 | **RECEPTION** — קליטה | How did it land? | engagement rate against a declared anchor, comment depth, saves |
 | L5 | **CONVERSION** — המרה | Who moved? | DMs, calls, interviews, offers, deals |
 | L6 | **RECOGNITION** — הכרה | Who vouches for you? | citations, invitations, referrals, features |
 
@@ -99,13 +99,21 @@ exponential half-life:
 The implemented form is an affine remap rather than a floored exponential:
 
 ```
-factor = 0.35 + 0.65 · 0.5 ^ (ageDays / halfLife)
+factor = 0.35 + 0.65 · 0.5 ^ (ageDays · rate / halfLife)
 ```
 
 so the tabulated half-life is the half-life of the *decaying component* (65% of
-the value), not of the score. At one half-life a proof retains 67.5%, and the
-floor is approached asymptotically rather than reached. Stated here because the
-simpler formula this table used to describe is not what the engine computes.
+the value), not of the score. At one half-life a dated proof retains 67.5%, and
+the floor is approached asymptotically rather than reached. Stated here because
+the simpler formula this table used to describe is not what the engine computes.
+
+`rate` is 1 for dated evidence and **0.5 for undated evidence**, anchored to
+when the user first captured it rather than to an occurrence date we do not
+have. Most proofs mined from a real CV are undated, so this is the common case,
+not the exception: an undated `outcome` at 730 days retains 81%, not 67.5%. The
+half-rate is a deliberate refusal to punish evidence for a missing date — with
+the consequence, stated plainly, that integration I5 rarely fires on undated
+material.
 
 ## L2 — positioning scoring
 
@@ -125,27 +133,33 @@ transformation clarity, claim specificity, offer coupling, and non-genericity
 
 ## L4 — reception scoring
 
-Measured **relative to the user's own trailing baseline**, never in absolute
-terms. A 400-follower account with 6% engagement is doing better than a
-20,000-follower account with 0.4%, and any absolute engagement number would say
-the opposite.
+Measured as an **engagement rate**, which normalises for audience size: a
+400-follower account at 6% is doing better than a 20,000-follower account at
+0.4%, and a raw engagement count would say the opposite.
 
-Weighted: comment depth > saves > shares > reactions. Reactions are the
-cheapest signal available and are weighted accordingly.
+Weighted by what the response costs the reader: comment depth > saves > shares
+> reactions.
 
-Scored against **declared fixed anchors** (`RATE_ANCHOR = 0.05` weighted
-engagement rate, or `ABSOLUTE_ANCHOR = 30` weighted engagement when the user did
-not report impressions), not against the user's own moving mean. A rate already
-normalises for audience size, which was the only reason to avoid absolute
-figures; scoring each record against a baseline built from the user's other
+Scored against a **single declared anchor**, `RATE_ANCHOR = 0.05` — the
+weighted engagement rate at which a post scores 50. Not against the user's own
+moving mean: scoring each record against a baseline built from the user's other
 records made the layer self-referential, so a uniform improvement was invisible
 and publishing a genuine hit *lowered* the score.
 
 Relative-to-your-own-norm comparison still happens, in compounding and
 calibration, where that is the question actually being asked.
 
-Locked below 3 reception records. Impressions are optional: records with and
-without them are compared only against others in the same mode.
+**Impressions are required for this layer and optional everywhere else.** A
+record without them still counts for cadence and for conversion attribution,
+but it is not scored for reception and is excluded from the baseline. Giving it
+a second, independently-chosen anchor made the two agree at exactly 600
+impressions and diverge in both directions — the same post scoring 9 or 61 at
+10,000 impressions depending on whether the user filled the field, rewarding
+larger audiences for omitting it.
+
+Locked below 3 scorable records. Records are weighted by recency with a 90-day
+half-life rather than a hard window, so no record crossing a boundary steps the
+layer.
 
 ## L5 — conversion scoring
 
@@ -193,21 +207,45 @@ A signed gap is deliberate. Most users of this product will open it with a
 large positive gap, and naming that precisely is the entire motivational
 mechanism.
 
-### Diagnosis (2×2)
+### Diagnosis
 
-| | built low | built high |
-|---|---|---|
-| **foundation low** | `STALLED` — start by mining evidence | `HOLLOW` — you are louder than your proof |
-| **foundation high** | `BURIED` — you hold evidence nobody has seen | `COMPOUNDING` — scale and convert |
+Keyed to the **gap**, not to absolute thresholds on each half. Absolute cliffs
+put a hard boundary on a continuous quantity: a user told "we found six pieces
+of evidence" read "you haven't started yet" one screen later, because their
+foundation came out at 44 against a threshold of 45.
+
+| condition | diagnosis |
+|---|---|
+| only bundled fixtures loaded | `DEMO` — these numbers describe our sample, not you |
+| both halves below `STARTED` (18) | `STALLED` — nothing to work with yet |
+| `gap ≥ GAP_THRESHOLD` (12) | `BURIED` — you hold evidence nobody has seen |
+| `gap ≤ −GAP_THRESHOLD`, foundation measured | `HOLLOW` — louder than your proof |
+| `gap ≤ −GAP_THRESHOLD`, foundation **not** measured | `UNCATALOGUED` — not written down, not absent |
+| balanced, both halves ≥ `DEVELOPED` (45) | `COMPOUNDING` — scale and convert |
+| balanced, below that | `EARLY` — moving together, still small |
 
 `BURIED` is the original ProofMiner insight, now a formal diagnosable state.
 `HOLLOW` is the state the rest of the market actively produces.
 
+`UNCATALOGUED` exists because the arithmetic could not otherwise tell
+*inflated* from *not yet written down*. The built side fills from a few
+dropdown clicks; the foundation side requires pasting documents. Reading that
+asymmetry as inflation calls an honest person a fraud, so `HOLLOW` is returned
+only when L1 confidence reaches `MEASURED_FOUNDATION` (0.5).
+
 ### Confidence
 
-The index carries a confidence = weighted mean of layer confidences. Below
-0.35 the UI presents the index as an *estimate* and the product's language
-changes accordingly.
+The index carries a confidence = the **minimum** of the two halves, not their
+mean. The headline sentence asserts both numbers, and a fully-measured
+foundation was buying off the hedge on a built half computed entirely from
+layers with no observations. Below `LOW_CONFIDENCE` (0.55) the UI presents the
+index as an *estimate* and the product's language changes accordingly.
+
+Foundation layers are additionally weighted by the square of their own
+confidence, so a quarter-answered positioning form contributes a sixteenth of
+its weight. Without that, typing one character into the form dropped the
+headline number by 20 points — punishing the user for obeying the product's own
+instruction.
 
 ## Cross-layer integrations
 
@@ -227,6 +265,15 @@ engine regresses reception on dimensions and shrinks toward the priors:
 ```
 w = prior·(k/(k+n)) + empirical·(n/(k+n)),  k = 8
 ```
+
+with `MIN_OBSERVATIONS = 8` **distinct artifacts** — one post measured five
+times is one observation, not five. At that sample size roughly half the weight
+is empirical and, under noise, that half is noise: about 28% of users whose
+results are pure noise will see one dimension reach conventional significance
+across seven uncorrected comparisons. The containment is that the effect on
+actual ranking is small (measured: composites move by ≤3 points, no pairwise
+inversions) and that the panel presents itself as a hypothesis until n ≥ 15.
+This is an engineering compromise, not a sound estimator, and the UI says so.
 
 The result is a **per-user leverage model**: which proof qualities actually move
 *this person's* audience. The priors stop being the answer and become the

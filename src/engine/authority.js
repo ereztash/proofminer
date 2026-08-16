@@ -32,6 +32,8 @@ export const LOW_CONFIDENCE = 0.55;
 
 /** Below this on both halves, there is genuinely nothing to work with yet. */
 export const STARTED = 18;
+/** Above this on both halves, the stack is developed enough to be compounding. */
+export const DEVELOPED = 45;
 /** Gap magnitude at which the two halves count as out of step. */
 export const GAP_THRESHOLD = 12;
 
@@ -57,15 +59,27 @@ function weightedLayers(layers, weights, { skipLocked = false } = {}) {
   for (const [key, w] of Object.entries(weights)) {
     const layer = layers[key];
     if (skipLocked && layer?.locked) continue;
-    score += (layer?.score ?? 0) * w;
+    // Weight each layer by how much of it we actually know. Without this,
+    // typing one character into the positioning form unlocked L2 at a very low
+    // score and blended it in at full weight — dropping the headline number by
+    // 20 points as a direct consequence of obeying the product's own
+    // instruction, and leaving a competent full answer still below the score
+    // for leaving the form blank.
+    // Squared, so a quarter-answered form contributes a sixteenth of its
+    // weight rather than a quarter of it. A partial answer is not a quarter of
+    // a positioning — it is barely a positioning, and weighting it as though we
+    // knew a quarter of the truth still cost the user points for starting.
+    const known = skipLocked ? Math.max(0.02, (layer?.confidence ?? 1) ** 2) : 1;
+    const effective = w * known;
+    score += (layer?.score ?? 0) * effective;
     confidence += (layer?.confidence ?? 0) * w;
-    totalWeight += w;
+    totalWeight += effective;
   }
   if (totalWeight <= 0) return { score: 0, confidence: 0 };
   const divisor = skipLocked ? totalWeight : sumWeights(weights);
   return {
     score: clamp100(score / divisor),
-    confidence: confidence / totalWeight,
+    confidence: confidence / (skipLocked ? sumWeights(weights) : sumWeights(weights)),
   };
 }
 
@@ -90,10 +104,18 @@ export function computeAuthority(state, now = Date.now()) {
   const index = clamp100(0.45 * foundation.score + 0.55 * effectiveBuilt);
   const gap = Math.round(foundation.score - built.score);
 
-  const confidence = round(0.5 * foundation.confidence + 0.5 * built.confidence, 3);
+  // The minimum, not the mean. The headline sentence asserts both numbers, and
+  // a fully-measured foundation was buying off the hedge on a built half
+  // computed from layers with no observations at all.
+  const confidence = round(Math.min(foundation.confidence, built.confidence), 3);
+
+  // Bundled fixtures describe nobody. Any verdict computed from them is a
+  // verdict about our sample, and the product says so instead of asserting it.
+  const demo = isDemoMode(state);
 
   return {
     layers,
+    demo,
     foundation: foundation.score,
     built: built.score,
     effectiveBuilt: Math.round(effectiveBuilt),
@@ -102,8 +124,10 @@ export function computeAuthority(state, now = Date.now()) {
     /** Signed. Positive = worth more than the world can see. The headline number. */
     gap,
     confidence,
-    lowConfidence: confidence < LOW_CONFIDENCE,
-    diagnosis: diagnose(foundation.score, built.score, layers.L1),
+    lowConfidence: demo || confidence < LOW_CONFIDENCE,
+    diagnosis: demo
+      ? 'DEMO'
+      : diagnose(foundation.score, built.score, layers.L1),
     unlockedLayers: Object.entries(layers)
       .filter(([, l]) => !l.locked)
       .map(([k]) => k),
@@ -146,7 +170,10 @@ export function diagnose(foundation, built, proofLayer = null) {
   // foundation came out at 44 against a threshold of 45.
   if (gap >= GAP_THRESHOLD) return 'BURIED';
   if (gap <= -GAP_THRESHOLD) return measured ? 'HOLLOW' : 'UNCATALOGUED';
-  return 'COMPOUNDING';
+  // Balanced. Whether that is compounding or merely early depends on the level:
+  // "now it is cadence and conversion" is the wrong thing to tell someone whose
+  // two halves are balanced at 18.
+  return foundation >= DEVELOPED && built >= DEVELOPED ? 'COMPOUNDING' : 'EARLY';
 }
 
 /**
@@ -165,8 +192,10 @@ export function nextMove(state, now = Date.now()) {
   const proofs = realProofs(state);
   const positioning = scorePositioning(state.positioning, state.recognitions || []);
 
-  // 1. Nothing to work with. Everything else is premature.
-  if (!state.sources?.length && !proofs.length) {
+  // 1. Nothing to work with. Everything else is premature. Also covers the
+  //    case where sources exist but mining found nothing usable in them —
+  //    otherwise the only instruction is "mine", forever, on empty input.
+  if (!proofs.length && !(state.sources || []).some((s) => !Number.isFinite(s.minedAt))) {
     return { id: 'move.addSource', layer: 'L1', effortMinutes: 5, view: 'mine' };
   }
 
@@ -174,8 +203,7 @@ export function nextMove(state, now = Date.now()) {
   //    call, not only on the first run: evidence acquired through a gap play
   //    comes back in as a new source, and the guidance has to notice it or the
   //    acquisition loop has no return path.
-  const minedSourceIds = new Set((state.proofs || []).map((p) => p.sourceId));
-  const unmined = (state.sources || []).filter((s) => !minedSourceIds.has(s.id));
+  const unmined = (state.sources || []).filter((s) => !Number.isFinite(s.minedAt));
   if (unmined.length) {
     return {
       id: 'move.mine',
@@ -293,9 +321,23 @@ export function nextMove(state, now = Date.now()) {
     };
   }
 
+  // 7c. The built half cannot rise without these, and until now nothing ever
+  //     asked for them: L5 and L6 carry 0.45 of built, so an obedient user
+  //     publishing and measuring forever watched the headline gap freeze.
+  //     They are also the cheapest inputs in the product — one dropdown.
+  const publishedWithReception = (state.artifacts || []).filter(
+    (a) => a.status === 'published' && (state.receptions || []).some((r) => r.artifactId === a.id),
+  ).length;
+  if (publishedWithReception >= 2 && !(state.conversions || []).length) {
+    return { id: 'move.logConversion', layer: 'L5', effortMinutes: 2, view: 'measure' };
+  }
+  if (publishedWithReception >= 3 && !(state.recognitions || []).length) {
+    return { id: 'move.logRecognition', layer: 'L6', effortMinutes: 2, view: 'measure' };
+  }
+
   // 8. Weakest of the covered archetypes, once the loop is running.
   const play = acquisitionPlays(state, now)[0];
-  if (play) {
+  if (play && !recentlyAttempted(state, play, now)) {
     return {
       id: 'move.closeGap',
       layer: 'L1',
@@ -338,6 +380,21 @@ export function nextMove(state, now = Date.now()) {
     effortMinutes: 15,
     view: 'dashboard',
   };
+}
+
+/**
+ * True when this play was surfaced recently and nothing new has arrived since.
+ *
+ * Without it the guidance re-issued an identical 20-minute task after the user
+ * had gone and done it — because the evidence they came back with scored just
+ * under the coverage threshold. Repeating an instruction someone has already
+ * followed is the fastest way to lose them.
+ */
+function recentlyAttempted(state, play, now) {
+  const attempt = state.playLog?.[play.archetype];
+  if (!Number.isFinite(attempt)) return false;
+  const addedSince = (state.sources || []).some((s) => s.addedAt > attempt);
+  return !addedSince && now - attempt < 7 * 24 * 60 * 60 * 1000;
 }
 
 /**

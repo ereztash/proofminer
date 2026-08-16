@@ -101,7 +101,14 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           ? notice('stop', t('studio.ungroundedEntities', liveGrounding.entities.join(', ')))
           : ''}
         ${liveGrounding.overreach.length ? notice('warn', t('studio.overreach')) : ''}
-        ${liveGrounding.ok ? notice('info', t('studio.grounded')) : ''}
+        ${liveGrounding.ok
+          ? notice(
+              'info',
+              liveGrounding.entityCoverage === 'full'
+                ? t('studio.grounded')
+                : t('studio.groundedPartial'),
+            )
+          : ''}
         <p class="hint">${t('studio.groundedCaveat')}</p>
         ${text.includes('______') ? notice('warn', t('studio.blanks')) : ''}
         <p class="studio__meta">

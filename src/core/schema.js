@@ -111,6 +111,8 @@ export function emptyState() {
     conversions: [],
     /** @type {Recognition[]} */
     recognitions: [],
+    /** archetype -> epoch ms the acquisition play was last surfaced. */
+    playLog: {},
     calibration: {
       /** @type {Record<string, number>|null} null = still using priors */
       weights: null,
@@ -133,6 +135,7 @@ export function emptyState() {
  * @property {string} text
  * @property {boolean} demo  true for bundled sample material
  * @property {number} addedAt
+ * @property {number|null} minedAt  last mining pass, null if never mined
  */
 
 /**
@@ -252,6 +255,11 @@ export function normalizeState(input) {
     receptions: arr(input.receptions).map(normalizeReception).filter(Boolean),
     conversions: arr(input.conversions).map(normalizeConversion).filter(Boolean),
     recognitions: arr(input.recognitions).map(normalizeRecognition).filter(Boolean),
+    playLog: isObj(input.playLog)
+      ? Object.fromEntries(
+          Object.entries(input.playLog).filter(([, v]) => Number.isFinite(v)),
+        )
+      : {},
     calibration: {
       weights: isObj(calibration.weights) ? calibration.weights : null,
       observations: Math.max(0, Math.round(num(calibration.observations, 0))),
@@ -278,6 +286,8 @@ function normalizeSource(s) {
     text: s.text,
     demo: bool(s.demo),
     addedAt: num(s.addedAt, Date.now()),
+    /** When this source was last run through the miner. */
+    minedAt: Number.isFinite(s.minedAt) ? s.minedAt : null,
   };
 }
 
@@ -291,7 +301,7 @@ function normalizeProof(p) {
   return {
     id: safeId(p.id, 'proof'),
     claim: p.claim,
-    sourceId: str(p.sourceId),
+    sourceId: ID_SAFE.test(str(p.sourceId)) ? p.sourceId : '',
     sourceName: str(p.sourceName, '—'),
     kind: oneOf(p.kind, PROOF_KINDS, 'experience'),
     archetypes: arr(p.archetypes).filter((a) => ARCHETYPES.includes(a)),
@@ -322,7 +332,10 @@ function normalizeArtifact(a) {
 }
 
 function normalizeReception(r) {
-  if (!isObj(r) || typeof r.artifactId !== 'string') return null;
+  // A reception whose artifact reference is unusable can never be scored,
+  // calibrated from, or displayed — it would silently disappear from
+  // `buildObservations` instead.
+  if (!isObj(r) || typeof r.artifactId !== 'string' || !ID_SAFE.test(r.artifactId)) return null;
   const n = (v) => Math.max(0, Math.round(num(v, 0)));
   return {
     id: safeId(r.id, 'rcp'),
@@ -342,7 +355,8 @@ function normalizeConversion(c) {
   return {
     id: safeId(c.id, 'cnv'),
     type: c.type,
-    artifactId: typeof c.artifactId === 'string' ? c.artifactId : null,
+    artifactId:
+      typeof c.artifactId === 'string' && ID_SAFE.test(c.artifactId) ? c.artifactId : null,
     note: str(c.note),
     at: num(c.at, Date.now()),
   };

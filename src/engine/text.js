@@ -171,6 +171,24 @@ export function contextRelevance(text, context) {
 }
 
 /**
+ * Lines that are contact details or document furniture rather than claims.
+ *
+ * A CV header — name, city, mobile, email — was being mined as a proof unit,
+ * ranked mid-inventory, and offered in the publish picker. For a product whose
+ * first promise is that nothing leaves your machine, suggesting the user's own
+ * phone number as publishable evidence is the wrong kind of surprise.
+ */
+const PII_OR_FURNITURE = [
+  /[\w.+-]+@[\w-]+\.[\w.]{2,}/u,
+  /(?:^|\D)0\d{1,2}[-\s]?\d{3}[-\s]?\d{4}(?:\D|$)/u,
+  /\+\d{1,3}[-\s]?\d{2,3}[-\s]?\d{3}[-\s]?\d{4}/u,
+  /linkedin\.com\/in\//iu,
+  /^(?:קורות חיים|resume|curriculum vitae|cv)\b/iu,
+];
+
+export const isContactOrFurniture = (line) => PII_OR_FURNITURE.some((re) => re.test(line));
+
+/**
  * Split a source document into candidate proof-unit sentences.
  *
  * Handles Hebrew and English terminators, bullet lists, and line breaks.
@@ -184,7 +202,8 @@ export function splitSentences(text, minLength = 30) {
     .flatMap((line) => line.split(/(?<=[.!?׃…])\s+/u))
     .flatMap((chunk) => chunk.split(/\s*[•·▪]\s*/u))
     .map((s) => s.replace(/^\s*[-–—*+\d]+[.)\]]?\s*/u, '').trim())
-    .filter((s) => s.length >= minLength);
+    .filter((s) => s.length >= minLength)
+    .filter((s) => !isContactOrFurniture(s));
 }
 
 /** Word count, script-aware. */

@@ -53,7 +53,12 @@ export function buildObservations(state) {
     }
   }
   const receptions = [...latestPerArtifact.values()];
-  const signals = receptions.map((r) => ({ r, ...receptionSignal(r) }));
+  const signals = receptions
+    .map((r) => {
+      const signal = receptionSignal(r);
+      return signal ? { r, ...signal } : null;
+    })
+    .filter(Boolean);
 
   const observations = [];
   for (const entry of signals) {
@@ -220,18 +225,34 @@ export function compound(state, { now = Date.now(), minImpressions = 500 } = {})
   const proofById = new Map((state.proofs || []).map((p) => [p.id, p]));
   const artifactById = new Map((state.artifacts || []).map((a) => [a.id, a]));
 
-  const signals = receptions.map((r) => ({ r, ...receptionSignal(r) }));
+  const signals = receptions
+    .map((r) => {
+      const signal = receptionSignal(r);
+      return signal ? { r, ...signal } : null;
+    })
+    .filter(Boolean);
 
+  // Keyed by artifact, not by reception: logging the same post's numbers three
+  // weeks running used to produce three near-identical traction claims, each
+  // offered as publishable. `buildObservations` already dedupes per artifact
+  // for the same reason.
+  const receptionToArtifact = new Map(
+    (state.receptions || []).map((r) => [r.id, r.artifactId]),
+  );
   const alreadyCompounded = new Set(
     (state.proofs || [])
       .filter((p) => p.origin === 'compounded')
-      .map((p) => p.sourceId),
+      .map((p) => receptionToArtifact.get(p.sourceId) ?? p.sourceId),
   );
 
   const created = [];
   for (const entry of signals) {
     const { r: reception } = entry;
-    if (alreadyCompounded.has(reception.id)) continue;
+    // Also guards within this run: three weekly measurements of the same post
+    // arrive as three receptions in one call. Marked below, once a unit is
+    // actually created — marking here would consume the artifact on the first
+    // record that failed a threshold.
+    if (alreadyCompounded.has(reception.artifactId)) continue;
 
     // Absolute floors first. Without them the relative test fires on a post
     // that simply happened to follow two flops.
@@ -258,24 +279,28 @@ export function compound(state, { now = Date.now(), minImpressions = 500 } = {})
     // Reach becomes evidence only when there is something a sceptic could open.
     // Without a link this is a number the user typed about themselves, and the
     // compounding loop would be a pipe from self-report into the score.
-    if (!artifact.url?.trim()) continue;
+    if (!/^https?:\/\/\S+\.\S+/i.test(artifact.url?.trim() ?? '')) continue;
 
     // Built only from observed numbers. No adjectives, no interpretation.
     const claim = buildTractionClaim(reception, artifact.url, state.locale);
     const analysis = analyzeClaim(claim, { positioning: state.positioning, now });
 
+    alreadyCompounded.add(reception.artifactId);
     created.push({
       id: makeId('proof'),
       claim,
       sourceId: reception.id,
       sourceName: artifact.channel,
       kind: 'traction',
-      // SCALE only. The generated sentence contains the word "published",
+      // No archetype at all. Reach the user typed in is evidence of a kind,
+      // but counting it as SCALE coverage made the product stop telling them to
+      // go and get real scale evidence because they had entered a number.
+      // The generated sentence also contains the word "published",
       // which the third-party lexicon reads as external validation — so
       // re-analysing our own output let self-reported reach close the
       // VALIDATION gap and suppress the highest-value acquisition play, the
       // one that tells the user to go and get a testimonial.
-      archetypes: ['SCALE'],
+      archetypes: [],
       breakdown: analysis.breakdown,
       score: analysis.score,
       occurredAt: artifact.publishedAt ?? reception.capturedAt,

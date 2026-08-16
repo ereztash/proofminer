@@ -62,29 +62,39 @@ export function parseAnalyticsPaste(text) {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  for (const line of lines) {
-    const number = line.match(NUMBER);
-    if (!number) continue;
-    const value = parseMagnitude(number[1], number[2]);
-    if (value === null) continue;
+  // Order matters: `תגובות` is a substring of `תגובות רגש`, so reactions must
+  // be tested before comments or every reaction count lands in the wrong field.
+  const LABELS = [
+    ['impressions', [HE.impressions, EN.impressions]],
+    ['reactions', [HE.reactions, EN.reactions]],
+    ['shares', [HE.shares, EN.shares]],
+    ['saves', [HE.saves, EN.saves]],
+    ['comments', [HE.comments, EN.comments]],
+  ];
 
-    for (const [key, patterns] of Object.entries({
-      impressions: [HE.impressions, EN.impressions],
-      reactions: [HE.reactions, EN.reactions],
-      shares: [HE.shares, EN.shares],
-      saves: [HE.saves, EN.saves],
-      comments: [HE.comments, EN.comments],
-    })) {
-      if (found[key] !== undefined) continue;
-      if (patterns.some((re) => re.test(line))) {
-        // `תגובות` matches both reactions and comments in Hebrew; whichever
-        // label is checked first wins, and reactions is checked first because
-        // LinkedIn lists it first. A wrong guess is a visible number the user
-        // can correct, not a silent error.
-        found[key] = value;
-        break;
-      }
-    }
+  /** A line that is nothing but a magnitude. */
+  const bareNumber = (line) => {
+    if (!line) return null;
+    const m = line.match(new RegExp(`^${NUMBER.source}$`, 'u'));
+    return m ? parseMagnitude(m[1], m[2]) : null;
+  };
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const key = LABELS.find(([, patterns]) => patterns.some((re) => re.test(line)))?.[0];
+    if (!key || found[key] !== undefined) continue;
+
+    // Same line first, then the line after, then the line before. LinkedIn's
+    // web panel stacks the label above its number, which is the ordinary thing
+    // a user copies — requiring them on one line made the parser return nothing
+    // on the common layout, which was the entire point of the feature.
+    const inline = line.match(NUMBER);
+    const value =
+      (inline ? parseMagnitude(inline[1], inline[2]) : null) ??
+      bareNumber(lines[i + 1]) ??
+      bareNumber(lines[i - 1]);
+
+    if (value !== null && value !== undefined) found[key] = value;
   }
 
   return { found, matched: Object.keys(found).length };

@@ -29,7 +29,7 @@ export default {
     pledge: [
       'Everything stays on your machine. No server, no account, nobody reading it but you.',
       'This tool will not invent achievements. It works only with what you wrote.',
-      'If you try to look bigger than your evidence supports, it will stop you and say so.',
+      'It will not let your visibility run ahead of your evidence, and it will tell you when that happens. What you type here it takes as given — it cannot verify that for you.',
     ],
     twoMore: 'Two short questions, so the ranking fits you.',
     trackQuestion: 'Where are you right now?',
@@ -91,6 +91,14 @@ export default {
     COMPOUNDING: {
       title: 'Compounding',
       body: 'Evidence and visibility are moving together. Now it is cadence and conversion.',
+    },
+    EARLY: {
+      title: 'Both sides moving together',
+      body: 'Evidence and visibility are balanced, and both are still small. That is a good position — just an early one. Every step now moves both.',
+    },
+    DEMO: {
+      title: 'This is the sample, not you',
+      body: 'Every number on this screen is computed from demo material. It shows how the system works and says nothing about you. Add one source of your own and the picture becomes yours.',
     },
     UNCATALOGUED: {
       title: 'Not enough written down to say',
@@ -162,9 +170,13 @@ export default {
 
   reasons: {
     rareVerification: (v) =>
-      `This is one of only ${v.n} of your ${v.total} pieces where someone external vouches for you. That is the type you have least of and the type that convinces most.`,
+      v.n === 1
+        ? `This is the only one of your ${v.total} pieces where someone external vouches for you. That is the type you have least of and the type that convinces most.`
+        : `This is one of only two of your ${v.total} pieces where someone external vouches for you. That is the type you have least of and the type that convinces most.`,
     rareNumbers: (v) =>
-      `Only ${v.n} of your ${v.total} pieces contain a checkable number. This is one of them.`,
+      v.n === 1
+        ? `This is the only one of your ${v.total} pieces containing a checkable number.`
+        : `Only two of your ${v.total} pieces contain a checkable number. This is one of them.`,
     onlyFailure:
       'This is your only piece where you analyse something that did not work. Professional judgement shows there more than in any success.',
     onlyMethod:
@@ -259,6 +271,14 @@ export default {
     'move.publishNext': {
       title: 'Publish the next one',
       why: 'This is your strongest piece of evidence that has not gone out yet.',
+    },
+    'move.logConversion': {
+      title: 'Who came to you because of it?',
+      why: 'The visible half of the index cannot rise without this, and it is the cheapest action in the product — one dropdown.',
+    },
+    'move.logRecognition': {
+      title: 'Who mentioned you from outside?',
+      why: 'External recognition is the one layer you cannot move alone. A small mention counts.',
     },
     'move.strengthenLayer': { title: 'Strengthen the weakest layer', why: 'The rest of the system is healthy. This is what limits you now.' },
     do: 'Do it',
@@ -373,6 +393,8 @@ export default {
     tooShort: 'Too short to carry evidence.',
     tooLong: 'Very long. Consider splitting.',
     grounded: 'No numbers or names in the text are absent from the evidence.',
+    groundedPartial:
+      'No numbers in the text are absent from the evidence. Names we cannot fully check here — read the text yourself and confirm every name in it appears in the evidence.',
     groundedCaveat:
       'This check compares numbers and names. It cannot tell whether a correct number was attached to the wrong claim — only you can check that.',
     ungroundedEntities: (list) =>
@@ -399,10 +421,14 @@ export default {
     substantive: 'Of those — real comments',
     substantiveHint: 'A sentence or more, not "agree" or an emoji.',
     saves: 'Saves',
+    savesHint: 'LinkedIn does not always show this. If it is missing, skip it.',
+    minimum: 'The minimum that works: impressions + reactions. The rest sharpens the picture, it does not gate it.',
     shares: 'Shares',
     save: 'Save measurement',
     saved: 'Saved',
     empty: 'No numbers entered. Nothing to save.',
+    needDetail: 'Add a note, or pick the post it came from.',
+    needWho: 'Say who, or add a link. Recognition with no source is not recognition.',
     paste: 'Paste the numbers from LinkedIn',
     pasteHint: 'Select the stats block on the post page, copy, and paste. We will pull the numbers out.',
     pasteAction: 'Extract numbers',

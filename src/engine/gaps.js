@@ -150,9 +150,17 @@ export function stalingProofs(
     // proof to still be above the threshold after the decay that put it in this
     // window in the first place — which needed raw scores above the engine's
     // own ceiling, so the integration could never fire.
+    // Bounded on both sides. With only an upper bound, evidence that crossed
+    // the threshold years ago returned a large negative, passed the filter,
+    // was clamped to "0 days left", and sorted first — so the single Next Move
+    // pointed at the user's most-decayed material three steps running, while
+    // stronger unpublished evidence sat one screen away in the picker.
     .filter(
       ({ proof, daysLeft }) =>
-        proof.score >= minScore && daysLeft !== null && daysLeft <= withinDays,
+        proof.score >= minScore &&
+        daysLeft !== null &&
+        daysLeft <= withinDays &&
+        daysLeft >= -14,
     )
     .map((entry) => ({ ...entry, daysLeft: Math.max(0, entry.daysLeft) }))
     .sort((a, b) => a.daysLeft - b.daysLeft);

@@ -80,8 +80,17 @@ export function layerPosition(state) {
  * proof unit does not raise standing in this model.
  */
 export function layerArtifact(state, now = Date.now()) {
+  const demoProofIds = new Set(
+    (state.proofs || []).filter((p) => p.demo).map((p) => p.id),
+  );
   const published = (state.artifacts || []).filter(
-    (a) => a.status === 'published' && Number.isFinite(a.publishedAt),
+    (a) =>
+      a.status === 'published' &&
+      Number.isFinite(a.publishedAt) &&
+      // Publishing bundled fixtures used to raise L3 to 74 and flip the
+      // diagnosis, with the demo banner already gone because a real proof
+      // existed elsewhere in the inventory.
+      !a.proofIds.some((id) => demoProofIds.has(id)),
   );
   if (!published.length) return locked('nothing-published');
 
@@ -129,20 +138,24 @@ export function engagementWeight(r) {
 }
 
 /**
- * The comparable quantity for one reception record.
+ * The comparable quantity for one reception record, or `null` when there is
+ * none.
  *
- * Two modes, because impressions are optional: LinkedIn shows them behind an
- * extra click and a demoralised user will skip that field. With impressions we
- * compare engagement *rate*; without them we compare absolute engagement, which
- * is valid across a personal account whose audience size is roughly stable over
- * weeks. Records are only ever compared against a baseline built from records
- * in the same mode.
+ * Impressions stay optional in the form — LinkedIn hides them behind an extra
+ * click and a demoralised user will skip the field — but a record without them
+ * is **not scored** for reception. The previous design gave it a second,
+ * independently-chosen anchor, and the two anchors agreed at exactly 600
+ * impressions and diverged in both directions from there: the same post scored
+ * 90 with impressions and 61 without at 100 views, and 9 versus 61 at 10,000.
+ * A 52-point swing decided by whether the user clicked through — rewarding the
+ * larger audience for omitting the field — is worse than an honest gap.
+ *
+ * The record still counts for cadence, for conversion attribution, and as a
+ * published artifact. It simply cannot answer "how did it land".
  */
 export function receptionSignal(r) {
-  const weighted = engagementWeight(r);
-  return r.impressions > 0
-    ? { mode: 'rate', value: weighted / r.impressions }
-    : { mode: 'absolute', value: weighted };
+  if (!(r.impressions > 0)) return null;
+  return { mode: 'rate', value: engagementWeight(r) / r.impressions };
 }
 
 /**
@@ -150,8 +163,7 @@ export function receptionSignal(r) {
  *
  * `RATE_ANCHOR` is the weighted-engagement rate at which a post scores 50.
  * 0.05 corresponds to roughly a 5% weighted response — a solid but not
- * exceptional personal post. `ABSOLUTE_ANCHOR` plays the same role when the
- * user did not report impressions.
+ * exceptional personal post. It is the only anchor: see `receptionSignal`.
  *
  * These are fixed anchors rather than the user's own moving mean, and that
  * choice is the whole design. Scoring each record against a baseline computed
@@ -167,16 +179,15 @@ export function receptionSignal(r) {
  * where that is what is being asked.
  */
 export const RATE_ANCHOR = 0.05;
-export const ABSOLUTE_ANCHOR = 30;
 
 /**
  * Score one reception on 0..100. Monotone in engagement, bounded, and 50 at
  * the anchor.
  */
 export function receptionScore(reception) {
-  const { mode, value } = receptionSignal(reception);
-  const anchor = mode === 'rate' ? RATE_ANCHOR : ABSOLUTE_ANCHOR;
-  return clamp100(saturate(value, anchor, 100));
+  const signal = receptionSignal(reception);
+  if (!signal) return null;
+  return clamp100(saturate(signal.value, RATE_ANCHOR, 100));
 }
 
 /**
@@ -191,23 +202,33 @@ export function relativeReceptionScore(reception, peerBaseline) {
 
 /** L4 — RECEPTION. How did it land? */
 export function layerReception(state, now = Date.now()) {
-  const receptions = state.receptions || [];
+  const scorable = (state.receptions || []).filter((r) => receptionSignal(r) !== null);
   // docs/METHOD.md requires three records before this layer says anything.
   // Below that a single number is being presented as a pattern.
-  if (receptions.length < 3) return locked('no-reception');
+  if (scorable.length < 3) return locked('no-reception');
 
-  const windowStart = now - 90 * DAY_MS;
-  const recent = receptions.filter((r) => r.capturedAt >= windowStart);
-  const pool = recent.length >= 3 ? recent : receptions;
+  // Recency-weighted rather than a hard 90-day set swap. The swap stepped the
+  // layer 23-38 points in a single day at constant confidence, purely because
+  // a record crossed the boundary.
+  const scores = scorable.map((r) => {
+    const ageDaysValue = Math.max(0, (now - r.capturedAt) / DAY_MS);
+    return { score: receptionScore(r), weight: 0.5 ** (ageDaysValue / 90) };
+  });
+  const totalWeight = scores.reduce((sum, e) => sum + e.weight, 0);
+  const weighted = totalWeight > 0
+    ? scores.reduce((sum, e) => sum + e.score * e.weight, 0) / totalWeight
+    : mean(scores.map((e) => e.score));
 
   return {
-    score: clamp100(mean(pool.map(receptionScore))),
-    confidence: Math.min(1, receptions.length / 6),
+    score: clamp100(weighted),
+    // Counted over the records the score was actually computed from, not over
+    // every record on file.
+    confidence: Math.min(1, scorable.length / 6),
     locked: false,
     inputs: {
-      records: receptions.length,
-      pooled: pool.length,
-      modes: [...new Set(pool.map((r) => receptionSignal(r).mode))],
+      records: (state.receptions || []).length,
+      scorable: scorable.length,
+      unscorable: (state.receptions || []).length - scorable.length,
     },
   };
 }

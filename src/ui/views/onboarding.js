@@ -12,7 +12,7 @@
 import { html } from '../html.js';
 import { button, field, textArea } from '../components.js';
 import { scoreBand } from '../../engine/score.js';
-import { reasonFor } from '../../engine/explain.js';
+import { inventorySignals, reasonFor } from '../../engine/explain.js';
 
 export function onboardingView(state, t) {
   const track = state.profile.track;
@@ -92,6 +92,7 @@ const checkedAttr = html`checked`;
  * land within a few minutes of arrival: *you already had this*.
  */
 export function firstLightView(state, t, { proofs, top3 }) {
+  const signalCache = inventorySignals(proofs);
   if (!proofs.length) {
     return html`<div class="cold">
       <div class="cold__inner">
@@ -111,7 +112,7 @@ export function firstLightView(state, t, { proofs, top3 }) {
 
       <h2 class="cold__step">${t('firstLight.threeTitle')}</h2>
       <ol class="reveal">
-        ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs))}
+        ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
 
       <div class="cold__actions">
@@ -121,14 +122,14 @@ export function firstLightView(state, t, { proofs, top3 }) {
   </div>`;
 }
 
-function revealCard(proof, rank, t, inventory) {
+function revealCard(proof, rank, t, inventory, signalCache) {
   // A reason derived from the signals actually present in this claim, and where
   // possible from how it compares to the rest of the inventory. The previous
   // version printed a static definition of whichever dimension scored highest,
   // which was frequently a non-reason and sometimes plainly false against the
   // card it sat under — "someone else said this about you" over a sentence the
   // user wrote themselves.
-  const reason = reasonFor(proof, inventory);
+  const reason = reasonFor(proof, inventory, signalCache);
   return html`<li class="reveal__item">
     <span class="reveal__rank">${rank}</span>
     <div>

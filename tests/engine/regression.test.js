@@ -11,14 +11,14 @@
 import { describe, expect, it } from 'vitest';
 import { analyzeClaim, mineSources } from '../../src/engine/mine.js';
 import { extractSignals, spelledNumbers } from '../../src/engine/signals.js';
-import { dedupeProofs, decayFactor } from '../../src/engine/score.js';
+import { dedupeProofs, decayFactor, scoreBand } from '../../src/engine/score.js';
 import {
   RATE_ANCHOR,
   layerReception,
   receptionScore,
   receptionSignal,
 } from '../../src/engine/layers.js';
-import { computeAuthority } from '../../src/engine/authority.js';
+import { computeAuthority, nextMove } from '../../src/engine/authority.js';
 import { normalizeState } from '../../src/core/schema.js';
 import { saturate } from '../../src/core/util.js';
 import { escapeHtml, toString_ } from '../../src/ui/html.js';
@@ -209,29 +209,48 @@ describe('L4 reception', () => {
     );
   });
 
-  it('compares absolute engagement when impressions were not reported', () => {
-    const r = base({ impressions: 0, reactions: 30 });
-    expect(receptionSignal(r).mode).toBe('absolute');
+  it('refuses to score a record with no impressions rather than inventing a mode', () => {
+    expect(receptionSignal(base({ impressions: 0 }))).toBeNull();
     expect(receptionSignal(base()).mode).toBe('rate');
   });
 
-  it('does not let one impressions-free record poison the rate baseline', () => {
-    // A blank impressions field used to be read as 0, treated as 1, and inflate
-    // that record's rate ~1000x, collapsing the layer at full confidence.
+  it('is completely unmoved by records that carry no impressions', () => {
+    // A blank field first destroyed the layer, then — with a second,
+    // independently-chosen anchor — inflated it by 52 points at large audience
+    // sizes, rewarding the user for omitting the field. Now it does neither.
     const rated = Array.from({ length: 5 }, (_, i) =>
       reception({ id: `r${i}`, artifactId: `a${i}`, ...base(), capturedAt: NOW - (i + 1) * DAY }),
     );
-    const clean = layerReception(stateWith({ receptions: rated }), NOW).score;
-    const polluted = layerReception(
+    const clean = layerReception(stateWith({ receptions: rated }), NOW);
+    const withBlanks = layerReception(
       stateWith({
         receptions: [
           ...rated,
-          reception({ id: 'r_blank', artifactId: 'a_blank', ...base({ impressions: 0 }) }),
+          reception({ id: 'r_b1', artifactId: 'a_b1', ...base({ impressions: 0 }) }),
+          reception({ id: 'r_b2', artifactId: 'a_b2', ...base({ impressions: 0, reactions: 900 }) }),
         ],
       }),
       NOW,
-    ).score;
-    expect(Math.abs(polluted - clean)).toBeLessThan(12);
+    );
+    expect(withBlanks.score).toBe(clean.score);
+    expect(withBlanks.confidence).toBe(clean.confidence);
+    expect(withBlanks.inputs.unscorable).toBe(2);
+  });
+
+  it('has no single-day cliff as a record ages past the window', () => {
+    const at = (d) =>
+      layerReception(
+        stateWith({
+          receptions: [
+            reception({ id: 'a', artifactId: 'a', ...base({ reactions: 80 }), capturedAt: NOW - 2 * DAY }),
+            reception({ id: 'b', artifactId: 'b', ...base({ reactions: 80 }), capturedAt: NOW - 3 * DAY }),
+            reception({ id: 'c', artifactId: 'c', ...base({ reactions: 2 }), capturedAt: NOW - d * DAY }),
+          ],
+        }),
+        NOW,
+      ).score;
+    // The old hard set-swap stepped 23-38 points across this boundary.
+    expect(Math.abs(at(90.5) - at(89.5))).toBeLessThan(2);
   });
 });
 
@@ -298,5 +317,79 @@ describe('imported data cannot reach markup', () => {
   it('emits a real disabled attribute rather than a raw string', () => {
     expect(toString_(button('mine', 'x', { disabled: true }))).toContain('disabled');
     expect(toString_(button('mine', 'x', { disabled: false }))).not.toContain('disabled');
+  });
+});
+
+describe('band calibration', () => {
+  const POSITIONING = {
+    audience: 'מנהלי כספים בחברות תעשייה בינוניות',
+    transformation: 'סגירת רבעון תוך שבוע במקום שלושה שבועות',
+    claim: 'אני מקצר סגירות רבעון בתעשייה',
+    offer: 'ליווי לצוות כספים',
+  };
+
+  /**
+   * The exact strings the boundary comment in score.js cites. Asserted here so
+   * the documented distribution cannot drift away from the engine — the
+   * comment previously claimed 86/69/56/40/13 while the engine produced
+   * 79/51/67/52/13, with the two load-bearing points inverted.
+   */
+  const REFERENCE = [
+    [86, 'בכתבה שפורסמה בכלכליסט ב-2026 צוטט סמנכ"ל הכספים של חברת אלביט שאמר שקיצרתי את סגירת הרבעון שלהם משלושה שבועות לשישה ימים, חיסכון של 220,000 ש״ח בשנה — https://example.com/article'],
+    [69, 'בכתבה שפורסמה ב-2025 באתר מקצועי צוטט לקוח שלי שסיפר שההכנסות שלו גדלו ב-38% בתוך ארבעה חודשים מהעבודה איתי.'],
+    [56, 'קיצרתי את סגירת הרבעון של לקוח תעשייתי משלושה שבועות לשישה ימים ב-2025, חיסכון של 40 שעות עבודה בחודש.'],
+    [52, 'פיתחתי תהליך בן חמישה שלבים לסגירת רבעון שאני מיישם זהה בכל לקוח מאז 2024.'],
+    [49, 'ניהלתי צוות של שנים עשר אנשים במחלקת הכספים במשך ארבע שנים.'],
+    [11, 'מאמינה בעבודת צוות ובלמידה מתמדת ובגישה אישית לכל לקוח.'],
+  ];
+
+  it('produces the distribution its own boundary comment claims', () => {
+    for (const [expected, claim] of REFERENCE) {
+      const { score } = analyzeClaim(claim, { positioning: POSITIONING, now: NOW });
+      expect(score, claim.slice(0, 50)).toBeGreaterThanOrEqual(expected - 3);
+      expect(score, claim.slice(0, 50)).toBeLessThanOrEqual(expected + 3);
+    }
+  });
+
+  it('keeps the reference points in the bands the boundaries assign them', () => {
+    const bandOf = (claim) =>
+      scoreBand(analyzeClaim(claim, { positioning: POSITIONING, now: NOW }).score);
+    expect(bandOf(REFERENCE[0][1])).toBe('strong');
+    expect(bandOf(REFERENCE[1][1])).toBe('strong');
+    expect(bandOf(REFERENCE[2][1])).toBe('usable');
+    expect(bandOf(REFERENCE[5][1])).toBe('weak');
+  });
+});
+
+describe('sources that yield nothing', () => {
+  it('does not pin the guidance to a button that does nothing', () => {
+    // A bulleted list under the sentence-length floor produced zero proofs, and
+    // "mine" was inferred as undone from the absence of a proof carrying the
+    // source id — so the product's single instruction became a no-op forever.
+    const state = stateWith({
+      sources: [{ id: 's1', name: 'list', text: '• קצר\n• גם קצר', demo: false, addedAt: NOW, minedAt: null }],
+    });
+    expect(nextMove(state, NOW).id).toBe('move.mine');
+
+    state.proofs = mineSources(state, { now: NOW });
+    expect(state.proofs).toHaveLength(0);
+    expect(state.sources[0].minedAt).toBe(NOW);
+    expect(nextMove(state, NOW).id).toBe('move.addSource');
+  });
+});
+
+describe('contact details are not evidence', () => {
+  it('never mines a CV header into the inventory', () => {
+    const source = {
+      id: 's1', name: 'cv', demo: false, addedAt: NOW, minedAt: null,
+      text: [
+        'מנהל תפעול ולוגיסטיקה בכיר | תל אביב | 052-8841203 | ronen.avidan@gmail.com',
+        'linkedin.com/in/ronen-avidan — פרופיל מקצועי מלא עם המלצות',
+        'קיצרתי את זמן האספקה הממוצע מ-19 יום ל-7 ימים במהלך 2025.',
+      ].join('\n'),
+    };
+    const proofs = mineSources(stateWith({ sources: [source] }), { now: NOW });
+    expect(proofs).toHaveLength(1);
+    expect(proofs[0].claim).not.toMatch(/052|gmail|linkedin\.com/);
   });
 });

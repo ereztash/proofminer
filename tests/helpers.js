@@ -10,6 +10,19 @@ export function stateWith(overrides = {}) {
   return { ...emptyState(), ...overrides };
 }
 
+/** A source that has already been through the miner. */
+export function minedSource(overrides = {}) {
+  return {
+    id: 's1',
+    name: 'cv',
+    text: STRONG_HE,
+    demo: false,
+    addedAt: NOW,
+    minedAt: NOW,
+    ...overrides,
+  };
+}
+
 /** Build a fully-scored proof unit from a claim string. */
 export function proofFrom(claim, options = {}) {
   const { positioning = {}, now = NOW, ...rest } = options;

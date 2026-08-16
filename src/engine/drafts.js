@@ -11,8 +11,7 @@
  * what they did and a tool that helps them make things up.
  */
 
-import { makeId } from '../core/util.js';
-import { DEMO_MARKER, extractSignals, spelledNumbers } from './signals.js';
+import { DEMO_MARKER, entityCoverage, extractSignals, spelledNumbers } from './signals.js';
 
 export const ANGLES = /** @type {const} */ (['bare', 'context', 'method', 'question']);
 
@@ -149,6 +148,13 @@ export function validateGrounding(body, proofs) {
     unsupported,
     entities,
     overreach,
+    /**
+     * How complete the name check could be. Hebrew has no capitalisation, so
+     * names are findable only by an adjacent role or organisation word or by
+     * the known-entity list — the UI must report that rather than print a clean
+     * bill of health over a draft naming three invented employers.
+     */
+    entityCoverage: entityCoverage(body),
   };
 }
 
@@ -212,27 +218,12 @@ export function provenanceFooter(proofs, locale = 'he') {
   return `\n\n---\n${label}:\n${lines.join('\n')}`;
 }
 
-/** Build a persistable artifact record from a composed draft. */
-export function makeArtifact({ draft, channel = 'post', angle = 'bare', now = Date.now() }) {
-  return {
-    id: makeId('art'),
-    proofIds: draft.proofIds,
-    channel,
-    angle,
-    body: draft.body,
-    status: 'draft',
-    publishedAt: null,
-    url: '',
-    createdAt: now,
-  };
-}
-
 /**
  * What share of this text is the user's own.
  *
  * This is the product's answer to the second pain in docs/UX.md — the
  * revulsion at sounding like everyone else on LinkedIn. Rather than pretending
- * our templates are not templates, the studio measures how much of the post the
+ * our scaffolds are not scaffolds, the studio measures how much of the post the
  * tool wrote and shows it. The default angle scores 100%.
  *
  * @param {string} body

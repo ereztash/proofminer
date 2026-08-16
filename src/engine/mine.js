@@ -94,6 +94,13 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
     }
   }
 
+  // Stamped whether or not the source produced anything. Inferring "mined"
+  // from the presence of a proof carrying the source id meant a source that
+  // yielded nothing — a bulleted list under the sentence-length floor, or one
+  // whose claims all deduped against existing units — was permanently unmined,
+  // and the product's single instruction became a button that did nothing.
+  for (const source of state.sources || []) source.minedAt = now;
+
   const ranked = sortByDesc(candidates, (p) => p.score);
   const deduped = dedupeProofs(ranked);
 

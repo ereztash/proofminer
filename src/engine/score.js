@@ -119,12 +119,16 @@ export function dedupeProofs(proofs, threshold = 0.8) {
  * Band boundaries, calibrated against the distribution the engine actually
  * produces on real material rather than against a round number.
  *
- * Measured reference points (Hebrew, positioning filled):
- *   ~86 named client + press + percentage + currency + URL
- *   ~69 third-party quote with a percentage delta
- *   ~56 quantified outcome, no external source
- *   ~40 written method
- *   ~13 platitude ("I believe in teamwork and continuous learning")
+ * Reference points, measured on the exact strings in
+ * `tests/engine/regression.test.js > band calibration` and asserted there, so
+ * this comment cannot drift away from the engine it describes:
+ *
+ *   86  named client + press + percentage + currency + URL
+ *   69  third-party quote with a percentage delta
+ *   56  quantified outcome, no external source
+ *   52  written method
+ *   49  ordinary CV line
+ *   11  platitude ("I believe in teamwork and continuous learning")
  *
  * The previous 75/55 cut made `strong` unreachable and printed "Weak" over a
  * user's best evidence on the reveal screen that exists to tell them the

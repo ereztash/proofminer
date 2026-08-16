@@ -51,7 +51,7 @@ const ui = {
   /** Numbers extracted from a pasted analytics block, pre-filling the form. */
   parsedAnalytics: {},
   selectedProofId: null,
-  angle: 'direct',
+  angle: 'bare',
   cta: 'none',
   draftBody: null,
   /** Artifact this studio session is editing, so save+publish is one record. */
@@ -94,6 +94,11 @@ export function mountApp(root) {
     ui.formCache = {};
     ui.parsedAnalytics = {};
     ui.filter = 'all';
+    ui.view = 'dashboard';
+    ui.angle = 'bare';
+    ui.cta = 'none';
+    ui.refining = false;
+    ui.toast = '';
   }
 
   let toastTimer = null;
@@ -156,9 +161,14 @@ export function mountApp(root) {
         existing.body = body;
         existing.proofIds = [proofId];
         existing.angle = ui.angle;
-        existing.status = status;
+        // Publishing is one-way. `Save draft` on an already-published artifact
+        // used to demote it: L3 collapsed to locked, the record vanished from
+        // the measurement screen, and its reception was orphaned.
+        if (status === 'published') {
+          existing.status = 'published';
+          if (!existing.publishedAt) existing.publishedAt = realNow();
+        }
         if (url) existing.url = url;
-        if (status === 'published' && !existing.publishedAt) existing.publishedAt = realNow();
         return;
       }
       const created = {
@@ -180,6 +190,13 @@ export function mountApp(root) {
 
   const actions = {
     goto(payload) {
+      // Record that an acquisition play was actually shown, so the guidance
+      // does not re-issue it to someone who has already gone and done it.
+      if (payload.archetype) {
+        store.update((draft) => {
+          draft.playLog[payload.archetype] = realNow();
+        });
+      }
       if (VIEWS.includes(payload.view)) ui.view = payload.view;
       if (payload.proof) ui.selectedProofId = payload.proof;
       ui.screen = 'app';
@@ -239,6 +256,7 @@ export function mountApp(root) {
     addText() {
       const text = val('paste').trim();
       if (!text) return;
+      delete ui.formCache.paste;
       store.update((draft) => {
         draft.sources.push({
           id: makeId('src'),
@@ -355,6 +373,8 @@ export function mountApp(root) {
     markPublished() {
       if (!upsertArtifact({ status: 'published', url: val('studio-url') })) return;
       delete ui.formCache['studio-url'];
+      // A published artifact is finished; the next draft starts a new record.
+      ui.artifactId = null;
       ui.view = 'measure';
     },
 
@@ -435,6 +455,15 @@ export function mountApp(root) {
 
     addConversion() {
       const artifactId = val('cv-artifact');
+      const note = val('cv-note').trim();
+      // A conversion with nothing attached to it is a stray click, not an
+      // event. Five of them used to move the index from 14 to 34 and flip the
+      // diagnosis to COMPOUNDING — fabricating standing out of nothing, in a
+      // product whose whole premise is that standing must be evidence-backed.
+      if (!note && !artifactId) {
+        toast(t('measure.needDetail'));
+        return;
+      }
       store.update((draft) => {
         draft.conversions.push({
           id: makeId('cnv'),
@@ -443,7 +472,7 @@ export function mountApp(root) {
           // it, `detectDrift` filters on `artifactId` and returns null in every
           // state the app can produce.
           artifactId: artifactId || null,
-          note: val('cv-note'),
+          note,
           at: realNow(),
         });
       });
@@ -451,15 +480,27 @@ export function mountApp(root) {
     },
 
     addRecognition() {
+      const by = val('rg-by').trim();
+      const url = val('rg-url').trim();
+      // Recognition is someone else vouching for you. Without a who or a where
+      // there is nobody in the record.
+      if (!by && !url) {
+        toast(t('measure.needWho'));
+        return;
+      }
       store.update((draft) => {
         draft.recognitions.push({
           id: makeId('rec'),
           type: val('rg-type'),
-          by: val('rg-by'),
-          url: val('rg-url'),
+          by,
+          url,
           at: realNow(),
         });
       });
+      // NEW-2: append forms must clear their cache, or `val()` falls back to
+      // the stale value and a second click silently duplicates the record.
+      delete ui.formCache['rg-by'];
+      delete ui.formCache['rg-url'];
     },
 
     saveSettings() {

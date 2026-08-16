@@ -181,7 +181,6 @@ describe('compounding', () => {
     expect(created).toHaveLength(1);
     expect(created[0].origin).toBe('compounded');
     expect(created[0].kind).toBe('traction');
-    expect(created[0].archetypes).toContain('SCALE');
   });
 
   it('builds the claim only from observed numbers, and attaches the link', () => {
@@ -193,12 +192,28 @@ describe('compounding', () => {
     expect(created.claim).not.toMatch(/מדהים|ויראלי|הצלחה/);
   });
 
-  it('never claims VALIDATION from the user own reach numbers', () => {
+  it('claims no archetype at all from the user own reach numbers', () => {
     const [created] = compound(outperformingState(), { now: NOW });
     // The generated sentence contains "published", which the third-party
-    // lexicon reads as external validation. Re-analysing our own output must
-    // not let self-reported reach close the testimonial gap.
-    expect(created.archetypes).toEqual(['SCALE']);
+    // lexicon reads as external validation — so re-analysing our own output let
+    // self-reported reach close the testimonial gap. Counting it as SCALE was
+    // the same mistake one step quieter: it deleted the acquisition play that
+    // tells the user to go and get real scale evidence.
+    expect(created.archetypes).toEqual([]);
+  });
+
+  it('counts one post measured weekly as one piece of evidence, not three', () => {
+    const state = outperformingState();
+    const hit = state.receptions[state.receptions.length - 1];
+    state.receptions.push(
+      { ...hit, id: 'rcp_hit2', capturedAt: NOW },
+      { ...hit, id: 'rcp_hit3', capturedAt: NOW - 2 * DAY },
+    );
+    expect(compound(state, { now: NOW })).toHaveLength(1);
+  });
+
+  it('requires a link that actually looks like one', () => {
+    expect(compound(outperformingState({ url: 'x' }), { now: NOW })).toHaveLength(0);
   });
 
   it('refuses without a link — self-reported reach is not checkable evidence', () => {

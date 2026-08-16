@@ -85,40 +85,39 @@ function comparativeReasons(claim, signals, inventorySignals) {
 }
 
 /**
+ * Signals for a whole inventory, extracted once.
+ *
+ * Hoisted out of `reasonFor` because the inventory view called it per row and
+ * it re-extracted the entire inventory each time — n^2 synchronous signal
+ * extraction on the most-used screen, measured at ~100ms per click at 60
+ * proofs and 4.9s at 600. `MAX_PROOFS` does not bound it: imported files are
+ * uncapped, and pinned and compounded units bypass truncation.
+ */
+export function inventorySignals(inventory = []) {
+  const map = new Map();
+  for (const proof of inventory) map.set(proof.id, extractSignals(proof.claim));
+  return map;
+}
+
+/**
  * The single best reason to show for a proof, given the whole inventory.
  *
  * @param {object} proof
  * @param {object[]} inventory  all active proofs, for comparison
+ * @param {Map<string, object>} [cache] precomputed signals, for list rendering
  * @returns {Reason|null}
  */
-export function reasonFor(proof, inventory = []) {
-  const signals = extractSignals(proof.claim);
-  const inventorySignals = inventory.map((p) =>
-    p.id === proof.id ? signals : extractSignals(p.claim),
+export function reasonFor(proof, inventory = [], cache = null) {
+  const signals = cache?.get(proof.id) ?? extractSignals(proof.claim);
+  const inventorySignalList = inventory.map(
+    (p) => cache?.get(p.id) ?? (p.id === proof.id ? signals : extractSignals(p.claim)),
   );
   const all = [
-    ...comparativeReasons(proof.claim, signals, inventorySignals),
+    ...comparativeReasons(proof.claim, signals, inventorySignalList),
     ...intrinsicReasons(signals),
   ];
   if (!all.length) return null;
   return all.sort((a, b) => b.weight - a.weight)[0];
-}
-
-/**
- * Up to `limit` reasons, strongest first — used where there is room to say more
- * than one thing about a piece of evidence.
- */
-export function reasonsFor(proof, inventory = [], limit = 3) {
-  const signals = extractSignals(proof.claim);
-  const inventorySignals = inventory.map((p) =>
-    p.id === proof.id ? signals : extractSignals(p.claim),
-  );
-  return [
-    ...comparativeReasons(proof.claim, signals, inventorySignals),
-    ...intrinsicReasons(signals),
-  ]
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, limit);
 }
 
 /**
