@@ -82,8 +82,23 @@ export function createStore(initial = loadState(), storage = safeStorage()) {
     /** @returns {object} the live state (treat as read-only) */
     get: () => state,
 
-    /** Deep snapshot, for export and for engine calls that must not alias. */
+    /** Deep snapshot, for engine calls that must not alias. */
     snapshot: () => deepClone(state),
+
+    /**
+     * Snapshot with credentials removed, for anything that leaves this device.
+     *
+     * The export file is something the product actively tells the user to
+     * create (Settings suggests it when storage is failing) and that they will
+     * then move to a backup, another machine, or a career coach. Serialising a
+     * live billable API key into it would manufacture a credential leak out of
+     * the portability feature.
+     */
+    exportSnapshot() {
+      const copy = deepClone(state);
+      copy.settings.llm = { ...copy.settings.llm, apiKey: '' };
+      return copy;
+    },
 
     /** Last persistence failure, surfaced in Settings so storage loss is visible. */
     persistError: () => lastPersistError,

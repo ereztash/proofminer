@@ -111,6 +111,8 @@ export function emptyState() {
     conversions: [],
     /** @type {Recognition[]} */
     recognitions: [],
+    /** archetype -> epoch ms the acquisition play was last surfaced. */
+    playLog: {},
     calibration: {
       /** @type {Record<string, number>|null} null = still using priors */
       weights: null,
@@ -133,6 +135,7 @@ export function emptyState() {
  * @property {string} text
  * @property {boolean} demo  true for bundled sample material
  * @property {number} addedAt
+ * @property {number|null} minedAt  last mining pass, null if never mined
  */
 
 /**
@@ -197,6 +200,16 @@ export function emptyState() {
  * @property {number} at
  */
 
+/**
+ * Ids end up in DOM attribute values and CSS selectors, so they are restricted
+ * to a safe alphabet on the way in rather than trusted on the way out. An
+ * imported backup is attacker-controllable input: a shared file whose proof id
+ * carried markup was a stored XSS with the user's API key in reach.
+ */
+const ID_SAFE = /^[A-Za-z0-9_-]{1,64}$/;
+const safeId = (value, prefix) =>
+  typeof value === 'string' && ID_SAFE.test(value) ? value : makeId(prefix);
+
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 const arr = (v) => (Array.isArray(v) ? v : []);
 const str = (v, fallback = '') => (typeof v === 'string' ? v : fallback);
@@ -242,6 +255,11 @@ export function normalizeState(input) {
     receptions: arr(input.receptions).map(normalizeReception).filter(Boolean),
     conversions: arr(input.conversions).map(normalizeConversion).filter(Boolean),
     recognitions: arr(input.recognitions).map(normalizeRecognition).filter(Boolean),
+    playLog: isObj(input.playLog)
+      ? Object.fromEntries(
+          Object.entries(input.playLog).filter(([, v]) => Number.isFinite(v)),
+        )
+      : {},
     calibration: {
       weights: isObj(calibration.weights) ? calibration.weights : null,
       observations: Math.max(0, Math.round(num(calibration.observations, 0))),
@@ -263,11 +281,13 @@ export function normalizeState(input) {
 function normalizeSource(s) {
   if (!isObj(s) || typeof s.text !== 'string' || !s.text.trim()) return null;
   return {
-    id: str(s.id) || makeId('src'),
+    id: safeId(s.id, 'src'),
     name: str(s.name, 'מקור'),
     text: s.text,
     demo: bool(s.demo),
     addedAt: num(s.addedAt, Date.now()),
+    /** When this source was last run through the miner. */
+    minedAt: Number.isFinite(s.minedAt) ? s.minedAt : null,
   };
 }
 
@@ -279,9 +299,9 @@ function normalizeProof(p) {
     if (Number.isFinite(v)) clean[k] = Math.min(100, Math.max(0, v));
   }
   return {
-    id: str(p.id) || makeId('proof'),
+    id: safeId(p.id, 'proof'),
     claim: p.claim,
-    sourceId: str(p.sourceId),
+    sourceId: ID_SAFE.test(str(p.sourceId)) ? p.sourceId : '',
     sourceName: str(p.sourceName, '—'),
     kind: oneOf(p.kind, PROOF_KINDS, 'experience'),
     archetypes: arr(p.archetypes).filter((a) => ARCHETYPES.includes(a)),
@@ -299,8 +319,8 @@ function normalizeProof(p) {
 function normalizeArtifact(a) {
   if (!isObj(a)) return null;
   return {
-    id: str(a.id) || makeId('art'),
-    proofIds: arr(a.proofIds).filter((v) => typeof v === 'string'),
+    id: safeId(a.id, 'art'),
+    proofIds: arr(a.proofIds).filter((v) => typeof v === 'string' && ID_SAFE.test(v)),
     channel: oneOf(a.channel, CHANNELS, 'post'),
     angle: str(a.angle, 'direct'),
     body: str(a.body),
@@ -312,10 +332,13 @@ function normalizeArtifact(a) {
 }
 
 function normalizeReception(r) {
-  if (!isObj(r) || typeof r.artifactId !== 'string') return null;
+  // A reception whose artifact reference is unusable can never be scored,
+  // calibrated from, or displayed — it would silently disappear from
+  // `buildObservations` instead.
+  if (!isObj(r) || typeof r.artifactId !== 'string' || !ID_SAFE.test(r.artifactId)) return null;
   const n = (v) => Math.max(0, Math.round(num(v, 0)));
   return {
-    id: str(r.id) || makeId('rcp'),
+    id: safeId(r.id, 'rcp'),
     artifactId: r.artifactId,
     impressions: n(r.impressions),
     reactions: n(r.reactions),
@@ -330,9 +353,10 @@ function normalizeReception(r) {
 function normalizeConversion(c) {
   if (!isObj(c) || !CONVERSION_TYPES.includes(c.type)) return null;
   return {
-    id: str(c.id) || makeId('cnv'),
+    id: safeId(c.id, 'cnv'),
     type: c.type,
-    artifactId: typeof c.artifactId === 'string' ? c.artifactId : null,
+    artifactId:
+      typeof c.artifactId === 'string' && ID_SAFE.test(c.artifactId) ? c.artifactId : null,
     note: str(c.note),
     at: num(c.at, Date.now()),
   };
@@ -341,7 +365,7 @@ function normalizeConversion(c) {
 function normalizeRecognition(r) {
   if (!isObj(r) || !RECOGNITION_TYPES.includes(r.type)) return null;
   return {
-    id: str(r.id) || makeId('rec'),
+    id: safeId(r.id, 'rec'),
     type: r.type,
     by: str(r.by),
     url: str(r.url),

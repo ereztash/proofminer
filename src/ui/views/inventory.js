@@ -11,6 +11,7 @@ import { button, meter, scoreChip, section, select } from '../components.js';
 import { daysUntilStale, decayedScore, extremes } from '../../engine/score.js';
 import { activeProofs } from '../../engine/mine.js';
 import { DIMENSION_KEYS } from '../../engine/dimensions.js';
+import { inventorySignals, reasonFor } from '../../engine/explain.js';
 
 export function inventoryView(state, t, { now, filter, expanded }) {
   const active = activeProofs(state);
@@ -19,6 +20,9 @@ export function inventoryView(state, t, { now, filter, expanded }) {
   const archetypes = [...new Set(active.flatMap((p) => p.archetypes))];
   const filtered =
     filter === 'all' ? active : active.filter((p) => p.archetypes.includes(filter));
+
+  // One extraction pass for the whole list, reused by every row.
+  const signalCache = inventorySignals(active);
 
   const sorted = [...filtered].sort(
     (a, b) =>
@@ -31,7 +35,9 @@ export function inventoryView(state, t, { now, filter, expanded }) {
       t('inventory.title'),
       '',
       sorted.length
-        ? html`<div class="inventory">${sorted.map((p) => row(p, t, now, expanded))}</div>`
+        ? html`<div class="inventory">
+            ${sorted.map((p) => row(p, t, now, expanded, active, signalCache))}
+          </div>`
         : html`<p class="prose">${t('inventory.empty')}</p>`,
       html`<div class="row">
         ${select('inv-filter', filter, [
@@ -44,11 +50,12 @@ export function inventoryView(state, t, { now, filter, expanded }) {
   </div>`;
 }
 
-function row(proof, t, now, expanded) {
+function row(proof, t, now, expanded, inventory, signalCache) {
   const decayed = Math.round(decayedScore(proof, now));
   const { strongest, weakest } = extremes(proof.breakdown);
   const staleDays = daysUntilStale(proof, now);
   const isOpen = expanded.has(proof.id);
+  const reason = reasonFor(proof, inventory, signalCache);
 
   return html`<article class="proof ${proof.pinned ? 'is-pinned' : ''}">
     <div class="proof__score">
@@ -65,7 +72,8 @@ function row(proof, t, now, expanded) {
         ${proof.demo ? html` · <span class="tag tag--demo">${t('mine.demoBadge')}</span>` : ''}
       </p>
       <p class="proof__strong">
-        <b>${t('inventory.strong')}:</b> ${strongest ? t(['dimensions', strongest]) : t('common.none')}
+        <b>${t('inventory.strong')}:</b>
+        ${reason ? t(reason.id.split('.'), reason.vars) : strongest ? t(['dimensions', strongest]) : t('common.none')}
       </p>
       <p class="proof__missing">
         <b>${t('inventory.missing')}:</b> ${weakest ? t(['missing', weakest]) : t('common.none')}
@@ -85,13 +93,15 @@ function row(proof, t, now, expanded) {
       ${button('pin', proof.pinned ? '★' : '☆', {
         variant: 'ghost',
         payload: { id: proof.id },
-        attrs: `aria-label="${t('inventory.pin')}" aria-pressed="${proof.pinned}"`,
+        ariaLabel: t('inventory.pin'),
+        ariaPressed: proof.pinned,
       })}
       ${button('dismiss', t('inventory.hide'), { variant: 'ghost', payload: { id: proof.id } })}
       ${button('expand', t('inventory.detail'), {
         variant: 'ghost',
         payload: { id: proof.id },
-        attrs: `aria-expanded="${isOpen}" aria-controls="bd-${proof.id}"`,
+        ariaExpanded: isOpen,
+        ariaControls: `bd-${proof.id}`,
       })}
     </div>
 

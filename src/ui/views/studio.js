@@ -9,7 +9,13 @@
 
 import { bidi, html } from '../html.js';
 import { button, field, notice, section, select, textArea, textInput } from '../components.js';
-import { ANGLES, composeDraft, lengthAdvice, validateGrounding } from '../../engine/drafts.js';
+import {
+  ANGLES,
+  authorship,
+  composeDraft,
+  lengthAdvice,
+  validateGrounding,
+} from '../../engine/drafts.js';
 import { activeProofs } from '../../engine/mine.js';
 import { decayedScore } from '../../engine/score.js';
 import { isConfigured } from '../../adapters/llm.js';
@@ -27,6 +33,7 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
   const draft = composeDraft({ proofs: [selected], angle, cta, locale: state.locale });
   const text = body ?? draft.body;
   const advice = lengthAdvice(text);
+  const own = authorship(text, [selected], state.locale);
   // Validate the *edited* text, not the generated one: the user can type
   // anything into the textarea, and that is exactly when this check matters.
   const liveGrounding = validateGrounding(text, [selected]);
@@ -51,19 +58,21 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
         ${selected.demo ? notice('warn', t('studio.demoWarning')) : ''}
 
         <div class="row">
-          <div class="tabs" role="tablist" aria-label="${t('studio.angle')}">
+          <div>
+          <div class="tabs" role="group" aria-label="${t('studio.angle')}">
             ${ANGLES.map(
               (a) => html`<button
                 type="button"
-                role="tab"
                 class="tab ${a === angle ? 'is-on' : ''}"
-                aria-selected="${a === angle}"
+                aria-pressed="${String(a === angle)}"
                 data-act="setAngle"
                 data-angle="${a}"
               >
                 ${t(['studio', 'angles', a])}
               </button>`,
             )}
+          </div>
+          <p class="hint">${t('studio.anglesHint')}</p>
           </div>
           ${field(
             'studio-cta',
@@ -85,9 +94,27 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           { hideLabel: true },
         )}
 
+        ${liveGrounding.unsupported.length
+          ? notice('stop', t('studio.ungrounded', liveGrounding.unsupported.join(', ')))
+          : ''}
+        ${liveGrounding.entities.length
+          ? notice('stop', t('studio.ungroundedEntities', liveGrounding.entities.join(', ')))
+          : ''}
+        ${liveGrounding.overreach.length ? notice('warn', t('studio.overreach')) : ''}
         ${liveGrounding.ok
-          ? notice('info', t('studio.grounded'))
-          : notice('stop', t('studio.ungrounded', liveGrounding.unsupported.join(', ')))}
+          ? notice(
+              'info',
+              liveGrounding.entityCoverage === 'full'
+                ? t('studio.grounded')
+                : t('studio.groundedPartial'),
+            )
+          : ''}
+        <p class="hint">${t('studio.groundedCaveat')}</p>
+        ${text.includes('______') ? notice('warn', t('studio.blanks')) : ''}
+        <p class="studio__meta">
+          ${t('studio.authorship', Math.round(own.ownShare * 100))}
+        </p>
+        ${own.ownShare < 0.6 ? notice('warn', t('studio.authorshipWarn')) : ''}
 
         <p class="studio__meta">
           ${t('studio.chars', advice.chars)}
@@ -106,7 +133,7 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           ${isConfigured(state.settings)
             ? button('refine', refining ? t('studio.refining') : t('studio.refine'), {
                 variant: 'ghost',
-                attrs: refining ? 'disabled' : '',
+                disabled: refining,
               })
             : html`<span class="hint">${t('studio.refineOff')}</span>`}
         </div>
@@ -121,7 +148,7 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           ${button('markPublished', t('studio.markPublished'), {
             variant: 'primary',
             payload: { id: selected.id },
-            attrs: liveGrounding.ok ? '' : 'disabled',
+            disabled: !liveGrounding.ok,
           })}
         </div>
       `,

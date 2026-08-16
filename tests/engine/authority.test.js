@@ -4,7 +4,16 @@ import { computeLayers, receptionScore } from '../../src/engine/layers.js';
 import { archetypeCoverage, acquisitionPlays } from '../../src/engine/gaps.js';
 import { scorePositioning } from '../../src/engine/positioning.js';
 import { isDemoMode } from '../../src/engine/mine.js';
-import { NOW, DAY, STRONG_HE, artifact, proofFrom, reception, stateWith } from '../helpers.js';
+import {
+  NOW,
+  DAY,
+  STRONG_HE,
+  artifact,
+  minedSource,
+  proofFrom,
+  reception,
+  stateWith,
+} from '../helpers.js';
 
 const POSITIONING = {
   audience: 'מנהלי כספים בחברות תעשייה בינוניות',
@@ -98,11 +107,20 @@ describe('layer scores', () => {
   });
 });
 
-/** Loud: heavy publishing, reception, conversion — on almost no evidence. */
+/**
+ * Loud: heavy publishing, reception, conversion — on a measured but weak
+ * evidence base. Four proofs is the point at which L1 confidence reaches the
+ * threshold for the product to be willing to say "hollow" at all.
+ */
 function hollowState({ volume = 1 } = {}) {
   return stateWith({
     positioning: { audience: 'אנשים', transformation: 'טוב יותר' },
-    proofs: [proofFrom('אני אדם מאוד מקצועי ומנוסה בתחום שלי')],
+    proofs: [
+      proofFrom('אני אדם מאוד מקצועי ומנוסה בתחום שלי'),
+      proofFrom('אני מאמין בעבודת צוות ובלמידה מתמדת לאורך כל הדרך'),
+      proofFrom('יש לי גישה אישית ותשומת לב לפרטים בכל פרויקט'),
+      proofFrom('אני דינמי ופרואקטיבי עם מוטיבציה גבוהה מאוד'),
+    ],
     artifacts: Array.from({ length: 8 * volume }, () => artifact({ proofIds: [] })),
     receptions: Array.from({ length: 6 * volume }, (_, i) =>
       reception({ artifactId: `a${i}`, impressions: 500, reactions: 90, comments: 30, substantiveComments: 20, saves: 25, shares: 12 }),
@@ -143,6 +161,39 @@ describe('the Liebig gate', () => {
     expect(computeAuthority(thickened, NOW).index).toBeGreaterThan(thin.index);
   });
 
+  it('refuses to call an honest under-supplier hollow', () => {
+    // Two CV lines plus three real interviews and two real referrals. The
+    // built side fills from dropdown clicks; the foundation side needs pasted
+    // documents. Reading that as inflation is calling an honest person a fraud.
+    const honest = stateWith({
+      positioning: { audience: 'מנהלי מוצר', transformation: 'צוות שמשלים ברבעון' },
+      proofs: [proofFrom('ניהלתי צוות מוצר במשך ארבע שנים')],
+      artifacts: Array.from({ length: 6 }, (_, i) =>
+        artifact({ id: `a${i}`, proofIds: [] }),
+      ),
+      receptions: Array.from({ length: 5 }, (_, i) =>
+        reception({ artifactId: `a${i}`, impressions: 600, reactions: 60, comments: 12, substantiveComments: 8, saves: 10, shares: 4 }),
+      ),
+      conversions: [
+        { id: 'c1', type: 'interview', artifactId: null, note: '', at: NOW - 3 * DAY },
+        { id: 'c2', type: 'interview', artifactId: null, note: '', at: NOW - 5 * DAY },
+        { id: 'c3', type: 'offer', artifactId: null, note: '', at: NOW - 7 * DAY },
+        { id: 'c4', type: 'offer', artifactId: null, note: '', at: NOW - 8 * DAY },
+        { id: 'c5', type: 'call', artifactId: null, note: '', at: NOW - 9 * DAY },
+      ],
+      recognitions: [
+        { id: 'r1', type: 'referral', by: 'עמית', url: '', at: NOW - 9 * DAY },
+        { id: 'r2', type: 'invite', by: 'מיטאפ', url: '', at: NOW - 11 * DAY },
+        { id: 'r3', type: 'feature', by: 'כתבה', url: '', at: NOW - 12 * DAY },
+        { id: 'r4', type: 'invite', by: 'כנס', url: '', at: NOW - 13 * DAY },
+      ],
+    });
+    const result = computeAuthority(honest, NOW);
+    expect(result.diagnosis).toBe('UNCATALOGUED');
+    expect(result.diagnosis).not.toBe('HOLLOW');
+    expect(nextMove(honest, NOW).id).toBe('move.catalogueMore');
+  });
+
   it('leaves a grounded user ungated', () => {
     const state = buriedState();
     const proofId = state.proofs[0].id;
@@ -158,11 +209,71 @@ describe('visibility gap and diagnosis', () => {
     expect(result.diagnosis).toBe('BURIED');
   });
 
-  it('produces all four quadrants', () => {
-    expect(diagnose(20, 20)).toBe('STALLED');
-    expect(diagnose(70, 20)).toBe('BURIED');
-    expect(diagnose(20, 70)).toBe('HOLLOW');
-    expect(diagnose(70, 70)).toBe('COMPOUNDING');
+  it('produces every diagnosis, keyed to the gap rather than to cliffs', () => {
+    const measured = { confidence: 1 };
+    expect(diagnose(10, 8, measured)).toBe('STALLED');
+    expect(diagnose(70, 20, measured)).toBe('BURIED');
+    expect(diagnose(20, 70, measured)).toBe('HOLLOW');
+    expect(diagnose(70, 70, measured)).toBe('COMPOUNDING');
+    // Balanced but modest is neither "not started" nor "now scale and convert".
+    expect(diagnose(30, 28, measured)).toBe('EARLY');
+    expect(diagnose(18, 18, measured)).toBe('EARLY');
+  });
+
+  it('has no cliff: one point of foundation cannot flip the verdict', () => {
+    const measured = { confidence: 1 };
+    // A blank optional field used to move foundation from 45 to 44 and flip
+    // BURIED to "you haven't started yet" on an identical evidence base.
+    for (const f of [43, 44, 45, 46]) {
+      expect(diagnose(f, 0, measured)).toBe('BURIED');
+    }
+  });
+
+  it('says uncatalogued rather than hollow when the foundation is unmeasured', () => {
+    expect(diagnose(20, 70, { confidence: 0.1 })).toBe('UNCATALOGUED');
+  });
+
+  it('never delivers a verdict about a person from bundled fixtures', () => {
+    const demoOnly = stateWith({
+      proofs: [proofFrom(STRONG_HE, { demo: true })],
+      conversions: Array.from({ length: 6 }, (_, i) => ({
+        id: `c${i}`, type: 'deal', artifactId: null, note: 'x', at: NOW - i * DAY,
+      })),
+      recognitions: Array.from({ length: 5 }, (_, i) => ({
+        id: `g${i}`, type: 'feature', by: 'x', url: '', at: NOW - i * DAY,
+      })),
+    });
+    const result = computeAuthority(demoOnly, NOW);
+    expect(result.demo).toBe(true);
+    expect(result.diagnosis).toBe('DEMO');
+    expect(result.lowConfidence).toBe(true);
+  });
+
+  it('does not let a published fixture raise the artifact layer', () => {
+    const demo = proofFrom(STRONG_HE, { demo: true });
+    const real = proofFrom('קיצרתי סגירת רבעון של לקוח תעשייתי לשישה ימים ב-2025');
+    const state = stateWith({
+      proofs: [real, demo],
+      artifacts: Array.from({ length: 6 }, (_, i) =>
+        artifact({ id: `a${i}`, proofIds: [demo.id] }),
+      ),
+    });
+    expect(computeLayers(state, NOW).L3.locked).toBe(true);
+  });
+
+  it('does not punish the user for answering the positioning form', () => {
+    // Typing one character used to unlock L2 at a low score, blend it in at
+    // full weight, and drop the headline by 20 points — as a direct result of
+    // obeying the product's own instruction.
+    const proofs = buriedState().proofs;
+    const blank = computeAuthority(stateWith({ proofs }), NOW).foundation;
+    const oneChar = computeAuthority(
+      stateWith({ proofs, positioning: { audience: 'x', transformation: '', claim: '', offer: '', nonGoals: [] } }),
+      NOW,
+    ).foundation;
+    const full = computeAuthority(stateWith({ proofs, positioning: POSITIONING }), NOW).foundation;
+    expect(blank - oneChar).toBeLessThan(6);
+    expect(full).toBeGreaterThanOrEqual(blank);
   });
 
   it('flags low confidence for a nearly-empty state', () => {
@@ -190,13 +301,52 @@ describe('next move', () => {
     expect(nextMove(state, NOW).id).toBe('move.mine');
   });
 
-  it('asks for an audience before anything else once evidence exists', () => {
-    const state = stateWith({ proofs: [proofFrom(STRONG_HE)], sources: [{ id: 's1', name: 'cv', text: STRONG_HE, demo: false, addedAt: NOW }] });
+  it('asks for an audience when the evidence is not yet compelling', () => {
+    const weak = proofFrom('ניהלתי צוות במחלקה במשך כמה שנים', { sourceId: 's1' });
+    const state = stateWith({
+      proofs: [weak],
+      sources: [minedSource({ text: 'x' })],
+    });
     expect(nextMove(state, NOW).id).toBe('move.setAudience');
   });
 
+  it('shows the win before the form when the user already holds strong evidence', () => {
+    const strong = proofFrom(
+      'בכתבה שפורסמה בכלכליסט ב-2026 צוטט סמנכ"ל הכספים של חברת אלביט שאמר שקיצרתי את סגירת הרבעון שלהם משלושה שבועות לשישה ימים — https://example.com/a',
+      { sourceId: 's1' },
+    );
+    const state = stateWith({
+      proofs: [strong],
+      sources: [minedSource({ text: 'x' })],
+    });
+    // They arrived invisible. The first instruction must not be a five-field form.
+    expect(nextMove(state, NOW).id).toBe('move.publishFirst');
+  });
+
+  it('notices sources added after the first mine', () => {
+    const state = buriedState();
+    state.sources = [
+      minedSource({ id: 's_new', name: 'testimonial', minedAt: null }),
+    ];
+    // Evidence acquired through a gap play comes back in as a new source; the
+    // guidance has to notice it or the acquisition loop has no return path.
+    expect(nextMove(state, NOW).id).toBe('move.mine');
+  });
+
+  it('never points the primary action at bundled fixtures', () => {
+    const demoOnly = stateWith({
+      profile: { ...stateWith().profile, onboarded: true },
+      sources: [minedSource({ id: 's_d', name: 'sample', text: 'x', demo: true })],
+      proofs: [proofFrom(STRONG_HE, { demo: true, sourceId: 's_d' })],
+    });
+    const move = nextMove(demoOnly, NOW);
+    expect(move.id).toBe('move.addRealSource');
+  });
+
   it('tells a BURIED user to publish', () => {
-    const move = nextMove(buriedState(), NOW);
+    const state = buriedState();
+    state.sources = [minedSource()];
+    const move = nextMove(state, NOW);
     expect(move.id).toBe('move.publishFirst');
     expect(move.payload.proofId).toBeTruthy();
   });
@@ -204,7 +354,12 @@ describe('next move', () => {
   it('tells a HOLLOW user to stop publishing and acquire evidence', () => {
     const hollow = stateWith({
       positioning: { audience: 'אנשים בתעשייה', transformation: 'משהו טוב יותר' },
-      proofs: [proofFrom('אני אדם מאוד מקצועי ומנוסה בתחום שלי')],
+      proofs: [
+        proofFrom('אני אדם מאוד מקצועי ומנוסה בתחום שלי'),
+        proofFrom('אני מאמין בעבודת צוות ובלמידה מתמדת לאורך כל הדרך'),
+        proofFrom('יש לי גישה אישית ותשומת לב לפרטים בכל פרויקט'),
+        proofFrom('אני דינמי ופרואקטיבי עם מוטיבציה גבוהה מאוד'),
+      ],
       artifacts: Array.from({ length: 10 }, () => artifact({ proofIds: [] })),
       receptions: Array.from({ length: 6 }, (_, i) =>
         reception({ artifactId: `a${i}`, impressions: 500, reactions: 90, comments: 30, substantiveComments: 20, saves: 25, shares: 12 }),
@@ -219,6 +374,7 @@ describe('next move', () => {
 
   it('asks for reception data once something is published', () => {
     const state = buriedState();
+    state.sources = [minedSource()];
     state.artifacts = [artifact({ proofIds: [state.proofs[0].id] })];
     expect(nextMove(state, NOW).id).toBe('move.logReception');
   });

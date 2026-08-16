@@ -60,7 +60,7 @@ export function mineView(state, t) {
         <div class="row row--end">
           ${button('mine', t('mine.run'), {
             variant: 'primary',
-            attrs: state.sources.length ? '' : 'disabled',
+            disabled: state.sources.length === 0,
           })}
         </div>
       `,

@@ -51,7 +51,16 @@ export function analyzeClaim(claim, { positioning, weights = PRIOR_WEIGHTS, now 
 export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS } = {}) {
   const priorDecisions = new Map();
   for (const p of state.proofs || []) {
-    priorDecisions.set(p.claim.trim(), { pinned: p.pinned, dismissed: p.dismissed, id: p.id });
+    priorDecisions.set(p.claim.trim(), {
+      pinned: p.pinned,
+      dismissed: p.dismissed,
+      id: p.id,
+      // Undated evidence decays from when it was first captured. Stamping
+      // `now` on every mining pass reset that clock, so pressing "mine again"
+      // made an eight-year-old undated claim brand new — silently rewarding
+      // the user for not dating their evidence.
+      createdAt: p.createdAt,
+    });
   }
 
   // Compounded and manual units are not derived from source text, so they are
@@ -80,14 +89,29 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
         origin: 'mined',
         pinned: prior?.pinned ?? false,
         dismissed: prior?.dismissed ?? false,
-        createdAt: now,
+        createdAt: prior?.createdAt ?? now,
       });
     }
   }
 
+  // Stamped whether or not the source produced anything. Inferring "mined"
+  // from the presence of a proof carrying the source id meant a source that
+  // yielded nothing — a bulleted list under the sentence-length floor, or one
+  // whose claims all deduped against existing units — was permanently unmined,
+  // and the product's single instruction became a button that did nothing.
+  for (const source of state.sources || []) source.minedAt = now;
+
   const ranked = sortByDesc(candidates, (p) => p.score);
-  const deduped = dedupeProofs(ranked).slice(0, MAX_PROOFS);
-  return sortByDesc([...preserved, ...deduped], (p) => p.score);
+  const deduped = dedupeProofs(ranked);
+
+  // Truncation must never destroy a decision the user made. A pinned unit that
+  // happened to score low was being dropped by the score-sorted cut, taking the
+  // pin with it and leaving any artifact citing it with a dangling reference.
+  const curated = deduped.filter((p) => p.pinned || p.dismissed);
+  const rest = deduped.filter((p) => !p.pinned && !p.dismissed);
+  const kept = [...curated, ...rest.slice(0, Math.max(0, MAX_PROOFS - curated.length))];
+
+  return sortByDesc([...preserved, ...kept], (p) => p.score);
 }
 
 /**

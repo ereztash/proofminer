@@ -7,7 +7,7 @@
  *  - absence of data renders as *not started*, never as *failing*.
  */
 
-import { bidi, cx, html, raw } from './html.js';
+import { bidi, cx, html } from './html.js';
 import { scoreBand } from '../engine/score.js';
 
 export const bandOf = scoreBand;
@@ -138,18 +138,46 @@ export const notice = (tone, body) =>
     ${body}
   </p>`;
 
-/** Primary/secondary/ghost button. Actions are dispatched by `data-act`. */
-export const button = (act, label, { variant = 'secondary', payload = {}, attrs = '' } = {}) => {
-  const data = Object.entries(payload)
-    .map(([key, value]) => html`data-${key}="${value}"`)
-    .filter(Boolean);
+/**
+ * Primary/secondary/ghost button. Actions are dispatched by `data-act`.
+ *
+ * There is deliberately **no raw-attribute escape hatch** here. The previous
+ * signature accepted an `attrs` string emitted through `raw()`, and callers
+ * built it with plain template literals containing values like `proof.id` —
+ * which arrives verbatim from an imported backup file. That was a stored XSS
+ * with a credential in reach: a shared "ProofMiner backup" could execute script
+ * on the importer's page and read their API key out of localStorage.
+ *
+ * Every attribute below goes through the escaping `html` tag. Anything a view
+ * needs must be added here as a named, typed option.
+ */
+export const button = (
+  act,
+  label,
+  {
+    variant = 'secondary',
+    payload = {},
+    disabled = false,
+    ariaLabel = '',
+    ariaPressed = null,
+    ariaExpanded = null,
+    ariaControls = '',
+  } = {},
+) => {
+  const data = Object.entries(payload).map(([key, value]) => html`data-${key}="${value}" `);
   return html`<button
     type="button"
     class="${cx('btn', `btn--${variant}`)}"
     data-act="${act}"
     ${data}
-    ${attrs ? raw(attrs) : ''}
+    ${disabled ? disabledAttr : ''}
+    ${ariaLabel ? html`aria-label="${ariaLabel}"` : ''}
+    ${ariaPressed === null ? '' : html`aria-pressed="${String(ariaPressed)}"`}
+    ${ariaExpanded === null ? '' : html`aria-expanded="${String(ariaExpanded)}"`}
+    ${ariaControls ? html`aria-controls="${ariaControls}"` : ''}
   >
     ${label}
   </button>`;
 };
+
+const disabledAttr = html`disabled`;

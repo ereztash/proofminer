@@ -29,8 +29,9 @@ export default {
     pledge: [
       'Everything stays on your machine. No server, no account, nobody reading it but you.',
       'This tool will not invent achievements. It works only with what you wrote.',
-      'If you try to look bigger than your evidence supports, it will stop you and say so.',
+      'It will not let your visibility run ahead of your evidence, and it will tell you when that happens. What you type here it takes as given — it cannot verify that for you.',
     ],
+    twoMore: 'Two short questions, so the ranking fits you.',
     trackQuestion: 'Where are you right now?',
     trackJob: 'Looking for a role',
     trackJobHint: 'You want to be recognised, get replies, get invited to talk',
@@ -80,16 +81,35 @@ export default {
       body: 'Not enough evidence and not enough visibility. This is the easiest state to change, because the first step is only collecting.',
     },
     BURIED: {
-      title: 'Buried',
+      title: 'You hold more than shows',
       body: 'You hold good evidence nobody has seen. This is the state this product was built for.',
     },
     HOLLOW: {
-      title: 'Louder than your evidence',
+      title: 'Visibility ahead of evidence',
       body: 'You appear larger than your evidence supports. Publishing more makes it worse. Bring evidence.',
     },
     COMPOUNDING: {
       title: 'Compounding',
       body: 'Evidence and visibility are moving together. Now it is cadence and conversion.',
+    },
+    EARLY: {
+      title: 'Both sides moving together',
+      body: 'Evidence and visibility are balanced, and both are still small. That is a good position — just an early one. Every step now moves both.',
+    },
+    DEMO: {
+      title: 'This is the sample, not you',
+      body: 'Every number on this screen is computed from demo material. It shows how the system works and says nothing about you. Add one source of your own and the picture becomes yours.',
+    },
+    UNCATALOGUED: {
+      title: 'Not enough written down to say',
+      body: 'Things are happening for you out there, but too little of your experience has been collected here. That almost always means it was never written down — not that it is absent. Add more material and we can tell you something real.',
+    },
+  },
+
+  dashboard: {
+    urgency: {
+      months: 'You have been at this a few months. The move below is chosen to shift something this week, not to build a year-long plan.',
+      long: 'You have been at this long enough that the general advice has run out. What follows is the one concrete thing worth doing now.',
     },
   },
 
@@ -146,6 +166,37 @@ export default {
     commercialProximity: 'Tie the evidence to what you offer.',
     recency: 'Add a date or current context.',
     narrative: 'Add a before and after.',
+  },
+
+  reasons: {
+    rareVerification: (v) =>
+      v.n === 1
+        ? `This is the only one of your ${v.total} pieces where someone external vouches for you. That is the type you have least of and the type that convinces most.`
+        : `This is one of only two of your ${v.total} pieces where someone external vouches for you. That is the type you have least of and the type that convinces most.`,
+    rareNumbers: (v) =>
+      v.n === 1
+        ? `This is the only one of your ${v.total} pieces containing a checkable number.`
+        : `Only two of your ${v.total} pieces contain a checkable number. This is one of them.`,
+    onlyFailure:
+      'This is your only piece where you analyse something that did not work. Professional judgement shows there more than in any success.',
+    onlyMethod:
+      'This is your only piece describing a method rather than an event. A written method is the one thing nobody can copy off you.',
+    namedThirdParty: 'There is a named external party here. A sceptic can go and check it without you.',
+    thirdParty: 'This is not you claiming something about yourself — somebody else put you in the picture.',
+    checkable: 'There is a link here. This is evidence someone can open, not a claim they have to accept.',
+    datedAndNamed: 'There is both a date and a name here. Together they turn a claim into something checkable.',
+    percentDelta: 'There is a percentage change here. That is the hardest thing to argue with.',
+    moneyDelta: 'There is a money figure here. Revenue is the outcome fewest people are willing to write down.',
+    beforeAfter: 'There is a before and an after here. That is what turns a job description into something checkable.',
+    outcome: 'Something actually changed here — this is not a description of what you do.',
+    scale: 'There is a counted scale here. Most people never bother to count, which is why it stands out.',
+    method: 'This describes how you work, not what happened once. That is the part that stays yours.',
+    failure: 'You are writing about something that did not go well. That reads as more professional confidence, not less.',
+    peer: 'The confirmation here comes from a peer, not a client. That carries entirely different weight.',
+    credentialGraded: 'There is a graded credential here. It closes a gap, even at low weight.',
+    hedged: 'The wording here hedges. The evidence is stronger than the way you wrote it.',
+    generic: 'This is self-description, not evidence. There is nothing here anyone could check.',
+    none: 'There are not enough signals here yet to say anything definite.',
   },
 
   bands: { strong: 'Strong', usable: 'Usable', weak: 'Weak' },
@@ -209,6 +260,26 @@ export default {
     'move.closeGap': { title: 'Close the highest-value gap', why: 'This is the missing evidence type with the best effort-to-value ratio.' },
     'move.sharpenPositioning': { title: 'Sharpen your positioning', why: 'The current positioning does not yet separate you from others in your field.' },
     'move.resolveDrift': { title: 'Your positioning does not match what actually works', why: 'What generates inbound for you differs from what you declare. Worth resolving.' },
+    'move.catalogueMore': {
+      title: 'Add more raw material',
+      why: 'Things are happening for you out there, but too little of your experience has been collected. Nothing real can be said on the basis of two lines.',
+    },
+    'move.addRealSource': {
+      title: 'Now add something of your own',
+      why: 'So far you have seen how this works on a sample. The numbers above are the sample\u2019s, not yours.',
+    },
+    'move.publishNext': {
+      title: 'Publish the next one',
+      why: 'This is your strongest piece of evidence that has not gone out yet.',
+    },
+    'move.logConversion': {
+      title: 'Who came to you because of it?',
+      why: 'The visible half of the index cannot rise without this, and it is the cheapest action in the product — one dropdown.',
+    },
+    'move.logRecognition': {
+      title: 'Who mentioned you from outside?',
+      why: 'External recognition is the one layer you cannot move alone. A small mention counts.',
+    },
     'move.strengthenLayer': { title: 'Strengthen the weakest layer', why: 'The rest of the system is healthy. This is what limits you now.' },
     do: 'Do it',
     minutes: (n) => `~${n} min`,
@@ -298,7 +369,17 @@ export default {
     subtitle: 'The evidence stays attached to the text. You cannot publish a claim from here that has no source.',
     pick: 'Pick evidence',
     angle: 'Angle',
-    angles: { direct: 'Direct evidence', story: 'Story', insight: 'Professional insight', method: 'Method', question: 'Open question' },
+    angles: {
+      bare: 'Evidence only',
+      context: 'With context',
+      method: 'With the steps',
+      question: 'With an open question',
+    },
+    anglesHint: 'The default adds no words of ours. The others add a short scaffold with a blank for you to fill.',
+    authorship: (pct) => `${pct}% of this text is yours`,
+    authorshipWarn:
+      'A large share of this came from the tool. That is exactly what makes posts sound alike. Rewrite it in your own words.',
+    blanks: 'There are blanks to fill in (______). Do not publish before you fill them.',
     cta: 'Ending',
     ctas: { none: 'None', discussion: 'Invite discussion', dm: 'Direct message', call: 'Call' },
     copy: 'Copy',
@@ -311,7 +392,15 @@ export default {
     fold: 'Visible before "see more"',
     tooShort: 'Too short to carry evidence.',
     tooLong: 'Very long. Consider splitting.',
-    grounded: 'Every number in the text comes from the evidence.',
+    grounded: 'No numbers or names in the text are absent from the evidence.',
+    groundedPartial:
+      'No numbers in the text are absent from the evidence. Names we cannot fully check here — read the text yourself and confirm every name in it appears in the evidence.',
+    groundedCaveat:
+      'This check compares numbers and names. It cannot tell whether a correct number was attached to the wrong claim — only you can check that.',
+    ungroundedEntities: (list) =>
+      `The text names things absent from the evidence: ${list}. If it is true, add it to the source. If not, remove it.`,
+    overreach:
+      'There is inflated wording here. That is exactly what makes people stop believing a post. Take it out.',
     ungrounded: (list) =>
       `The text contains numbers absent from the evidence: ${list}. Fix it or add a source — otherwise this is no longer evidence.`,
     demoWarning: 'This evidence is marked as demo. Do not publish it as your own.',
@@ -332,10 +421,23 @@ export default {
     substantive: 'Of those — real comments',
     substantiveHint: 'A sentence or more, not "agree" or an emoji.',
     saves: 'Saves',
+    savesHint: 'LinkedIn does not always show this. If it is missing, skip it.',
+    minimum: 'The minimum that works: impressions + reactions. The rest sharpens the picture, it does not gate it.',
     shares: 'Shares',
     save: 'Save measurement',
+    saved: 'Saved',
+    empty: 'No numbers entered. Nothing to save.',
+    needDetail: 'Add a note, or pick the post it came from.',
+    needWho: 'Say who, or add a link. Recognition with no source is not recognition.',
+    paste: 'Paste the numbers from LinkedIn',
+    pasteHint: 'Select the stats block on the post page, copy, and paste. We will pull the numbers out.',
+    pasteAction: 'Extract numbers',
+    pasteFailed: 'No numbers found in that text.',
+    optional: 'Optional — without impressions we compare absolute engagement',
     conversions: 'What moved because of it',
     addConversion: 'Add inbound',
+    fromNothing: 'Not from a specific post',
+    attributionHint: 'If it came from a specific post, pick it. That is what lets the system tell you what actually works.',
     conversionTypes: {
       reply: 'Reply to an application',
       dm: 'Direct message',
@@ -357,7 +459,9 @@ export default {
     by: 'Who',
     link: 'Link',
     note: 'Note',
-    calibrationTitle: 'What your audience actually rewards',
+    calibrationTitle: 'What your audience appears to reward',
+    calibrationProvisional:
+      'This is a hypothesis, not a finding. At this sample size some of the correlation is noise. It stabilises as you add measurements — until then, do not change strategy because of this row.',
     calibrationNeed: (n) => `${n} more measurements and we can tell you this from your data, not from an average.`,
     calibrationActive: (n) => `Based on ${n} of your own measurements.`,
     calibrationExcluded: 'Checkability and recency do not shift with performance — by design.',
@@ -376,7 +480,9 @@ export default {
     storageError: 'The browser cannot save. Storage may be full — export to a file.',
     llm: 'Model rewriting (optional)',
     llmBody:
-      'You can connect an API key to rewrite drafts. You should know: this app has no server, so the key is stored in this browser and sent directly from it to the provider. That is not the security level of a server-side key. If you enable it, use a dedicated key with a low limit that you can revoke.',
+      'You can connect an API key to rewrite drafts. Two warnings, both important: (1) enabling this sends the draft **and the evidence it is based on** to the external provider — that is text from the sources you pasted. It is the only time your material leaves this device. (2) This app has no server, so the key is stored in this browser and sent directly from it. That is not the security level of a server-side key — use a dedicated key with a low limit you can revoke.',
+    refineDisclosure:
+      'Rewriting sends the draft and its underlying evidence to the external provider you configured. Continue?',
     llmEnable: 'Enable rewriting',
     llmKey: 'API key',
     llmModel: 'Model',

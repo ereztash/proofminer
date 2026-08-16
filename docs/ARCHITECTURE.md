@@ -76,7 +76,7 @@ rather than aspirational.
 
 ## Testing
 
-141 unit tests across seven files, covering the engine's actual claims rather
+Unit tests across eight files, covering the engine's actual claims rather
 than its surface:
 
 - **text** — Hebrew normalisation, prefix ambiguity, similarity symmetry,
@@ -92,6 +92,10 @@ than its surface:
 - **store** — corrupt input, legacy migration, storage failure, immutability
 - **ui** — escaping including attribute context, i18n bundle alignment, and the
   banned-vocabulary check from `docs/UX.md`
+- **regression** — one test per defect found by adversarial review: engine
+  determinism, spelled-out magnitudes, decay-clock preservation, curation
+  surviving truncation, dedupe cost, the L4 monotonicity and lock properties,
+  numeric safety, and the stored-XSS entry point through imported ids
 
 CI runs lint, tests and a production build on every pull request and push to
 `main`.

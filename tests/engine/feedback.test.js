@@ -104,8 +104,8 @@ describe('calibration', () => {
   });
 
   it('shrinks hard toward the priors on a small sample', () => {
-    const small = calibrate(calibratableState(6));
-    const large = calibrate(calibratableState(24));
+    const small = calibrate(calibratableState(MIN_OBSERVATIONS + 1));
+    const large = calibrate(calibratableState(30));
     const driftOf = (r) => Math.abs(r.weights.verification - PRIOR_WEIGHTS.verification);
     expect(driftOf(small)).toBeLessThan(driftOf(large));
   });
@@ -148,26 +148,31 @@ describe('compounding', () => {
       }),
     );
 
-  function outperformingState() {
+  const HIT = {
+    id: 'rcp_hit',
+    artifactId: 'a_hit',
+    impressions: 12_000,
+    reactions: 400,
+    comments: 60,
+    substantiveComments: 40,
+    saves: 90,
+    shares: 25,
+    capturedAt: NOW - DAY,
+  };
+
+  function outperformingState(overrides = {}) {
     const proof = proofFrom(STRONG_HE);
-    const art = artifact({ id: 'a_hit', proofIds: [proof.id] });
+    const art = artifact({
+      id: 'a_hit',
+      proofIds: [proof.id],
+      status: 'published',
+      url: 'https://www.linkedin.com/posts/example',
+      ...overrides,
+    });
     return stateWith({
       proofs: [proof],
       artifacts: [art],
-      receptions: [
-        ...baselineReceptions('a_hit'),
-        reception({
-          id: 'rcp_hit',
-          artifactId: 'a_hit',
-          impressions: 12_000,
-          reactions: 400,
-          comments: 60,
-          substantiveComments: 40,
-          saves: 90,
-          shares: 25,
-          capturedAt: NOW - DAY,
-        }),
-      ],
+      receptions: [...baselineReceptions('a_hit'), reception(HIT)],
     });
   }
 
@@ -176,15 +181,73 @@ describe('compounding', () => {
     expect(created).toHaveLength(1);
     expect(created[0].origin).toBe('compounded');
     expect(created[0].kind).toBe('traction');
-    expect(created[0].archetypes).toContain('SCALE');
   });
 
-  it('builds the claim only from observed numbers', () => {
+  it('builds the claim only from observed numbers, and attaches the link', () => {
     const [created] = compound(outperformingState(), { now: NOW });
     expect(created.claim).toContain('12,000');
     expect(created.claim).toContain('40');
+    expect(created.claim).toContain('https://www.linkedin.com/posts/example');
     // No interpretation, no adjectives about the result.
     expect(created.claim).not.toMatch(/מדהים|ויראלי|הצלחה/);
+  });
+
+  it('claims no archetype at all from the user own reach numbers', () => {
+    const [created] = compound(outperformingState(), { now: NOW });
+    // The generated sentence contains "published", which the third-party
+    // lexicon reads as external validation — so re-analysing our own output let
+    // self-reported reach close the testimonial gap. Counting it as SCALE was
+    // the same mistake one step quieter: it deleted the acquisition play that
+    // tells the user to go and get real scale evidence.
+    expect(created.archetypes).toEqual([]);
+  });
+
+  it('counts one post measured weekly as one piece of evidence, not three', () => {
+    const state = outperformingState();
+    const hit = state.receptions[state.receptions.length - 1];
+    state.receptions.push(
+      { ...hit, id: 'rcp_hit2', capturedAt: NOW },
+      { ...hit, id: 'rcp_hit3', capturedAt: NOW - 2 * DAY },
+    );
+    expect(compound(state, { now: NOW })).toHaveLength(1);
+  });
+
+  it('requires a link that actually looks like one', () => {
+    expect(compound(outperformingState({ url: 'x' }), { now: NOW })).toHaveLength(0);
+  });
+
+  it('refuses without a link — self-reported reach is not checkable evidence', () => {
+    expect(compound(outperformingState({ url: '' }), { now: NOW })).toHaveLength(0);
+  });
+
+  it('refuses when the artifact was never published', () => {
+    expect(compound(outperformingState({ status: 'draft' }), { now: NOW })).toHaveLength(0);
+  });
+
+  it('refuses to launder demo material into real evidence', () => {
+    const demo = proofFrom(STRONG_HE, { demo: true });
+    const state = outperformingState();
+    state.proofs = [demo];
+    state.artifacts[0].proofIds = [demo.id];
+    expect(compound(state, { now: NOW })).toHaveLength(0);
+  });
+
+  it('ignores a post that only looks good because the previous ones flopped', () => {
+    const proof = proofFrom(STRONG_HE);
+    const art = artifact({ id: 'a1', proofIds: [proof.id], url: 'https://example.com/p' });
+    const state = stateWith({
+      proofs: [proof],
+      artifacts: [art],
+      receptions: [
+        ...Array.from({ length: 3 }, (_, i) =>
+          reception({ artifactId: 'a1', impressions: 1000, reactions: 1, comments: 0, substantiveComments: 0, saves: 0, shares: 0, capturedAt: NOW - (i + 4) * DAY }),
+        ),
+        // 6 reactions on 240 views clears 1.6x of a floored baseline but is
+        // nothing at all on LinkedIn.
+        reception({ id: 'r_small', artifactId: 'a1', impressions: 240, reactions: 6, comments: 0, substantiveComments: 0, saves: 0, shares: 0, capturedAt: NOW - DAY }),
+      ],
+    });
+    expect(compound(state, { now: NOW })).toHaveLength(0);
   });
 
   it('does nothing without a baseline to compare against', () => {
@@ -216,5 +279,20 @@ describe('compounding', () => {
     const state = outperformingState();
     state.receptions[state.receptions.length - 1].impressions = 30;
     expect(compound(state, { now: NOW })).toHaveLength(0);
+  });
+
+  it('counts one artifact measured repeatedly as a single observation', () => {
+    const proof = proofFrom(STRONG_HE);
+    const art = artifact({ id: 'a1', proofIds: [proof.id] });
+    const state = stateWith({
+      proofs: [proof],
+      artifacts: [art],
+      receptions: Array.from({ length: 6 }, (_, i) =>
+        reception({ artifactId: 'a1', capturedAt: NOW - i * DAY }),
+      ),
+    });
+    // Re-checking the same post's numbers each week is ordinary behaviour and
+    // must not manufacture six independent data points.
+    expect(buildObservations(state)).toHaveLength(1);
   });
 });

@@ -8,6 +8,7 @@
  */
 
 import { createStore } from '../core/store.js';
+import { LEGACY_STORAGE_KEY } from '../core/schema.js';
 import { makeId, now as realNow } from '../core/util.js';
 import { translator } from '../i18n/index.js';
 import { html, renderInto } from './html.js';
@@ -15,6 +16,8 @@ import { sampleFor } from '../data/sample.js';
 
 import { isDemoMode, mineSources, rescoreProofs } from '../engine/mine.js';
 import { computeAuthority, nextMove } from '../engine/authority.js';
+import { revealPicks } from '../engine/explain.js';
+import { parseAnalyticsPaste } from '../engine/analytics.js';
 import { activeWeights, calibrate, compound } from '../engine/feedback.js';
 import { provenanceFooter } from '../engine/drafts.js';
 import { refineDraft } from '../adapters/llm.js';
@@ -43,10 +46,16 @@ const ui = {
   screen: 'app', // 'onboarding' | 'firstLight' | 'app'
   filter: 'all',
   expanded: new Set(),
+  /** Text-field values that must survive a re-render. Cleared on submit. */
+  formCache: {},
+  /** Numbers extracted from a pasted analytics block, pre-filling the form. */
+  parsedAnalytics: {},
   selectedProofId: null,
-  angle: 'direct',
+  angle: 'bare',
   cta: 'none',
   draftBody: null,
+  /** Artifact this studio session is editing, so save+publish is one record. */
+  artifactId: null,
   refining: false,
   toast: '',
 };
@@ -57,16 +66,48 @@ export function mountApp(root) {
 
   if (!state.profile.onboarded) ui.screen = 'onboarding';
 
-  const val = (id) => root.querySelector(`#${CSS.escape(id)}`)?.value ?? '';
+  /**
+   * Live value of a form control.
+   *
+   * Values also land in `ui.formCache` on input, because a full re-render
+   * re-emits every control at its *default* value. A debounced render from
+   * typing a draft silently wiped the URL field next to it, and clicking "add
+   * conversion" wiped the six reception numbers above it — producing a
+   * published artifact with no link and an all-zero reception record.
+   */
+  const val = (id) => {
+    const live = root.querySelector(`#${CSS.escape(id)}`)?.value;
+    if (live !== undefined && live !== '') return live;
+    return ui.formCache[id] ?? live ?? '';
+  };
   const intVal = (id) => {
     const n = Number.parseInt(val(id), 10);
     return Number.isFinite(n) && n >= 0 ? n : 0;
   };
 
+  /** Drop view state that points at records the new state no longer contains. */
+  function resetEphemeral() {
+    ui.selectedProofId = null;
+    ui.artifactId = null;
+    ui.draftBody = null;
+    ui.expanded = new Set();
+    ui.formCache = {};
+    ui.parsedAnalytics = {};
+    ui.filter = 'all';
+    ui.view = 'dashboard';
+    ui.angle = 'bare';
+    ui.cta = 'none';
+    ui.refining = false;
+    ui.toast = '';
+  }
+
+  let toastTimer = null;
   function toast(message) {
     ui.toast = message;
     render();
-    setTimeout(() => {
+    if (toastTimer !== null) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastTimer = null;
       ui.toast = '';
       render();
     }, 2400);
@@ -102,8 +143,60 @@ export function mountApp(root) {
     });
   }
 
+  /**
+   * Write the studio's current draft to state as one artifact.
+   *
+   * Saving a draft and then marking it published used to push two separate
+   * records with identical bodies — an undeletable orphan in the studio list
+   * and a double count in the L3 cadence. The draft this session created is
+   * updated in place instead.
+   */
+  function upsertArtifact({ status, url = '' }) {
+    const body = val('studio-body');
+    const proofId = currentProofId();
+    if (!body.trim() || !proofId) return false;
+    store.update((draft) => {
+      const existing = ui.artifactId && draft.artifacts.find((a) => a.id === ui.artifactId);
+      if (existing) {
+        existing.body = body;
+        existing.proofIds = [proofId];
+        existing.angle = ui.angle;
+        // Publishing is one-way. `Save draft` on an already-published artifact
+        // used to demote it: L3 collapsed to locked, the record vanished from
+        // the measurement screen, and its reception was orphaned.
+        if (status === 'published') {
+          existing.status = 'published';
+          if (!existing.publishedAt) existing.publishedAt = realNow();
+        }
+        if (url) existing.url = url;
+        return;
+      }
+      const created = {
+        id: makeId('art'),
+        proofIds: [proofId],
+        channel: 'post',
+        angle: ui.angle,
+        body,
+        status,
+        publishedAt: status === 'published' ? realNow() : null,
+        url,
+        createdAt: realNow(),
+      };
+      draft.artifacts.push(created);
+      ui.artifactId = created.id;
+    });
+    return true;
+  }
+
   const actions = {
     goto(payload) {
+      // Record that an acquisition play was actually shown, so the guidance
+      // does not re-issue it to someone who has already gone and done it.
+      if (payload.archetype) {
+        store.update((draft) => {
+          draft.playLog[payload.archetype] = realNow();
+        });
+      }
       if (VIEWS.includes(payload.view)) ui.view = payload.view;
       if (payload.proof) ui.selectedProofId = payload.proof;
       ui.screen = 'app';
@@ -163,6 +256,7 @@ export function mountApp(root) {
     addText() {
       const text = val('paste').trim();
       if (!text) return;
+      delete ui.formCache.paste;
       store.update((draft) => {
         draft.sources.push({
           id: makeId('src'),
@@ -247,6 +341,7 @@ export function mountApp(root) {
     draft(payload) {
       ui.selectedProofId = payload.id;
       ui.draftBody = null;
+      ui.artifactId = null;
       ui.view = 'studio';
       ui.screen = 'app';
     },
@@ -271,48 +366,25 @@ export function mountApp(root) {
     },
 
     saveDraft() {
-      const body = val('studio-body');
-      const proofId = currentProofId();
-      if (!body.trim() || !proofId) return;
-      store.update((draft) => {
-        draft.artifacts.push({
-          id: makeId('art'),
-          proofIds: [proofId],
-          channel: 'post',
-          angle: ui.angle,
-          body,
-          status: 'draft',
-          publishedAt: null,
-          url: '',
-          createdAt: realNow(),
-        });
-      });
+      upsertArtifact({ status: 'draft' });
       toast(t('studio.save'));
     },
 
     markPublished() {
-      const body = val('studio-body');
-      const proofId = currentProofId();
-      if (!body.trim() || !proofId) return;
-      store.update((draft) => {
-        draft.artifacts.push({
-          id: makeId('art'),
-          proofIds: [proofId],
-          channel: 'post',
-          angle: ui.angle,
-          body,
-          status: 'published',
-          publishedAt: realNow(),
-          url: val('studio-url'),
-          createdAt: realNow(),
-        });
-      });
+      if (!upsertArtifact({ status: 'published', url: val('studio-url') })) return;
+      delete ui.formCache['studio-url'];
+      // A published artifact is finished; the next draft starts a new record.
+      ui.artifactId = null;
       ui.view = 'measure';
     },
 
     async refine() {
       const proof = state.proofs.find((p) => p.id === currentProofId());
       if (!proof) return;
+      // Restated at the point of the action, not only in Settings: this is the
+      // one moment the user's evidence leaves the device, and the first-screen
+      // pledge told them nothing ever would.
+      if (!globalThis.confirm?.(t('settings.refineDisclosure'))) return;
       ui.refining = true;
       render();
       const result = await refineDraft({
@@ -334,19 +406,33 @@ export function mountApp(root) {
       const artifactId = val('rc-artifact');
       if (!artifactId) return;
       const comments = intVal('rc-comments');
+      const record = {
+        impressions: intVal('rc-impressions'),
+        reactions: intVal('rc-reactions'),
+        comments,
+        substantiveComments: Math.min(intVal('rc-substantive'), comments),
+        saves: intVal('rc-saves'),
+        shares: intVal('rc-shares'),
+      };
+      // An all-zero record is a mis-click, not a measurement, and it poisons
+      // the baseline every other artifact is scored against.
+      const total =
+        record.reactions + record.comments + record.saves + record.shares + record.impressions;
+      if (total === 0) {
+        toast(t('measure.empty'));
+        return;
+      }
       store.update((draft) => {
         draft.receptions.push({
           id: makeId('rcp'),
           artifactId,
-          impressions: intVal('rc-impressions'),
-          reactions: intVal('rc-reactions'),
-          comments,
-          substantiveComments: Math.min(intVal('rc-substantive'), comments),
-          saves: intVal('rc-saves'),
-          shares: intVal('rc-shares'),
+          ...record,
           capturedAt: realNow(),
         });
       });
+      for (const key of ['rc-impressions', 'rc-reactions', 'rc-comments', 'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste']) delete ui.formCache[key];
+      ui.parsedAnalytics = {};
+      toast(t('measure.saved'));
       // Both feedback integrations run on new reception data.
       recalibrate();
       store.update((draft) => {
@@ -355,28 +441,66 @@ export function mountApp(root) {
       });
     },
 
+    parsePaste() {
+      const { found, matched } = parseAnalyticsPaste(val('rc-paste'));
+      if (!matched) {
+        toast(t('measure.pasteFailed'));
+        return;
+      }
+      ui.parsedAnalytics = found;
+      for (const [key, value] of Object.entries(found)) {
+        ui.formCache[`rc-${key}`] = String(value);
+      }
+    },
+
     addConversion() {
+      const artifactId = val('cv-artifact');
+      const note = val('cv-note').trim();
+      // A conversion with nothing attached to it is a stray click, not an
+      // event. Five of them used to move the index from 14 to 34 and flip the
+      // diagnosis to COMPOUNDING — fabricating standing out of nothing, in a
+      // product whose whole premise is that standing must be evidence-backed.
+      if (!note && !artifactId) {
+        toast(t('measure.needDetail'));
+        return;
+      }
       store.update((draft) => {
         draft.conversions.push({
           id: makeId('cnv'),
           type: val('cv-type'),
-          artifactId: null,
-          note: val('cv-note'),
+          // Attribution is what makes integration I4 possible at all: without
+          // it, `detectDrift` filters on `artifactId` and returns null in every
+          // state the app can produce.
+          artifactId: artifactId || null,
+          note,
           at: realNow(),
         });
       });
+      delete ui.formCache['cv-note'];
     },
 
     addRecognition() {
+      const by = val('rg-by').trim();
+      const url = val('rg-url').trim();
+      // Recognition is someone else vouching for you. Without a who or a where
+      // there is nobody in the record.
+      if (!by && !url) {
+        toast(t('measure.needWho'));
+        return;
+      }
       store.update((draft) => {
         draft.recognitions.push({
           id: makeId('rec'),
           type: val('rg-type'),
-          by: val('rg-by'),
-          url: val('rg-url'),
+          by,
+          url,
           at: realNow(),
         });
       });
+      // NEW-2: append forms must clear their cache, or `val()` falls back to
+      // the stale value and a second click silently duplicates the record.
+      delete ui.formCache['rg-by'];
+      delete ui.formCache['rg-url'];
     },
 
     saveSettings() {
@@ -395,7 +519,7 @@ export function mountApp(root) {
     },
 
     exportData() {
-      const blob = new Blob([JSON.stringify(store.snapshot(), null, 2)], {
+      const blob = new Blob([JSON.stringify(store.exportSnapshot(), null, 2)], {
         type: 'application/json',
       });
       const url = URL.createObjectURL(blob);
@@ -408,7 +532,15 @@ export function mountApp(root) {
 
     resetData() {
       if (!globalThis.confirm?.(t('settings.resetConfirm'))) return;
+      // "There is no undo" has to be true of the pre-rewrite key as well, or a
+      // returning v1 user's CV and client material survive the wipe.
+      try {
+        globalThis.localStorage?.removeItem(LEGACY_STORAGE_KEY);
+      } catch {
+        // Storage unavailable; nothing to clear.
+      }
       store.replace({});
+      resetEphemeral();
       ui.screen = 'onboarding';
       ui.view = 'dashboard';
     },
@@ -416,10 +548,22 @@ export function mountApp(root) {
 
   let t = translator(state.locale);
 
+  /**
+   * The proof the studio is actually showing.
+   *
+   * This must resolve identically to `studioView`'s own selection or a draft
+   * gets saved citing a different proof than the one on screen — which breaks
+   * the single guarantee the product is built on. The shared fallback is why
+   * it re-checks membership of the active set rather than trusting the stored
+   * id: dismissing or removing the selected proof used to leave the view
+   * rendering one unit and the save action writing another.
+   */
   const currentProofId = () => {
-    if (ui.selectedProofId) return ui.selectedProofId;
     const active = state.proofs.filter((p) => !p.dismissed);
     if (!active.length) return null;
+    if (ui.selectedProofId && active.some((p) => p.id === ui.selectedProofId)) {
+      return ui.selectedProofId;
+    }
     return sortByDesc(active, (p) => decayedScore(p, realNow()))[0].id;
   };
 
@@ -431,7 +575,7 @@ export function mountApp(root) {
     if (ui.screen === 'firstLight') {
       const active = state.proofs.filter((p) => !p.dismissed);
       const ranked = sortByDesc(active, (p) => p.score);
-      return firstLightView(state, t, { proofs: ranked, top3: ranked.slice(0, 3) });
+      return firstLightView(state, t, { proofs: ranked, top3: revealPicks(ranked) });
     }
 
     switch (ui.view) {
@@ -457,7 +601,7 @@ export function mountApp(root) {
           refining: ui.refining,
         });
       case 'measure':
-        return measureView(state, t);
+        return measureView(state, t, { parsed: ui.parsedAnalytics });
       case 'settings':
         return settingsView(state, t, { storageError: Boolean(store.persistError()) });
       default:
@@ -494,10 +638,17 @@ export function mountApp(root) {
       ${isDemoMode(state)
         ? html`<p class="demobar" role="note">${t('mine.demoWarning')}</p>`
         : ''}
-      <main id="main" class="main">${inner}</main>
-      <div class="toast" role="status" aria-live="polite">${ui.toast}</div>
+      <main id="main" class="main" tabindex="-1">${inner}</main>
     `;
   }
+
+  // Kept outside the re-rendered tree: a live region that is destroyed and
+  // recreated on every render is not tracked by assistive technology.
+  const liveRegion = document.createElement('div');
+  liveRegion.className = 'toast';
+  liveRegion.setAttribute('role', 'status');
+  liveRegion.setAttribute('aria-live', 'polite');
+  root.after(liveRegion);
 
   function render() {
     state = store.get();
@@ -506,22 +657,35 @@ export function mountApp(root) {
     document.documentElement.dir = state.locale === 'he' ? 'rtl' : 'ltr';
     document.documentElement.classList.toggle('reduce-motion', state.settings.reduceMotion);
 
-    const activeId = document.activeElement?.id;
-    const selectionStart = document.activeElement?.selectionStart;
+    // Full re-render destroys focus, which makes the whole app unusable from a
+    // keyboard: pinning three proofs meant tabbing from the top of the document
+    // three times. Fields are restored by id; buttons carry no id, so they are
+    // restored by their action and payload instead.
+    const active = document.activeElement;
+    const activeId = active?.id;
+    const activeAct = active?.dataset?.act;
+    const activeKey = active?.dataset?.id ?? active?.dataset?.view ?? '';
+    const selectionStart = active?.selectionStart;
+
     renderInto(root, chrome(body()));
 
-    // Full re-render loses focus, which makes every keystroke-adjacent control
-    // unusable with a keyboard. Restore it, including the caret position.
+    let restored = null;
     if (activeId) {
-      const restored = root.querySelector(`#${CSS.escape(activeId)}`);
-      if (restored) {
-        restored.focus();
-        if (typeof selectionStart === 'number' && 'setSelectionRange' in restored) {
-          try {
-            restored.setSelectionRange(selectionStart, selectionStart);
-          } catch {
-            // Not all input types support selection ranges.
-          }
+      restored = root.querySelector(`#${CSS.escape(activeId)}`);
+    } else if (activeAct) {
+      restored = [...root.querySelectorAll(`[data-act="${CSS.escape(activeAct)}"]`)].find(
+        (el) => (el.dataset.id ?? el.dataset.view ?? '') === activeKey,
+      );
+    }
+    liveRegion.textContent = ui.toast;
+
+    if (restored) {
+      restored.focus();
+      if (typeof selectionStart === 'number' && 'setSelectionRange' in restored) {
+        try {
+          restored.setSelectionRange(selectionStart, selectionStart);
+        } catch {
+          // Not all input types support selection ranges.
         }
       }
     }
@@ -536,18 +700,23 @@ export function mountApp(root) {
     if (!act) return;
     event.preventDefault();
     const result = act({ ...target.dataset });
-    if (result instanceof Promise) result.then(render);
-    else render();
+    if (result instanceof Promise) {
+      result.then(render, () => render());
+    } else {
+      render();
+    }
   });
 
   root.addEventListener('change', async (event) => {
     const el = event.target;
+    if (el.id && el.type !== 'file' && el.type !== 'checkbox') ui.formCache[el.id] = el.value;
     if (el.id === 'inv-filter') {
       ui.filter = el.value;
       render();
     } else if (el.id === 'studio-proof') {
       ui.selectedProofId = el.value;
       ui.draftBody = null;
+      ui.artifactId = null;
       render();
     } else if (el.id === 'studio-cta') {
       ui.cta = el.value;
@@ -559,6 +728,14 @@ export function mountApp(root) {
       });
       render();
     } else if (el.id === 'llm-enabled') {
+      // Persist immediately rather than on Save: leaving the UI showing the
+      // feature as off while the credential is still in storage is the kind of
+      // gap a user cannot see and would not forgive.
+      const enabled = el.checked;
+      store.update((draft) => {
+        draft.settings.llm.enabled = enabled;
+        if (!enabled) draft.settings.llm.apiKey = '';
+      });
       render();
     } else if (el.id === 'file') {
       await ingestFiles(el.files);
@@ -573,6 +750,7 @@ export function mountApp(root) {
   // the user learns about after they have already copied the text out.
   let draftTimer = null;
   root.addEventListener('input', (event) => {
+    if (event.target.id) ui.formCache[event.target.id] = event.target.value;
     if (event.target.id !== 'studio-body') return;
     ui.draftBody = event.target.value;
     if (draftTimer !== null) clearTimeout(draftTimer);
@@ -612,6 +790,7 @@ export function mountApp(root) {
     try {
       const parsed = JSON.parse(await file.text());
       store.replace(parsed);
+      resetEphemeral();
       ui.screen = store.get().profile.onboarded ? 'app' : 'onboarding';
       render();
     } catch {

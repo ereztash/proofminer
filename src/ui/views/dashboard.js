@@ -13,8 +13,12 @@ import { LAYER_KEYS } from '../../engine/layers.js';
 
 export function dashboardView(state, t, { authority, move }) {
   const { gap, foundation, built, index, diagnosis, lowConfidence, gated } = authority;
+  // The onboarding asked how long they had been at this. It changes the
+  // register of one line — quietly, without a countdown or a guilt mechanic.
+  const urgency = state.profile.weeksInMotion >= 40 ? 'long' : state.profile.weeksInMotion >= 12 ? 'months' : '';
 
   return html`<div class="stack">
+    ${urgency ? html`<p class="urgency">${t(['dashboard', 'urgency', urgency])}</p>` : ''}
     ${gapCard(gap, foundation, built, index, lowConfidence, t)}
     ${moveCard(move, t)}
     ${diagnosisCard(diagnosis, gated, t)}
@@ -82,7 +86,12 @@ function moveCard(move, t) {
     <div class="move__foot">
       ${button('goto', t('moves.do'), {
         variant: 'primary',
-        payload: { view: move.view, proof: move.payload?.proofId || '', artifact: move.payload?.artifactId || '' },
+        payload: {
+          view: move.view,
+          proof: move.payload?.proofId || '',
+          artifact: move.payload?.artifactId || '',
+          archetype: move.payload?.play?.archetype || '',
+        },
       })}
       <span class="move__meta">
         ${t('moves.minutes', move.effortMinutes)} · ${t(`layers.${move.layer}.name`)}

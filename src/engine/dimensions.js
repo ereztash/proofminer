@@ -35,13 +35,13 @@ export const DIMENSIONS = [
     // yourself. Users systematically under-supply this and it is the single
     // strongest driver of perceived credibility.
     score: (s) => {
-      let v = 20;
-      if (s.thirdParty) v += 42;
+      let v = 22;
+      if (s.thirdParty) v += 40;
       if (s.verifiableRef) v += 14;
-      if (s.hasUrl) v += 12;
-      if (s.hasProperNoun) v += 8;
-      if (s.peer) v += 6;
-      if (s.generic) v -= 16;
+      if (s.hasUrl) v += 14;
+      if (s.hasProperNoun) v += 12;
+      if (s.peer) v += 8;
+      if (s.generic) v -= 18;
       return clamp100(v);
     },
   },
@@ -50,14 +50,17 @@ export const DIMENSIONS = [
     prior: 16,
     calibratable: true,
     // Evidence is not good in the abstract, only for an audience with a
-    // problem. Baseline 30 (not 0) because an unfilled positioning must not
-    // zero out every proof the user owns on their first run.
+    // problem. With no audience declared this returns the neutral midpoint
+    // rather than a low number: we have not measured fit, and scoring an
+    // unmeasured dimension low made a strong first paste read as "Weak" across
+    // the board on the one screen meant to tell the user the opposite.
     score: (s, ctx) => {
-      if (!ctx.audienceContext.trim()) return 30;
+      if (!ctx.audienceContext.trim()) return 50;
       const rel = contextRelevance(ctx.text, ctx.audienceContext);
-      let v = 22 + rel * 62;
-      if (s.outcome) v += 8;
-      if (s.generic) v -= 10;
+      let v = 30 + rel * 74;
+      if (s.outcome) v += 10;
+      if (s.thirdParty) v += 6;
+      if (s.generic) v -= 12;
       return clamp100(v);
     },
   },
@@ -68,11 +71,11 @@ export const DIMENSIONS = [
     // Did something change in the world? Change verb plus a stated delta.
     score: (s) => {
       let v = 22;
-      if (s.outcome) v += 30;
-      if (s.outcome && s.numberCount > 0) v += 16;
-      if (s.hasPercent) v += 10;
-      if (s.hasCurrency) v += 10;
-      if (s.contrast) v += 8;
+      if (s.outcome) v += 32;
+      if (s.outcome && s.numberCount > 0) v += 18;
+      if (s.hasPercent) v += 12;
+      if (s.hasCurrency) v += 12;
+      if (s.contrast) v += 10;
       if (s.hedge) v -= 12;
       if (s.generic) v -= 18;
       return clamp100(v);
@@ -84,11 +87,13 @@ export const DIMENSIONS = [
     calibratable: true,
     // Concreteness is what makes a claim feel checkable rather than asserted.
     score: (s) => {
-      let v = 20;
-      v += Math.min(3, s.numberCount) * 12;
-      if (s.hasDuration) v += 10;
-      if (s.hasScaleUnit) v += 10;
-      if (s.hasProperNoun) v += 10;
+      let v = 24;
+      v += Math.min(3, s.numberCount) * 14;
+      if (s.hasPercent) v += 8;
+      if (s.hasCurrency) v += 8;
+      if (s.hasDuration) v += 12;
+      if (s.hasScaleUnit) v += 12;
+      if (s.hasProperNoun) v += 12;
       if (s.hedge) v -= 14;
       if (s.generic) v -= 20;
       // Very long claims dilute: a 60-word sentence is a paragraph, and a
@@ -105,10 +110,11 @@ export const DIMENSIONS = [
     // intersections beat strong-but-common claims. Approximated by the
     // co-occurrence of qualities that rarely travel together.
     score: (s, ctx) => {
-      let v = 30;
+      let v = 34;
       const rare = [s.method, s.failure, s.credential && s.outcome, s.peer, s.origin && s.outcome];
-      v += rare.filter(Boolean).length * 11;
-      if (s.hasProperNoun && s.outcome) v += 8;
+      v += rare.filter(Boolean).length * 14;
+      if (s.hasProperNoun && s.outcome) v += 12;
+      if (s.thirdParty && s.numberCount > 0) v += 12;
       // A claim that restates the user's own generic positioning language adds
       // no separation from anyone else in the category.
       if (ctx.claimContext.trim() && contextRelevance(ctx.text, ctx.claimContext) > 0.7) v -= 6;
@@ -123,15 +129,15 @@ export const DIMENSIONS = [
     // Could a sceptic check this? This dimension has no equivalent in any
     // competing tool and is the structural defence against hollow authority.
     score: (s) => {
-      let v = 12;
-      if (s.hasUrl) v += 30;
-      if (s.hasProperNoun) v += 20;
+      let v = 14;
+      if (s.hasUrl) v += 32;
+      if (s.hasProperNoun) v += 22;
       if (s.verifiableRef) v += 16;
-      if (s.years.length) v += 12;
-      if (s.numberCount > 0) v += 10;
+      if (s.years.length) v += 14;
+      if (s.numberCount > 0) v += 12;
       if (s.thirdParty) v += 10;
-      if (s.hedge) v -= 18;
-      if (s.generic) v -= 22;
+      if (s.hedge) v -= 10;
+      if (s.generic) v -= 24;
       return clamp100(v);
     },
   },
@@ -141,12 +147,13 @@ export const DIMENSIONS = [
     calibratable: true,
     // Distance between the proof and the thing being sold or hired for.
     score: (s, ctx) => {
-      let v = 24;
-      if (ctx.offerContext.trim()) v += contextRelevance(ctx.text, ctx.offerContext) * 40;
-      if (s.outcome) v += 18;
+      let v = 28;
+      if (ctx.offerContext.trim()) v += contextRelevance(ctx.text, ctx.offerContext) * 46;
+      if (s.outcome) v += 22;
+      if (s.hasCurrency) v += 10;
       if (s.thirdParty) v += 8;
-      if (s.method) v += 8;
-      if (s.generic) v -= 12;
+      if (s.method) v += 10;
+      if (s.generic) v -= 14;
       return clamp100(v);
     },
   },
@@ -169,13 +176,14 @@ export const DIMENSIONS = [
     // Before/after structure, tension, a turn. Determines whether the proof
     // can carry an artifact at all.
     score: (s) => {
-      let v = 28;
-      if (s.contrast) v += 24;
-      if (s.outcome) v += 18;
-      if (s.failure) v += 14; // a turn is the strongest narrative material
-      if (s.origin) v += 10;
+      let v = 30;
+      if (s.contrast) v += 28;
+      if (s.outcome) v += 20;
+      if (s.failure) v += 20; // a turn is the strongest narrative material
+      if (s.origin) v += 12;
+      if (s.hasProperNoun) v += 6;
       if (s.words < 8) v -= 12; // too short to carry a story
-      if (s.generic) v -= 14;
+      if (s.generic) v -= 16;
       return clamp100(v);
     },
   },

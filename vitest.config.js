@@ -8,6 +8,7 @@ export default defineConfig({
           name: 'engine',
           environment: 'node',
           include: ['tests/engine/**/*.test.js', 'tests/core/**/*.test.js'],
+          exclude: ['tests/engine/regression.test.js'],
         },
       },
       {
@@ -15,7 +16,7 @@ export default defineConfig({
         test: {
           name: 'ui',
           environment: 'jsdom',
-          include: ['tests/ui/**/*.test.js'],
+          include: ['tests/ui/**/*.test.js', 'tests/engine/regression.test.js'],
         },
       },
     ],
