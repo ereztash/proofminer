@@ -1,4 +1,4 @@
-# Telos Governance — Governing Rule v1.7
+# Telos Governance — Governing Rule v1.8
 
 Date: 2026-08-16
 
@@ -6,199 +6,146 @@ Date: 2026-08-16
 
 This document outranks product category, feature set, UX, UI, integrations, commercial model, research plan, simulation, semantic model, implementation plan and Definition of Done.
 
-No current mechanism is protected by implementation effort.
+No current mechanism or delivery surface is protected by implementation effort.
 
 ---
 
 # O — end-to-end user telos
 
-The system exists to make consequential professional commitments **safer to enter and more useful to learn from**.
+The system exists to reduce avoidable loss from consequential professional commitments made under uncertainty, while preserving the user's ability to act quickly when direct action is cheap, reversible and informative.
 
-The desired end state is not frequent app use.
+The desired end state is **not app use**.
 
 It is:
 
-> **At the moment a professional commitment becomes expensive enough to matter, the user has the smallest decision-relevant check needed to expose what is being risked, what the commitment relies on, what is known versus inferred, and what future observation would justify reversal — without having to reconstruct the decision after the fact.**
+> **When a commitment becomes expensive enough to matter, the user has the smallest decision-relevant capability needed to expose what is being risked, what the commitment relies on, what is known versus inferred, and what future observation would justify reversal — delivered at lower cognitive and workflow cost than the expected loss it helps avoid.**
 
-The product should reduce avoidable commitment to weakly grounded strategic bets while preserving agency and allowing cheap, reversible action to proceed without ceremonial analysis.
+The product may be an app, plugin, agent, inline check, workflow, API, human service or no software surface at all.
+
+---
+
+# App non-entitlement invariant
+
+> **A standalone application has no default right to exist.**
+
+Always separate:
+
+```text
+USER NEED
+  ↓
+DECISION-SAFETY CAPABILITY
+  ↓
+BEST TRIGGER / PLACEMENT
+  ↓
+MINIMUM INTERACTION
+  ↓
+OPTIONAL APP SURFACE
+```
+
+If a general AI, template, host-platform agent, direct field action or human service delivers equivalent commitment value at lower burden, the standalone application must collapse toward that simpler form.
+
+The application is secondary unless FIELD demonstrates that a dedicated manipulation/history surface itself creates unique value.
 
 ---
 
 # Indispensability ambition
 
-> **Unskippable by value, skippable by design.**
+> **Unskippable by value, skippable by design — at the capability level, not necessarily at the app level.**
 
-A user must always be able to bypass the product.
+The user must always be able to bypass the capability.
 
-The product may not manufacture indispensability through lock-in, streaks, anxiety, hidden switching costs, notification pressure, forced waiting or unnecessary approval gates.
+The product may not manufacture dependence through lock-in, streaks, anxiety, hidden switching costs, notification pressure, forced waiting or unnecessary approval gates.
 
-The governing product DOD is behavioral:
+The governing behavioral test is:
 
-> **After experiencing real value, a suitable user voluntarily routes later material commitments through ProofMiner because the expected loss from bypassing the check or losing the pre-commitment record is now meaningful to them.**
+> **After experiencing real value in one recurring commitment class, a suitable user does not want to make that class of commitment again without the decision-safety capability, regardless of which surface delivers it.**
 
-If the user does not notice when the capability disappears, the product is not indispensable.
+If removal of the capability produces no compensatory behavior or observable loss, the product is not indispensable.
 
 ---
 
 # Category hypothesis
 
-Working category:
+Working capability:
 
 > **Commitment Safety Layer**
 
-ProofMiner is not primarily a journal, chat, dashboard, canvas, strategy report, pre-mortem engine or recommendation generator.
+Working surface: **unresolved**.
 
-Those may exist as subordinate surfaces or methods.
-
-The product belongs **between intention and consequential commitment**, then remains linked to execution and outcome.
+Do not treat `app`, `workspace`, `dashboard`, `plugin`, `agent` or `integration` as the product category until a recurring commitment wedge earns that form.
 
 ---
 
-# Canonical flow
+# Wedge-before-app rule
 
-```text
-INTENT FORMS IN EXISTING WORK
-        ↓
-CANDIDATE COMMITMENT
-        ↓
-SUPPORT-VALUE ROUTER
-   ├─ LOW VALUE → SILENT PASS
-   └─ MATERIAL
-        ↓
-FREEZE PRE-INFLUENCE STATE
-        ↓
-EXPOSE COMMITMENT + RESOURCE EXPOSURE
-        ↓
-INFER CANDIDATE LOAD-BEARING BET
-        ↓
-USER CORRECTS / REJECTS
-        ↓
-EVIDENCE / ALTERNATIVE / UNKNOWN / REVERSAL
-        ↓
-PASS | MODIFY | PROBE
-        ↓
-REAL EXECUTION
-        ↓
-EXPECTED SIGNAL / OUTCOME
-        ↓
-DECISION FLIGHT RECORDER
-        ↓
-NEXT COMMITMENT RECEIVES BETTER CONTEXT
-```
+Before expanding the application, prove one recurring commitment class with:
+
+1. material stakes;
+2. an observable trigger in one bounded work surface;
+3. enough local context to support a useful check;
+4. enough recurrence to justify integration / learning;
+5. a bounded enough signal horizon to learn from outcomes;
+6. pre-commitment state that cannot be cheaply reconstructed later;
+7. plausible PASS / MODIFY / PROBE consequences;
+8. intervention cost below expected decision value;
+9. an advantage over general AI + a simple template;
+10. a measurable removal consequence.
+
+If no commitment class passes, kill the software-product hypothesis and retain the capability as service / protocol / agent method.
+
+Current falsification record: `docs/APP_NECESSITY_FALSIFICATION_V1.md`.
 
 ---
 
-# Governing invariants
+# Selective support invariant
 
-## 1. The system comes to the commitment
-
-The user should not need to remember to open a blank decision app and reconstruct context.
-
-An explicit one-click handoff is an acceptable first wedge. Over time, integrations may surface candidate commitments from existing work surfaces.
-
-## 2. Silence is a valid product behavior
-
-Most actions should not trigger a strategic intervention.
+Most actions should receive no intervention.
 
 The system must minimize both:
 
-- **missed-support error** — acting without help when help would materially improve the commitment;
-- **unnecessary-support burden** — interrupting when the check cannot justify its cost.
+- **missed-support error** — acting alone where support would materially improve the commitment;
+- **unnecessary-support burden** — interrupting where support cannot justify its cost.
 
-## 3. Temporal integrity matters
+Silence is valid product behavior.
 
-The true pre-commitment state must be preserved before system influence and before outcomes contaminate memory.
+Selective support is not assumed behaviorally neutral; routing must be tested in FIELD.
 
-This is a core product asset, not journaling ceremony.
+---
 
-## 4. Provenance remains explicit
+# Temporal integrity invariant
 
-Always distinguish:
+When support is justified, preserve the true pre-influence state before system interpretation and before outcome knowledge contaminates memory.
 
-- user-owned statement / action;
+Distinguish explicitly:
+
+- user statement / action;
 - system inference;
 - external observation / evidence;
-- unresolved hypothesis;
-- real outcome.
+- hypothesis;
+- later execution / outcome.
 
-No lower evidence class silently inherits higher authority.
-
-## 5. Every intervention has commitment consequence
-
-Valid outputs:
-
-- `PASS` — proceed;
-- `MODIFY` — alter commitment, sequence, scope, prerequisite or resource allocation;
-- `PROBE` — acquire a smaller discriminating observation before a larger commitment.
-
-Insight without commitment consequence is not enough.
-
-## 6. Analysis must not become avoidance
-
-`PROBE` is invalid when direct action is cheaper, reversible and at least as informative.
-
-## 7. Memory compounds only from reality
-
-Outcome-linked history may improve future support, but prior decisions remain source-linked, contestable and transferability-bounded.
-
-The product may not turn repetition into authority by default.
+History may support later decisions only while source-linked and contestable.
 
 ---
 
-# Creative × Adversarial governance
+# Intervention outcomes
 
-Every substantial product hypothesis is generated and attacked in the same iteration.
+Every material check terminates in exactly one:
 
-## Creative role
+- `PASS` — act;
+- `MODIFY` — change scope / sequence / allocation / prerequisite;
+- `PROBE` — acquire a smaller discriminating observation before a materially larger commitment.
 
-Ask:
-
-> **What structurally different mechanism could make the product dramatically more valuable at the user’s real moment of need?**
-
-It is allowed to change category, interaction surface, business model, workflow and product boundary.
-
-## Adversarial role
-
-For every creative proposal ask:
-
-> **Why would a rational user still skip this, replace it with a general AI/template/human, disable it, distrust it, or fail to notice its absence?**
-
-Also attack privacy, burden, false positives, epistemic overclaim, cold start, integration cost, analysis paralysis and commoditization.
-
-A surviving idea must answer both voices simultaneously.
+`PROBE` is prohibited when direct action is cheaper, reversible and at least as informative.
 
 ---
 
-# Anti-recursion rule
+# STOP / FIELD
 
-Another internal iteration is justified only if it can change:
+Do not add richer app UI, more canvas objects, more integrations or more simulation merely because they are implementable.
 
-- the product category;
-- the commitment surface;
-- the support-routing rule;
-- the intervention mechanism;
-- the before-state capture;
-- the real commitment outcome;
-- the outcome-linking loop;
-- the FIELD test.
+The next justified question is:
 
-If not, move to FIELD.
+> **For which narrow recurring commitment class is the expected loss from acting without this capability meaningful enough that users behaviorally recreate or seek the capability when it is absent?**
 
----
-
-# Current FIELD boundary
-
-The current hypothesis is **not proven indispensable**.
-
-The next evidence must test whether users who experience value voluntarily seek or accept the layer at a later consequential commitment before the outcome is known, and whether its absence produces compensatory behavior.
-
-Read with:
-
-- `docs/INDISPENSABILITY_DOD_V1.md`
-- `docs/CREATIVE_ADVERSARIAL_PRODUCT_RUN_V1.md`
-- `docs/DOD_COMMITMENT_GATE_V1.md`
-- `docs/COMMITMENT_GATE_FIELD_PROTOCOL_V1.md`
-
-Current governance outcome:
-
-> **REPLAN → COMMITMENT SAFETY LAYER → FIELD**
+Until one class survives, outcome = `FIELD / WEDGE DISCOVERY`, not `BUILD MORE APP`.
