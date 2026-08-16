@@ -79,6 +79,11 @@ describe('i18n', () => {
     expect(translator('he')('nope.not.here')).toBe('nope.not.here');
   });
 
+  it('has localized validation copy for the opening wizard', () => {
+    expect(translator('he')('onboarding.needPaste')).not.toBe('onboarding.needPaste');
+    expect(translator('en')('onboarding.needPaste')).not.toBe('onboarding.needPaste');
+  });
+
   it('keeps the two bundles structurally aligned', () => {
     const shape = (obj, prefix = '') =>
       Object.entries(obj).flatMap(([key, value]) =>
@@ -135,7 +140,7 @@ describe('the first screen qualifies rather than educates', () => {
 
   it('does not show the paste box until the question is answered', () => {
     expect(toString_(onboardingView(state, t, {}))).not.toContain('id="cold-paste"');
-    expect(toString_(onboardingView(state, t, { situation: 'job' }))).toContain('id="cold-paste"');
+    expect(toString_(onboardingView(state, t, { situation: 'consultant' }))).toContain('id="cold-paste"');
   });
 
   it('puts no action at all on the exit page', () => {
@@ -158,8 +163,17 @@ describe('the first screen qualifies rather than educates', () => {
     expect(markup).not.toContain('data-act="coldStart"');
   });
 
+  it('starts with evidence choice, not only a pain category', () => {
+    const markup = toString_(onboardingView(state, t, { situation: 'expert' }));
+
+    expect(markup).toContain(t('onboarding.fitQuestion'));
+    expect(markup).toContain('id="fit-claim"');
+    expect(markup).toContain('id="fit-evidence"');
+    expect(markup).toContain(t(['onboarding', 'modeRead', 'expert']));
+  });
+
   it('does not empty the paste box when the visitor answers the question above it', () => {
-    const ui = { situation: 'job', formCache: { 'cold-paste': 'ניהלתי צוות של שמונה אנשים' } };
+    const ui = { situation: 'consultant', formCache: { 'cold-paste': 'ניהלתי צוות של שמונה אנשים' } };
     expect(toString_(onboardingView(state, t, ui))).toContain('ניהלתי צוות של שמונה אנשים');
   });
 
@@ -199,6 +213,104 @@ describe('First Light on the sample', () => {
     );
     expect(markup).not.toContain('demobar');
     expect(markup).toContain('במה שהדבקת');
+  });
+
+  it('turns the first reveal into one proof loop, not only an inventory teaser', () => {
+    const real = {
+      ...demoProof,
+      id: 'proof_loop',
+      demo: false,
+      archetypes: ['OUTCOME'],
+      kind: 'experience',
+    };
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs: [real] }, t, {
+        proofs: [real], top3: [real], demo: false,
+      }),
+    );
+    expect(markup).toContain(t('proofCard.title'));
+    expect(markup).toContain(t('proofCard.limitLabel'));
+    expect(markup).toContain(t('proofCard.actionLevelLabel'));
+    expect(markup).toContain(t(['proofCard', 'actionLevels', 'R3']));
+    expect(markup).toContain('data-act="draft"');
+    expect(markup).toContain('data-id="proof_loop"');
+  });
+
+  it('uses the usable proof for the proof loop when a weaker proof is ranked first', () => {
+    const weak = {
+      ...demoProof,
+      id: 'weak_loop',
+      claim: 'כתבתי שיטה אישית לניהול צוותים.',
+      score: 31,
+      demo: false,
+      archetypes: ['METHOD'],
+      kind: 'method',
+    };
+    const usable = {
+      ...demoProof,
+      id: 'usable_loop',
+      claim: 'קיצרתי את זמן האספקה מ-19 יום ל-7 ימים.',
+      score: 61,
+      demo: false,
+      archetypes: ['OUTCOME'],
+      kind: 'experience',
+    };
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs: [usable, weak] }, t, {
+        proofs: [usable, weak], top3: [weak], demo: false,
+      }),
+    );
+
+    expect(markup).toContain('data-act="draft"');
+    expect(markup).toContain('data-id="usable_loop"');
+  });
+
+  it('does not claim unrelated evidence supports the user\'s choice claim', () => {
+    const state = {
+      ...emptyState(),
+      positioning: { ...emptyState().positioning, claim: 'אני יודע לשפר צוותי מכירות' },
+    };
+    const unrelated = {
+      ...demoProof,
+      id: 'unrelated_loop',
+      claim: 'בניתי תהליך מלאי שהפחית זמני אספקה מ-19 יום ל-7 ימים.',
+      score: 81,
+      demo: false,
+      archetypes: ['OUTCOME'],
+      kind: 'experience',
+    };
+    const markup = toString_(
+      firstLightView({ ...state, proofs: [unrelated] }, t, {
+        proofs: [unrelated], top3: [unrelated], demo: false,
+      }),
+    );
+
+    expect(markup).toContain(t('proofCard.titleWeak'));
+    expect(markup).toContain(t(['proofCard', 'actionLevels', 'R4']));
+    expect(markup).toContain(t(['proofCard', 'supports', 'OUTCOME']));
+    expect(markup).not.toContain('data-act="draft"');
+    expect(markup).not.toContain(t('proofCard.supportsSpecific', state.positioning.claim));
+  });
+
+  it('does not turn weak evidence into a draftable recommendation', () => {
+    const weak = {
+      ...demoProof,
+      id: 'weak_loop',
+      score: 31,
+      demo: false,
+      archetypes: ['OUTCOME'],
+      kind: 'experience',
+    };
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs: [weak] }, t, {
+        proofs: [weak], top3: [weak], demo: false,
+      }),
+    );
+
+    expect(markup).toContain(t('proofCard.titleWeak'));
+    expect(markup).toContain(t('proofCard.strengthen'));
+    expect(markup).toContain(t(['proofCard', 'actionLevels', 'R4']));
+    expect(markup).not.toContain('data-act="draft"');
   });
 });
 

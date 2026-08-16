@@ -48,14 +48,14 @@ export function onboardingView(state, t, ui = {}) {
         <legend>${t('onboarding.situationQuestion')}</legend>
         <p class="choice__note">${t('onboarding.situationNote')}</p>
         <div class="choice__row">
-          ${situationOption('independent', situation, t('onboarding.trackIndependent'), t('onboarding.trackIndependentHint'))}
-          ${situationOption('job', situation, t('onboarding.trackJob'), t('onboarding.trackJobHint'))}
+          ${situationOption('consultant', situation, t('onboarding.modeConsultant'), t('onboarding.modeConsultantHint'))}
+          ${situationOption('expert', situation, t('onboarding.modeExpert'), t('onboarding.modeExpertHint'))}
         </div>
         ${situationOption(NOT_ME, situation, t('onboarding.notMe'), t('onboarding.notMeHint'), 'choice__opt--wide')}
       </fieldset>
 
       ${situation === NOT_ME ? notForYou(t) : ''}
-      ${situation && situation !== NOT_ME ? coldStartBody(t, weeks, ui) : ''}
+      ${situation && situation !== NOT_ME ? coldStartBody(t, weeks, ui, situation) : ''}
     </div>
   </div>`;
 }
@@ -84,43 +84,110 @@ function notForYou(t) {
   </div>`;
 }
 
-function coldStartBody(t, weeks, ui) {
+function coldStartBody(t, weeks, ui, situation) {
+  const confidence = ui.formCache?.['fit-confidence'] ?? '5';
+  const modeRead = t(['onboarding', 'modeRead', situation]);
+
   return html`<div class="cold__step-block">
-    <fieldset class="choice">
-      <legend>${t('onboarding.weeksQuestion')}</legend>
-      <div class="choice__row choice__row--tight">
-        ${weeksOption(0, weeks, t('onboarding.weeksNotYet'))}
-        ${weeksOption(12, weeks, t('onboarding.weeksMonths'))}
-        ${weeksOption(40, weeks, t('onboarding.weeksLong'))}
-      </div>
-    </fieldset>
+    <div class="wizard" aria-label="${t('onboarding.wizardLabel')}">
+      <section class="wizard__step wizard__step--claim">
+        <div class="wizard__head">
+          <span class="wizard__num">1</span>
+          <h2 class="wizard__title">${t('onboarding.stepClaim')}</h2>
+        </div>
+        <p class="wizard__lead">${modeRead}</p>
 
-    <p class="pledge__lead">${t('onboarding.pledgeLead')}</p>
+        <fieldset class="choice">
+          <legend>${t('onboarding.fitQuestion')}</legend>
+          <p class="choice__note">${t('onboarding.fitNote')}</p>
+          <input
+            class="input input--range"
+            id="fit-confidence"
+            name="fit-confidence"
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            value="${confidence}"
+            aria-describedby="fit-confidence-scale"
+          />
+          <div class="range-scale" id="fit-confidence-scale">
+            <span>${t('onboarding.fitLow')}</span>
+            <b>${confidence}</b>
+            <span>${t('onboarding.fitHigh')}</span>
+          </div>
+        </fieldset>
 
-    <h2 class="cold__step">${t('onboarding.firstStepTitle')}</h2>
-    <p class="cold__body">${t('onboarding.firstStepBody')}</p>
+        ${field(
+          'fit-claim',
+          t('onboarding.claimQuestion'),
+          textArea('fit-claim', ui.formCache?.['fit-claim'] ?? '', {
+            placeholder: t('onboarding.claimPlaceholder'),
+            rows: 3,
+          }),
+          t('onboarding.claimHint'),
+        )}
+      </section>
 
-    ${field(
-      'cold-paste',
-      t('onboarding.firstStepTitle'),
-      // Rendered from the cache, not blank: answering the situation question
-      // re-renders this screen, and a paste box that empties itself when the
-      // user answers a question above it is the cruellest possible bug here.
-      textArea('cold-paste', ui.formCache?.['cold-paste'] ?? '', {
-        placeholder: t('onboarding.placeholder'),
-        rows: 9,
-      }),
-      '',
-      { hideLabel: true },
-    )}
+      <section class="wizard__step wizard__step--evidence">
+        <div class="wizard__head">
+          <span class="wizard__num">2</span>
+          <h2 class="wizard__title">${t('onboarding.stepEvidence')}</h2>
+        </div>
 
-    <div class="cold__actions">
-      ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
-      ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
+        ${field(
+          'fit-evidence',
+          t('onboarding.evidenceQuestion'),
+          textArea('fit-evidence', ui.formCache?.['fit-evidence'] ?? '', {
+            placeholder: t('onboarding.evidencePlaceholder'),
+            rows: 3,
+          }),
+          t('onboarding.evidenceHint'),
+        )}
+      </section>
+
+      <section class="wizard__step wizard__step--material">
+        <div class="wizard__head">
+          <span class="wizard__num">3</span>
+          <h2 class="wizard__title">${t('onboarding.stepMaterial')}</h2>
+        </div>
+
+        <fieldset class="choice choice--compact">
+          <legend>${t('onboarding.weeksQuestion')}</legend>
+          <div class="choice__row choice__row--tight">
+            ${weeksOption(0, weeks, t('onboarding.weeksNotYet'))}
+            ${weeksOption(12, weeks, t('onboarding.weeksMonths'))}
+            ${weeksOption(40, weeks, t('onboarding.weeksLong'))}
+          </div>
+        </fieldset>
+
+        <h3 class="cold__step">${t('onboarding.firstStepTitle')}</h3>
+        <p class="cold__body">${t('onboarding.firstStepBody')}</p>
+
+        ${field(
+          'cold-paste',
+          t('onboarding.firstStepTitle'),
+          // Rendered from the cache, not blank: answering the situation question
+          // re-renders this screen, and a paste box that empties itself when the
+          // user answers a question above it is the cruellest possible bug here.
+          textArea('cold-paste', ui.formCache?.['cold-paste'] ?? '', {
+            placeholder: t('onboarding.placeholder'),
+            rows: 8,
+          }),
+          '',
+          { hideLabel: true },
+        )}
+
+        <div class="cold__actions">
+          ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
+          ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
+        </div>
+      </section>
     </div>
 
     <details class="pledge">
       <summary class="pledge__title">${t('onboarding.pledgeTitle')}</summary>
+      <p class="pledge__lead">${t('onboarding.pledgeLead')}</p>
       <ul class="pledge__list">
         ${t('onboarding.pledge').map((line) => html`<li>${line}</li>`)}
       </ul>
@@ -145,6 +212,15 @@ const weeksOption = (value, current, label) => html`<label
 </label>`;
 
 const checkedAttr = html`checked`;
+
+const SUPPORT_STOP_WORDS = new Set([
+  'אני', 'אתה', 'את', 'הוא', 'היא', 'הם', 'הן', 'זה', 'זו', 'של', 'עם', 'מול',
+  'למה', 'נכון', 'לבחור', 'לקוח', 'לקוחות', 'פרויקט', 'עבודה', 'יותר', 'יודע',
+  'יודעת', 'יכול', 'יכולה', 'אפשר', 'כדי',
+  'the', 'and', 'for', 'you', 'your', 'with', 'this', 'that', 'can', 'able',
+  'from', 'into', 'client', 'project', 'choose', 'alternative', 'someone', 'over',
+  'why',
+]);
 
 /**
  * First Light — the reveal, deliberately a screen of its own rather than a
@@ -173,6 +249,8 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
   const strong = top3.filter((p) => p.score >= BAND_USABLE);
   const shown = demo ? top3 : strong;
   const thin = !demo && strong.length === 0;
+  const primary = top3.find((p) => p.score >= BAND_USABLE) || proofs.find((p) => p.score >= BAND_USABLE) || top3[0] || proofs[0];
+  const thin = !demo && (!primary || primary.score < BAND_USABLE);
   if (!proofs.length) {
     return html`<div class="cold">
       <div class="cold__inner">
@@ -197,15 +275,103 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
         ${thin ? t('firstLight.thinTitle') : t('firstLight.threeTitle')}
       </h2>
       ${thin ? html`<p class="cold__body">${t('firstLight.thinBody')}</p>` : ''}
+      ${primary ? proofLoopCard(primary, t, proofs, signalCache, state, { thin }) : ''}
+
       <ol class="reveal">
         ${shown.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
-
-      <div class="cold__actions">
-        ${button('firstLightDone', t('firstLight.continue'), { variant: 'primary' })}
-      </div>
     </div>
   </div>`;
+}
+
+function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false } = {}) {
+  const reason = reasonFor(proof, inventory, signalCache);
+  const archetype = proof.archetypes?.[0] || 'OUTCOME';
+  const dimension = strongestDimension(proof.breakdown || {});
+  const limit = transferLimit(proof);
+  const claim = state.positioning?.claim?.trim() || '';
+  const claimMatches = claim ? overlapsClaim(proof.claim, claim) : false;
+  const blocked = thin || proof.score < BAND_USABLE || Boolean(claim && !claimMatches);
+  const actionLevel = blocked ? 'R4' : 'R3';
+
+  return html`<section class="proof-card" aria-labelledby="proof-card-title">
+    <p class="proof-card__eyebrow">${t('proofCard.eyebrow')}</p>
+    <h3 class="proof-card__title" id="proof-card-title">
+      ${blocked ? t('proofCard.titleWeak') : t('proofCard.title')}
+    </h3>
+    <p class="proof-card__verdict">
+      ${blocked ? t('proofCard.weakVerdict') : t('proofCard.readyVerdict')}
+    </p>
+    <p class="proof-card__authority">
+      <b>${t('proofCard.actionLevelLabel')}</b> ${t(['proofCard', 'actionLevels', actionLevel])}
+    </p>
+
+    <dl class="proof-card__grid">
+      <div class="proof-card__cell proof-card__cell--wide">
+        <dt>${t('proofCard.traceLabel')}</dt>
+        <dd class="proof-card__claim">${proof.claim}</dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.mechanismLabel')}</dt>
+        <dd>${reason ? t(reason.id.split('.'), reason.vars) : t(['proofCard', 'mechanisms', archetype])}</dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.supportLabel')}</dt>
+        <dd>
+          ${claim && claimMatches
+            ? t('proofCard.supportsSpecific', claim)
+            : t(['proofCard', 'supports', archetype])}
+        </dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.confidenceLabel')}</dt>
+        <dd>${t(['bands', proof.score >= 70 ? 'strong' : proof.score >= BAND_USABLE ? 'usable' : 'weak'])} · ${t(['dimensions', dimension])}</dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.limitLabel')}</dt>
+        <dd>${t(['proofCard', 'limits', limit])}</dd>
+      </div>
+    </dl>
+
+    <div class="proof-card__actions">
+      ${blocked
+        ? button('goto', t('proofCard.strengthen'), { variant: 'primary', payload: { view: 'mine' } })
+        : button('draft', t('proofCard.draft'), { variant: 'primary', payload: { id: proof.id } })}
+      ${button('firstLightDone', t('proofCard.fullPicture'), { variant: 'ghost' })}
+    </div>
+  </section>`;
+}
+
+function overlapsClaim(proofClaim, targetClaim) {
+  const proofTerms = contentTerms(proofClaim);
+  const claimTerms = contentTerms(targetClaim);
+  if (!proofTerms.size || !claimTerms.size) return false;
+  let hits = 0;
+  for (const term of claimTerms) {
+    if (proofTerms.has(term)) hits += 1;
+  }
+  return hits >= 2 || hits / claimTerms.size >= 0.34;
+}
+
+function contentTerms(text = '') {
+  return new Set(
+    (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [])
+      .map((term) => term.replace(/^[והבכלש](?=.{3,})/u, ''))
+      .filter((term) => term.length >= 3 && !SUPPORT_STOP_WORDS.has(term)),
+  );
+}
+
+function strongestDimension(breakdown) {
+  return Object.entries(breakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || 'specificity';
+}
+
+function transferLimit(proof) {
+  const breakdown = proof.breakdown || {};
+  if ((breakdown.falsifiability ?? 0) < 45) return 'falsifiability';
+  if ((breakdown.verification ?? 0) < 45) return 'verification';
+  if ((breakdown.outcome ?? 0) < 45) return 'outcome';
+  if (proof.kind === 'experience') return 'domain';
+  return 'scope';
 }
 
 function revealCard(proof, rank, t, inventory, signalCache) {
