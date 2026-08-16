@@ -213,6 +213,15 @@ const weeksOption = (value, current, label) => html`<label
 
 const checkedAttr = html`checked`;
 
+const SUPPORT_STOP_WORDS = new Set([
+  'אני', 'אתה', 'את', 'הוא', 'היא', 'הם', 'הן', 'זה', 'זו', 'של', 'עם', 'מול',
+  'למה', 'נכון', 'לבחור', 'לקוח', 'לקוחות', 'פרויקט', 'עבודה', 'יותר', 'יודע',
+  'יודעת', 'יכול', 'יכולה', 'אפשר', 'כדי',
+  'the', 'and', 'for', 'you', 'your', 'with', 'this', 'that', 'can', 'able',
+  'from', 'into', 'client', 'project', 'choose', 'alternative', 'someone', 'over',
+  'why',
+]);
+
 /**
  * First Light — the reveal, deliberately a screen of its own rather than a
  * redirect into the dashboard. This is the product's entire hook and it has to
@@ -231,8 +240,8 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
   // signs here to say anything definite". Promising a reveal and delivering
   // that inverts the one screen the whole product hangs on. Quality decides,
   // not count.
-  const thin = !demo && !proofs.some((p) => p.score >= BAND_USABLE);
-  const primary = top3[0] || proofs[0];
+  const primary = top3.find((p) => p.score >= BAND_USABLE) || proofs.find((p) => p.score >= BAND_USABLE) || top3[0] || proofs[0];
+  const thin = !demo && (!primary || primary.score < BAND_USABLE);
   if (!proofs.length) {
     return html`<div class="cold">
       <div class="cold__inner">
@@ -271,15 +280,18 @@ function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false }
   const archetype = proof.archetypes?.[0] || 'OUTCOME';
   const dimension = strongestDimension(proof.breakdown || {});
   const limit = transferLimit(proof);
-  const actionLevel = thin ? 'R4' : 'R3';
+  const claim = state.positioning?.claim?.trim() || '';
+  const claimMatches = claim ? overlapsClaim(proof.claim, claim) : false;
+  const blocked = thin || proof.score < BAND_USABLE || Boolean(claim && !claimMatches);
+  const actionLevel = blocked ? 'R4' : 'R3';
 
   return html`<section class="proof-card" aria-labelledby="proof-card-title">
     <p class="proof-card__eyebrow">${t('proofCard.eyebrow')}</p>
     <h3 class="proof-card__title" id="proof-card-title">
-      ${thin ? t('proofCard.titleWeak') : t('proofCard.title')}
+      ${blocked ? t('proofCard.titleWeak') : t('proofCard.title')}
     </h3>
     <p class="proof-card__verdict">
-      ${thin ? t('proofCard.weakVerdict') : t('proofCard.readyVerdict')}
+      ${blocked ? t('proofCard.weakVerdict') : t('proofCard.readyVerdict')}
     </p>
     <p class="proof-card__authority">
       <b>${t('proofCard.actionLevelLabel')}</b> ${t(['proofCard', 'actionLevels', actionLevel])}
@@ -297,8 +309,8 @@ function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false }
       <div class="proof-card__cell">
         <dt>${t('proofCard.supportLabel')}</dt>
         <dd>
-          ${state.positioning?.claim?.trim()
-            ? t('proofCard.supportsSpecific', state.positioning.claim)
+          ${claim && claimMatches
+            ? t('proofCard.supportsSpecific', claim)
             : t(['proofCard', 'supports', archetype])}
         </dd>
       </div>
@@ -313,12 +325,31 @@ function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false }
     </dl>
 
     <div class="proof-card__actions">
-      ${thin
+      ${blocked
         ? button('goto', t('proofCard.strengthen'), { variant: 'primary', payload: { view: 'mine' } })
         : button('draft', t('proofCard.draft'), { variant: 'primary', payload: { id: proof.id } })}
       ${button('firstLightDone', t('proofCard.fullPicture'), { variant: 'ghost' })}
     </div>
   </section>`;
+}
+
+function overlapsClaim(proofClaim, targetClaim) {
+  const proofTerms = contentTerms(proofClaim);
+  const claimTerms = contentTerms(targetClaim);
+  if (!proofTerms.size || !claimTerms.size) return false;
+  let hits = 0;
+  for (const term of claimTerms) {
+    if (proofTerms.has(term)) hits += 1;
+  }
+  return hits >= 2 || hits / claimTerms.size >= 0.34;
+}
+
+function contentTerms(text = '') {
+  return new Set(
+    (text.toLowerCase().match(/[\\p{L}\\p{N}]+/gu) || [])
+      .map((term) => term.replace(/^[והבכלש](?=.{3,})/u, ''))
+      .filter((term) => term.length >= 3 && !SUPPORT_STOP_WORDS.has(term)),
+  );
 }
 
 function strongestDimension(breakdown) {
