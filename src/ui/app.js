@@ -488,7 +488,12 @@ export function mountApp(root) {
           at: realNow(),
         });
       });
-      delete ui.formCache['cv-note'];
+      // Every field of this form, not just the note. `val()` prefers the cache
+      // over the live control, so a stale `cv-artifact` silently attributed the
+      // next conversion to the previously selected post while the select on
+      // screen showed the default — a wrong attribution the user cannot see,
+      // feeding integration I4.
+      for (const key of ['cv-note', 'cv-artifact', 'cv-type']) delete ui.formCache[key];
     },
 
     addRecognition() {

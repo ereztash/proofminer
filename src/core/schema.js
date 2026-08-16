@@ -249,12 +249,7 @@ export function normalizeState(input) {
       offer: str(positioning.offer),
       nonGoals: arr(positioning.nonGoals).filter((v) => typeof v === 'string'),
     },
-    sources: arr(input.sources).map(normalizeSource).filter(Boolean),
-    proofs: arr(input.proofs).map(normalizeProof).filter(Boolean),
-    artifacts: arr(input.artifacts).map(normalizeArtifact).filter(Boolean),
-    receptions: arr(input.receptions).map(normalizeReception).filter(Boolean),
-    conversions: arr(input.conversions).map(normalizeConversion).filter(Boolean),
-    recognitions: arr(input.recognitions).map(normalizeRecognition).filter(Boolean),
+    ...relatedRecords(input),
     playLog: isObj(input.playLog)
       ? Object.fromEntries(
           Object.entries(input.playLog).filter(([, v]) => Number.isFinite(v)),
@@ -278,10 +273,89 @@ export function normalizeState(input) {
   };
 }
 
-function normalizeSource(s) {
+/**
+ * Referential integrity across the whole file, in dependency order.
+ *
+ * `safeId` mints a fresh id whenever an imported one could reach markup — and
+ * every reference to the rejected id then failed its own `ID_SAFE` test and was
+ * dropped on the floor. An artifact lost the proof it was written from, and,
+ * silently, every reception of that artifact was discarded whole, taking the
+ * L4 layer with it. References are now translated through the same rewrite, so
+ * only genuinely dangling ones are dropped.
+ */
+function relatedRecords(input) {
+  const rawSources = arr(input.sources);
+  const rawProofs = arr(input.proofs);
+  const rawArtifacts = arr(input.artifacts);
+
+  const src = assignIds(rawSources, 'src');
+  const prf = assignIds(rawProofs, 'proof');
+  const art = assignIds(rawArtifacts, 'art');
+
+  const sources = rawSources.map((s, i) => normalizeSource(s, src.ids[i])).filter(Boolean);
+
+  const proofs = rawProofs
+    .map((p, i) => normalizeProof(p, prf.ids[i], (v) => remap(v, src.map)))
+    .filter(Boolean);
+  const liveProofs = new Set(proofs.map((p) => p.id));
+
+  const artifacts = rawArtifacts
+    .map((a, i) => normalizeArtifact(a, art.ids[i], (v) => resolveRef(v, prf.map, liveProofs)))
+    .filter(Boolean);
+  // Receptions and conversions follow the rewrite but are *not* required to
+  // land on a surviving artifact. A reception is a measurement the user typed
+  // in; losing it because its artifact was deleted three months ago would be
+  // deleting their data to tidy up our own graph.
+  const toArtifact = (v) => remap(v, art.map);
+
+  return {
+    sources,
+    proofs,
+    artifacts,
+    receptions: arr(input.receptions).map((r) => normalizeReception(r, toArtifact)).filter(Boolean),
+    conversions: arr(input.conversions).map((c) => normalizeConversion(c, toArtifact)).filter(Boolean),
+    recognitions: arr(input.recognitions).map(normalizeRecognition).filter(Boolean),
+  };
+}
+
+/**
+ * Assign each raw record its final id, and record the rewrite so references to
+ * the original can follow it. Indexed by position, because a record that fails
+ * normalisation later must not shift the ids of the ones after it.
+ */
+function assignIds(records, prefix) {
+  const ids = [];
+  const map = new Map();
+  for (const record of records) {
+    const raw = isObj(record) ? record.id : undefined;
+    const id = safeId(raw, prefix);
+    ids.push(id);
+    if (typeof raw === 'string') map.set(raw, id);
+  }
+  return { ids, map };
+}
+
+/** Follow a reference through the rewrite. Null when it cannot be represented. */
+function remap(value, map) {
+  if (typeof value !== 'string') return null;
+  return map.get(value) ?? (ID_SAFE.test(value) ? value : null);
+}
+
+/**
+ * Follow a reference through the rewrite, then require that it lands on a
+ * record that survived. Used where a pointer to nothing is not data the user
+ * entered but breakage: a citation naming a proof unit that no longer exists
+ * renders as nothing while still being counted.
+ */
+function resolveRef(value, map, live) {
+  const target = remap(value, map);
+  return target && live.has(target) ? target : null;
+}
+
+function normalizeSource(s, id) {
   if (!isObj(s) || typeof s.text !== 'string' || !s.text.trim()) return null;
   return {
-    id: safeId(s.id, 'src'),
+    id,
     name: str(s.name, 'מקור'),
     text: s.text,
     demo: bool(s.demo),
@@ -291,7 +365,7 @@ function normalizeSource(s) {
   };
 }
 
-function normalizeProof(p) {
+function normalizeProof(p, id, toSource) {
   if (!isObj(p) || typeof p.claim !== 'string' || !p.claim.trim()) return null;
   const breakdown = isObj(p.breakdown) ? p.breakdown : {};
   const clean = {};
@@ -299,9 +373,9 @@ function normalizeProof(p) {
     if (Number.isFinite(v)) clean[k] = Math.min(100, Math.max(0, v));
   }
   return {
-    id: safeId(p.id, 'proof'),
+    id,
     claim: p.claim,
-    sourceId: ID_SAFE.test(str(p.sourceId)) ? p.sourceId : '',
+    sourceId: toSource(p.sourceId) ?? '',
     sourceName: str(p.sourceName, '—'),
     kind: oneOf(p.kind, PROOF_KINDS, 'experience'),
     archetypes: arr(p.archetypes).filter((a) => ARCHETYPES.includes(a)),
@@ -316,11 +390,11 @@ function normalizeProof(p) {
   };
 }
 
-function normalizeArtifact(a) {
+function normalizeArtifact(a, id, toProof) {
   if (!isObj(a)) return null;
   return {
-    id: safeId(a.id, 'art'),
-    proofIds: arr(a.proofIds).filter((v) => typeof v === 'string' && ID_SAFE.test(v)),
+    id,
+    proofIds: arr(a.proofIds).map(toProof).filter(Boolean),
     channel: oneOf(a.channel, CHANNELS, 'post'),
     angle: str(a.angle, 'direct'),
     body: str(a.body),
@@ -331,15 +405,16 @@ function normalizeArtifact(a) {
   };
 }
 
-function normalizeReception(r) {
+function normalizeReception(r, toArtifact) {
   // A reception whose artifact reference is unusable can never be scored,
   // calibrated from, or displayed — it would silently disappear from
   // `buildObservations` instead.
-  if (!isObj(r) || typeof r.artifactId !== 'string' || !ID_SAFE.test(r.artifactId)) return null;
+  const artifactId = isObj(r) ? toArtifact(r.artifactId) : null;
+  if (!artifactId) return null;
   const n = (v) => Math.max(0, Math.round(num(v, 0)));
   return {
     id: safeId(r.id, 'rcp'),
-    artifactId: r.artifactId,
+    artifactId,
     impressions: n(r.impressions),
     reactions: n(r.reactions),
     comments: n(r.comments),
@@ -350,13 +425,15 @@ function normalizeReception(r) {
   };
 }
 
-function normalizeConversion(c) {
+function normalizeConversion(c, toArtifact) {
   if (!isObj(c) || !CONVERSION_TYPES.includes(c.type)) return null;
   return {
     id: safeId(c.id, 'cnv'),
     type: c.type,
-    artifactId:
-      typeof c.artifactId === 'string' && ID_SAFE.test(c.artifactId) ? c.artifactId : null,
+    // Unattributed conversions are legitimate — the user records a call they
+    // cannot trace — so a reference that goes nowhere degrades to null rather
+    // than discarding the event.
+    artifactId: toArtifact(c.artifactId),
     note: str(c.note),
     at: num(c.at, Date.now()),
   };
@@ -389,7 +466,9 @@ export function migrateLegacy(legacy) {
   state.positioning.audience = str(ctx.icp);
   state.positioning.transformation = str(ctx.goal);
   state.positioning.offer = str(ctx.offer);
-  state.sources = arr(legacy.sources).map(normalizeSource).filter(Boolean);
+  state.sources = arr(legacy.sources)
+    .map((s) => normalizeSource(s, safeId(isObj(s) ? s.id : undefined, 'src')))
+    .filter(Boolean);
   state.profile.onboarded = Boolean(state.sources.length);
   return state;
 }

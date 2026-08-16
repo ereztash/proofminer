@@ -21,6 +21,7 @@ import {
 import { LIEBIG_GATE, computeAuthority, nextMove } from '../../src/engine/authority.js';
 import { normalizeState } from '../../src/core/schema.js';
 import { saturate } from '../../src/core/util.js';
+import { parseAnalyticsPaste } from '../../src/engine/analytics.js';
 import { escapeHtml, toString_ } from '../../src/ui/html.js';
 import { button } from '../../src/ui/components.js';
 import { NOW, DAY, artifact, minedSource, proofFrom, reception, stateWith } from '../helpers.js';
@@ -288,8 +289,29 @@ describe('imported data cannot reach markup', () => {
   });
 
   it('drops artifact proof references that are not safe ids', () => {
-    const state = normalizeState({ artifacts: [{ proofIds: [ATTACK, 'proof_ok'] }] });
+    const state = normalizeState({
+      proofs: [{ id: 'proof_ok', claim: 'ניהלתי צוות של שמונה אנשים במשך שנתיים.' }],
+      artifacts: [{ proofIds: [ATTACK, 'proof_ok'] }],
+    });
     expect(state.artifacts[0].proofIds).toEqual(['proof_ok']);
+  });
+
+  it('follows a rewritten id rather than dropping everything that pointed at it', () => {
+    // Minting a safe id for a rejected one used to orphan every reference to
+    // it: the artifact lost its proof and — silently — the reception of that
+    // artifact was discarded whole, taking the L4 layer with it.
+    const state = normalizeState({
+      proofs: [{ id: ATTACK, claim: 'ניהלתי צוות של שמונה אנשים במשך שנתיים.' }],
+      artifacts: [{ id: ATTACK, proofIds: [ATTACK], status: 'published' }],
+      receptions: [{ artifactId: ATTACK, impressions: 900, reactions: 30 }],
+    });
+    const proofId = state.proofs[0].id;
+    const artifactId = state.artifacts[0].id;
+    expect(proofId).not.toContain('<');
+    expect(artifactId).not.toContain('<');
+    expect(state.artifacts[0].proofIds).toEqual([proofId]);
+    expect(state.receptions).toHaveLength(1);
+    expect(state.receptions[0].artifactId).toBe(artifactId);
   });
 
   it('escapes every button attribute, including aria targets', () => {
@@ -462,5 +484,68 @@ describe('positioning cannot stand in for evidence', () => {
     };
     const result = computeAuthority(loud, NOW);
     expect(result.effectiveBuilt).toBeLessThanOrEqual(result.foundation + LIEBIG_GATE);
+  });
+});
+
+describe('analytics paste', () => {
+  const EXPECTED = { impressions: 1204, reactions: 38, comments: 4 };
+
+  it('reads both stacking directions and inline text alike', () => {
+    const layouts = [
+      'Impressions\n1,204\nReactions\n38\nComments\n4',
+      '1,204\nImpressions\n38\nReactions\n4\nComments',
+      '1,204 impressions · 38 reactions · 4 comments',
+      'חשיפות\n1,204\nתגובות רגש\n38\nתגובות\n4',
+      '1,204\nחשיפות\n38\nתגובות רגש\n4\nתגובות',
+    ];
+    for (const text of layouts) {
+      expect(parseAnalyticsPaste(text).found, text).toEqual(EXPECTED);
+    }
+  });
+
+  it('refuses a paste whose layout is genuinely ambiguous', () => {
+    // Guessing "the line after" on a number-above-label card handed every
+    // label the next metric's number and fed a 32x understated impression
+    // count into the reception denominator, reporting matched: 4 while doing it.
+    expect(parseAnalyticsPaste('1,204\nImpressions\n38').found).toEqual({});
+  });
+
+  it('never lets one number fill two fields', () => {
+    const { found } = parseAnalyticsPaste('Impressions\n1,204\nReactions');
+    const values = Object.values(found);
+    expect(new Set(values).size).toBe(values.length);
+  });
+
+  it('applies magnitude suffixes in both languages', () => {
+    expect(parseAnalyticsPaste('12K impressions').found.impressions).toBe(12_000);
+    expect(parseAnalyticsPaste('חשיפות 12 אלף').found.impressions).toBe(12_000);
+  });
+});
+
+describe('L4 confidence reflects the sample the score actually used', () => {
+  const record = (daysAgo, over = {}) =>
+    reception({
+      id: `r${daysAgo}`,
+      artifactId: `a${daysAgo}`,
+      capturedAt: NOW - daysAgo * DAY,
+      impressions: 1000,
+      reactions: 40,
+      ...over,
+    });
+
+  it('does not claim a settled pattern from one recent post and five stale ones', () => {
+    // The score is a recency-weighted mean, so this is arithmetically close to
+    // a single observation. Counting rows reported confidence 1.0 over it.
+    const stale = stateWith({
+      receptions: [record(1), ...[400, 430, 460, 490, 520].map((d) => record(d))],
+    });
+    const fresh = stateWith({ receptions: [1, 5, 9, 13, 17, 21].map((d) => record(d)) });
+    expect(layerReception(stale, NOW).confidence).toBeLessThan(0.5);
+    expect(layerReception(fresh, NOW).confidence).toBeGreaterThan(0.9);
+  });
+
+  it('gives back the plain count when the records are evenly fresh', () => {
+    const state = stateWith({ receptions: [0, 0.5, 1].map((d, i) => record(i ? d : 0)) });
+    expect(layerReception(state, NOW).inputs.effectiveN).toBeCloseTo(3, 1);
   });
 });

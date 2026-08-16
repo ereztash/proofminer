@@ -94,18 +94,45 @@ export function parseAnalyticsPaste(text) {
   // reception denominator. Confidently wrong is worse here than empty.
   const stackedAfter = labelled.filter((e) => !e.inline && bareNumber(lines[e.i + 1]) !== null).length;
   const stackedBefore = labelled.filter((e) => !e.inline && bareNumber(lines[e.i - 1]) !== null).length;
+
+  // A tie is a paste we cannot read, and reading it anyway is the failure mode
+  // this whole function is written against: on a number-above-label card,
+  // guessing "after" hands every label the *next* metric's number. When the
+  // layout is ambiguous we take only the values printed on the label's own
+  // line and leave the rest for the user to type.
+  const ambiguous = stackedBefore === stackedAfter && stackedBefore > 0;
   const preferBefore = stackedBefore > stackedAfter;
+
+  // One number line cannot fill two fields. Without this a paste that mixes
+  // layouts could read the same figure as both impressions and reactions.
+  const consumed = new Set();
+  const take = (index) => {
+    if (index < 0 || index >= lines.length || consumed.has(index)) return null;
+    const value = bareNumber(lines[index]);
+    if (value === null) return null;
+    consumed.add(index);
+    return value;
+  };
 
   for (const entry of labelled) {
     if (found[entry.key] !== undefined) continue;
-    const neighbours = preferBefore
-      ? [bareNumber(lines[entry.i - 1]), bareNumber(lines[entry.i + 1])]
-      : [bareNumber(lines[entry.i + 1]), bareNumber(lines[entry.i - 1])];
-    const value =
-      (entry.inline ? parseMagnitude(entry.inline[1], entry.inline[2]) : null) ??
-      neighbours.find((n) => n !== null) ??
-      null;
-    if (value !== null) found[entry.key] = value;
+    if (entry.inline) {
+      found[entry.key] = parseMagnitude(entry.inline[1], entry.inline[2]);
+      continue;
+    }
+    if (ambiguous) continue;
+    const order = preferBefore ? [entry.i - 1, entry.i + 1] : [entry.i + 1, entry.i - 1];
+    for (const index of order) {
+      const value = take(index);
+      if (value !== null) {
+        found[entry.key] = value;
+        break;
+      }
+    }
+  }
+
+  for (const key of Object.keys(found)) {
+    if (found[key] === null) delete found[key];
   }
 
   return { found, matched: Object.keys(found).length };
