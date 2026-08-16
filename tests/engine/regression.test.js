@@ -18,7 +18,11 @@ import {
   receptionScore,
   receptionSignal,
 } from '../../src/engine/layers.js';
-import { LIEBIG_GATE, computeAuthority, nextMove } from '../../src/engine/authority.js';
+import { LIEBIG_GATE, MOVE_IDS, computeAuthority, nextMove } from '../../src/engine/authority.js';
+import { translator } from '../../src/i18n/index.js';
+import heBundle from '../../src/i18n/he.js';
+import enBundle from '../../src/i18n/en.js';
+import { readFileSync } from 'node:fs';
 import { normalizeState } from '../../src/core/schema.js';
 import { saturate } from '../../src/core/util.js';
 import { parseAnalyticsPaste } from '../../src/engine/analytics.js';
@@ -547,5 +551,34 @@ describe('L4 confidence reflects the sample the score actually used', () => {
   it('gives back the plain count when the records are evenly fresh', () => {
     const state = stateWith({ receptions: [0, 0.5, 1].map((d, i) => record(i ? d : 0)) });
     expect(layerReception(state, NOW).inputs.effectiveN).toBeCloseTo(3, 1);
+  });
+});
+
+describe('every next move has something to say', () => {
+  it('resolves each move id in both bundles', () => {
+    for (const id of MOVE_IDS) {
+      for (const locale of ['he', 'en']) {
+        const t = translator(locale);
+        const title = t(['moves', id, 'title']);
+        expect(title, `${locale} ${id}`).not.toContain(id);
+        expect(t(['moves', id, 'why']), `${locale} ${id}`).not.toContain(id);
+      }
+    }
+  });
+
+  it('declares every move id the engine can actually emit', () => {
+    // The dashboard's only primary card rendered "moves.move.attributeConversion.title"
+    // because a move was added to the guidance and to nothing else.
+    const source = readFileSync('src/engine/authority.js', 'utf8');
+    const emitted = new Set([...source.matchAll(/id: '(move\.[A-Za-z]+)'/g)].map((m) => m[1]));
+    expect([...emitted].filter((id) => !MOVE_IDS.includes(id))).toEqual([]);
+  });
+
+  it('carries no move string the engine can never emit', () => {
+    for (const locale of ['he', 'en']) {
+      const bundle = locale === 'he' ? heBundle : enBundle;
+      const declared = Object.keys(bundle.moves).filter((k) => k.startsWith('move.'));
+      expect(declared.filter((id) => !MOVE_IDS.includes(id)), locale).toEqual([]);
+    }
   });
 });

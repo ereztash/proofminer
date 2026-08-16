@@ -14,11 +14,18 @@ product shows a user must be derivable from what is written here.
 3. **No claim the user did not supply.** Draft generation may reframe, order,
    and connect the user's own proof text. It may never introduce a fact,
    number, client, or outcome that is not present in a cited proof unit.
-   **Mechanically enforced for:** magnitudes (digits and words) and named
-   entities, plus a warning on superlatives. **Not mechanically enforceable:**
-   a correct number attached to the wrong subject, an invented title made of
-   ordinary words, a claim stitched across two separately-true proofs. The UI
-   states this limit rather than implying the check verifies truth.
+   **Blocks publishing:** magnitudes only — digits and number words — because
+   that comparison is exact and blocking on it is fair.
+   **Warns but does not block:** named entities and superlatives. Name
+   detection is heuristic, and in Hebrew, which has no capitalisation, it is
+   weaker still; a check that disabled the primary action over the word
+   "Onboarding" trained users to ignore the one check that matters. The UI
+   reports how complete the name check could be on the given text.
+   **Not mechanically detectable at all:** a correct number attached to the
+   wrong subject, an invented title made of ordinary words, a claim stitched
+   across two separately-true proofs — and, the widest case, a sentence
+   containing no number and no name, which is invented freely and passes.
+   The UI states these limits rather than implying the check verifies truth.
 4. **Provenance is not optional.** Every generated artifact carries the IDs of
    the proof units it is grounded in.
 5. **Priors are labelled as priors.** This applies to *every* constant in the

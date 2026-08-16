@@ -15,6 +15,35 @@ import { detectDrift, scorePositioning } from './positioning.js';
 import { isDemoMode, realProofs } from './mine.js';
 import { BAND_USABLE, decayedScore } from './score.js';
 
+/**
+ * Every move id `nextMove` can return.
+ *
+ * Declared rather than inferred so the i18n bundles can be checked against it.
+ * Two ids — `deepenEvidence` and `attributeConversion` — were added to the
+ * guidance without strings, and `translator` falls through to the path, so the
+ * only element on the dashboard styled as primary rendered
+ * "moves.move.attributeConversion.title" to the user.
+ */
+export const MOVE_IDS = Object.freeze([
+  'move.addSource',
+  'move.mine',
+  'move.addRealSource',
+  'move.setAudience',
+  'move.catalogueMore',
+  'move.acquireProof',
+  'move.deepenEvidence',
+  'move.publishFirst',
+  'move.publishStaling',
+  'move.logReception',
+  'move.publishNext',
+  'move.logConversion',
+  'move.logRecognition',
+  'move.attributeConversion',
+  'move.closeGap',
+  'move.sharpenPositioning',
+  'move.resolveDrift',
+]);
+
 /** How far built standing may exceed the evidence foundation. */
 export const LIEBIG_GATE = 25;
 

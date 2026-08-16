@@ -16,8 +16,7 @@
  */
 
 import { html } from '../html.js';
-import { button, field, textArea } from '../components.js';
-import { scoreBand } from '../../engine/score.js';
+import { button, field, scoreChip, textArea } from '../components.js';
 import { inventorySignals, reasonFor } from '../../engine/explain.js';
 
 /**
@@ -31,8 +30,13 @@ import { inventorySignals, reasonFor } from '../../engine/explain.js';
 export const NOT_ME = 'none';
 
 export function onboardingView(state, t, ui = {}) {
-  const situation = ui.situation ?? state.profile.track;
-  const weeks = state.profile.weeksInMotion;
+  // No default. Seeding this from `profile.track` pre-selected the first pain
+  // statement — accent border and all — so the screen asserted something about
+  // the visitor's life and asked them to un-check it, and anyone who ignored
+  // the question was silently recorded as qualified and tracked `independent`.
+  // A qualifying question that arrives answered has not qualified anybody.
+  const situation = ui.situation ?? (state.profile.declined ? NOT_ME : null);
+  const weeks = ui.weeks ?? null;
 
   return html`<div class="cold">
     <div class="cold__inner">
@@ -49,16 +53,22 @@ export function onboardingView(state, t, ui = {}) {
         ${situationOption(NOT_ME, situation, t('onboarding.notMe'), t('onboarding.notMeHint'), 'choice__opt--wide')}
       </fieldset>
 
-      ${situation === NOT_ME ? notForYou(t) : coldStartBody(t, weeks, ui)}
+      ${situation === NOT_ME ? notForYou(t) : ''}
+      ${situation && situation !== NOT_ME ? coldStartBody(t, weeks, ui) : ''}
     </div>
   </div>`;
 }
 
 /**
  * The honest exit. No waitlist capture, no "are you sure", no reframing of the
- * user's own answer back at them. It names who the tool is for, says plainly
- * that we are not going to argue them into a problem, and leaves the door open
- * on their terms.
+ * user's own answer back at them, and — deliberately — **no action at all**.
+ *
+ * This page used to end with "just show me how it works", which loaded the
+ * sample, set `onboarded` permanently, and landed on a dashboard whose single
+ * primary card read "now add something of your own": a second attempt at
+ * persuasion two clicks after promising there would be none. The only way back
+ * in is the question above, which stays on screen — the visitor changes their
+ * own answer or they leave.
  */
 function notForYou(t) {
   return html`<div class="notme">
@@ -69,14 +79,21 @@ function notForYou(t) {
     <ul class="pledge__list">
       ${t('notForYou.comeBack').map((line) => html`<li>${line}</li>`)}
     </ul>
-    <div class="cold__actions">
-      ${button('coldSample', t('notForYou.sample'), { variant: 'ghost' })}
-    </div>
+    <p class="cold__aside">${t('notForYou.changedMind')}</p>
   </div>`;
 }
 
 function coldStartBody(t, weeks, ui) {
   return html`<div class="cold__step-block">
+    <fieldset class="choice">
+      <legend>${t('onboarding.weeksQuestion')}</legend>
+      <div class="choice__row choice__row--tight">
+        ${weeksOption(0, weeks, t('onboarding.weeksNotYet'))}
+        ${weeksOption(12, weeks, t('onboarding.weeksMonths'))}
+        ${weeksOption(40, weeks, t('onboarding.weeksLong'))}
+      </div>
+    </fieldset>
+
     <p class="pledge__lead">${t('onboarding.pledgeLead')}</p>
 
     <h2 class="cold__step">${t('onboarding.firstStepTitle')}</h2>
@@ -108,16 +125,6 @@ function coldStartBody(t, weeks, ui) {
       </ul>
     </details>
 
-    <p class="cold__aside">${t('onboarding.oneMore')}</p>
-
-    <fieldset class="choice">
-      <legend>${t('onboarding.weeksQuestion')}</legend>
-      <div class="choice__row choice__row--tight">
-        ${weeksOption(0, weeks, t('onboarding.weeksNotYet'))}
-        ${weeksOption(12, weeks, t('onboarding.weeksMonths'))}
-        ${weeksOption(40, weeks, t('onboarding.weeksLong'))}
-      </div>
-    </fieldset>
   </div>`;
 }
 
@@ -142,8 +149,13 @@ const checkedAttr = html`checked`;
  * First Light — the reveal, deliberately a screen of its own rather than a
  * redirect into the dashboard. This is the product's entire hook and it has to
  * land within a few minutes of arrival: *you already had this*.
+ *
+ * On the sample it must say the opposite, and say it here rather than relying
+ * on the app chrome: `chrome()` only wraps the `app` screen, so this was the
+ * one screen with no demo bar — and it opened by telling someone in a shame
+ * state that eight bundled fixtures were things they hold and nobody sees.
  */
-export function firstLightView(state, t, { proofs, top3 }) {
+export function firstLightView(state, t, { proofs, top3, demo = false }) {
   const signalCache = inventorySignals(proofs);
   if (!proofs.length) {
     return html`<div class="cold">
@@ -159,8 +171,11 @@ export function firstLightView(state, t, { proofs, top3 }) {
 
   return html`<div class="cold cold--reveal">
     <div class="cold__inner">
-      <h1 class="cold__title">${t('firstLight.title', proofs.length)}</h1>
-      <p class="cold__body">${t('firstLight.subtitle')}</p>
+      ${demo ? html`<p class="demobar" role="note">${t('mine.demoWarning')}</p>` : ''}
+      <h1 class="cold__title">
+        ${demo ? t('firstLight.demoTitle', proofs.length) : t('firstLight.title', proofs.length)}
+      </h1>
+      <p class="cold__body">${demo ? t('firstLight.demoSubtitle') : t('firstLight.subtitle')}</p>
 
       <h2 class="cold__step">${t('firstLight.threeTitle')}</h2>
       <ol class="reveal">
@@ -190,7 +205,7 @@ function revealCard(proof, rank, t, inventory, signalCache) {
         <b>${t('firstLight.why')}:</b>
         ${reason ? t(reason.id.split('.'), reason.vars) : t('reasons.none')}
       </p>
-      <span class="reveal__score score--${scoreBand(proof.score)}">${Math.round(proof.score)}</span>
+      <span class="reveal__score">${scoreChip(proof.score, t, { size: 'sm' })}</span>
     </div>
   </li>`;
 }

@@ -33,7 +33,7 @@ export default {
       'This tool will not invent achievements. It works only with what you wrote.',
       'It will not let your visibility run ahead of your evidence, and it will tell you when that happens. What you type here it takes as given — it cannot verify that for you.',
     ],
-    oneMore: 'One short question, to set the pace.',
+    needSituation: 'Pick what is true for you first.',
     situationQuestion: 'Which of these is true for you right now?',
     situationNote:
       'This tool is built for someone who already feels it. If none of these describes you, say so — it saves us both the time.',
@@ -70,13 +70,17 @@ export default {
       'When the stream of work that came through people who know you starts drying up.',
       'When you are about to leave a role and find that everything you did exists only inside the organisation you are leaving.',
     ],
-    sample: 'Just show me how it works, on a sample',
+    changedMind: 'If you have changed your mind, the question above is still open.',
   },
 
   firstLight: {
     title: (n) => `We found ${n} pieces of evidence in what you pasted.`,
     subtitle:
       'These are not content ideas. These are things that already happened, that you hold and nobody sees.',
+    demoTitle: (n) => `Our sample holds ${n} pieces of evidence.`,
+    demoSubtitle:
+      'This is a sample we brought, not anything of yours. It is here only to show how the ' +
+      'ranking works — the moment you paste your own material it drops out of the calculation.',
     threeTitle: 'Three you would never have published yourself',
     why: 'Why this one',
     continue: 'Got it — show me the full picture',
@@ -309,7 +313,14 @@ export default {
       title: 'Who mentioned you from outside?',
       why: 'External recognition is the one layer you cannot move alone. A small mention counts.',
     },
-    'move.strengthenLayer': { title: 'Strengthen the weakest layer', why: 'The rest of the system is healthy. This is what limits you now.' },
+    'move.deepenEvidence': {
+      title: 'Strengthen evidence you already hold',
+      why: 'You have something of every type, but none of it is strong enough to carry the weight. A date, a name, a number or a link on an existing piece is worth more than a new one.',
+    },
+    'move.attributeConversion': {
+      title: 'Mark where the inbound came from',
+      why: 'You logged inbound without tying it to the post that produced it. Without that link nobody can tell you which of the things you published actually moves people.',
+    },
     do: 'Do it',
     minutes: (n) => `~${n} min`,
   },
@@ -395,7 +406,9 @@ export default {
 
   studio: {
     title: 'Draft',
-    subtitle: 'The evidence stays attached to the text. You cannot publish a claim from here that has no source.',
+    subtitle:
+      'The evidence stays attached to the text. The check blocks numbers that are not in ' +
+      'the evidence; it does not verify that the text itself is true.',
     pick: 'Pick evidence',
     angle: 'Angle',
     angles: {
@@ -421,11 +434,13 @@ export default {
     fold: 'Visible before "see more"',
     tooShort: 'Too short to carry evidence.',
     tooLong: 'Very long. Consider splitting.',
-    grounded: 'No numbers or names in the text are absent from the evidence.',
+    grounded: 'Every number in the text appears in the evidence, as does every name we detected.',
     groundedPartial:
       'No numbers in the text are absent from the evidence. Names we cannot fully check here — read the text yourself and confirm every name in it appears in the evidence.',
     groundedCaveat:
-      'This check compares numbers and names. It cannot tell whether a correct number was attached to the wrong claim — only you can check that.',
+      'The check compares numbers and names — it does not read the claim. A sentence with ' +
+      'no number and no name passes it even if you invented the whole thing, and so does a ' +
+      'correct number attached to the wrong claim. Only you can check that.',
     ungroundedEntities: (list) =>
       `Names we did not find in the evidence: ${list}. If they are correct, add them to the source. If not, remove them. This detection is approximate, so an ordinary word may be flagged.`,
     overreach:
@@ -510,13 +525,16 @@ export default {
     storageError: 'The browser cannot save. Storage may be full — export to a file.',
     llm: 'Model rewriting (optional)',
     llmBody:
-      'You can connect an API key to rewrite drafts. Two warnings, both important: (1) enabling this sends the draft **and the evidence it is based on** to the external provider — that is text from the sources you pasted. It is the only time your material leaves this device. (2) This app has no server, so the key is stored in this browser and sent directly from it. That is not the security level of a server-side key — use a dedicated key with a low limit you can revoke.',
+      'You can connect an API key to rewrite drafts. Two warnings, both important: (1) enabling this sends the draft — and the evidence it is based on — to the external provider — that is text from the sources you pasted. It is the only time your material leaves this device. (2) This app has no server, so the key is stored in this browser and sent directly from it. That is not the security level of a server-side key — use a dedicated key with a low limit you can revoke.',
     refineDisclosure:
       'Rewriting sends the draft and its underlying evidence to the external provider you configured. Continue?',
     llmEnable: 'Enable rewriting',
     llmKey: 'API key',
     llmModel: 'Model',
-    llmNever: 'The model never scores anything and never adds facts. Every output passes the same grounding check.',
+    llmNever: 'The model never scores anything. Its output passes the same check: a number ' +
+      'absent from the evidence is blocked, a name absent from it is only flagged — and in ' +
+      'Hebrew the name detection is weakest. The model can add an employer, a client or a ' +
+      'publication that was never there. Read what comes back.',
     reduceMotion: 'Reduce motion',
   },
 

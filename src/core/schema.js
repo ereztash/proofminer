@@ -88,6 +88,12 @@ export function emptyState() {
       weeksInMotion: 0,
       /** True once the cold-start sequence has been completed. */
       onboarded: false,
+      /**
+       * True when the visitor answered the qualifying question with "I do not
+       * feel I have a problem right now". Persisted so the honest exit survives
+       * a reload instead of quietly letting them back into the funnel.
+       */
+      declined: false,
       /** True once the First Light reveal has been shown. */
       sawFirstLight: false,
     },
@@ -240,6 +246,7 @@ export function normalizeState(input) {
       track: oneOf(profile.track, TRACKS, 'independent'),
       weeksInMotion: Math.max(0, Math.round(num(profile.weeksInMotion, 0))),
       onboarded: bool(profile.onboarded),
+      declined: bool(profile.declined),
       sawFirstLight: bool(profile.sawFirstLight),
     },
     positioning: {

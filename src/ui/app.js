@@ -50,6 +50,8 @@ const ui = {
    * problem" is not a track — it must never be written into the record as one.
    */
   situation: null,
+  /** Answer to the awareness-clock question, null until explicitly given. */
+  weeks: null,
   filter: 'all',
   expanded: new Set(),
   /** Text-field values that must survive a re-render. Cleared on submit. */
@@ -211,9 +213,14 @@ export function mountApp(root) {
     coldStart() {
       const text = val('cold-paste').trim();
       const situation = root.querySelector('input[name="situation"]:checked')?.value;
-      // The button is not rendered under NOT_ME; this is belt-and-braces so a
-      // "this is not my problem" answer can never be recorded as a track.
-      if (situation === NOT_ME) return;
+      // The paste box is only rendered once the qualifying question is
+      // answered, so neither branch here is reachable through the UI. They
+      // exist so an unanswered or declined qualification can never be recorded
+      // as a track — the defect was a default that answered it for the user.
+      if (!situation || situation === NOT_ME) {
+        toast(t('onboarding.needSituation'));
+        return;
+      }
       const track = situation === 'job' ? 'job' : 'independent';
       const weeks = Number.parseInt(
         root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
@@ -592,7 +599,11 @@ export function mountApp(root) {
     if (ui.screen === 'firstLight') {
       const active = state.proofs.filter((p) => !p.dismissed);
       const ranked = sortByDesc(active, (p) => p.score);
-      return firstLightView(state, t, { proofs: ranked, top3: revealPicks(ranked) });
+      return firstLightView(state, t, {
+        proofs: ranked,
+        top3: revealPicks(ranked),
+        demo: isDemoMode(state),
+      });
     }
 
     switch (ui.view) {
@@ -729,6 +740,15 @@ export function mountApp(root) {
     if (el.id && el.type !== 'file' && el.type !== 'checkbox') ui.formCache[el.id] = el.value;
     if (el.name === 'situation') {
       ui.situation = el.value;
+      // Persisted, so the exit is still there after a reload. Held ephemerally
+      // it let a disqualified visitor back into the product on the next visit,
+      // which is the funnel the exit exists to refuse.
+      store.update((draft) => {
+        draft.profile.declined = el.value === NOT_ME;
+      });
+      render();
+    } else if (el.name === 'weeks') {
+      ui.weeks = Number.parseInt(el.value, 10);
       render();
     } else if (el.id === 'inv-filter') {
       ui.filter = el.value;
