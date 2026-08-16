@@ -1,374 +1,204 @@
-# Telos Governance — Governing Rule v1.6
+# Telos Governance — Governing Rule v1.7
 
-## Status
+Date: 2026-08-16
 
-This document has higher authority than product doctrine, category, commercial model, UX, UI, characterization, research, simulation, semantic model, decision method, measurement plan, implementation plan or Definition of Done.
+## Authority
 
-Lower layers are working hypotheses about how to realize O. They are never protected from revision by prior implementation effort.
+This document outranks product category, feature set, UX, UI, integrations, commercial model, research plan, simulation, semantic model, implementation plan and Definition of Done.
+
+No current mechanism is protected by implementation effort.
 
 ---
 
 # O — end-to-end user telos
 
-The system exists to help a professional at a consequential transition move from:
+The system exists to make consequential professional commitments **safer to enter and more useful to learn from**.
 
-> **"I know roughly where I want to go, I have several plausible things I could do, and I am about to commit scarce time / money / attention without knowing which assumptions my plan is really relying on."**
-
-into:
-
-> **a grounded commitment: the load-bearing bets behind the plan are sufficiently explicit, contestable and evidence-linked that the user can KEEP the plan, CHANGE it, or TEST FIRST before paying the full cost.**
-
-The product does **not** promise to discover the one true strategic bottleneck.
-
-Its core responsibility is narrower and more defensible:
-
-> **reduce avoidable commitment to weakly grounded strategic bets before their cost is paid.**
-
-The system is successful only when the clarification changes or justifiably preserves a real commitment, resource allocation, sequence, evidence request or discriminating test.
-
-Insight language without commitment consequence is not sufficient value.
-
----
-
-# Canonical first-session job — Commitment Gate
-
-Before system influence, preserve the user's real transition, intended actions and material resource exposure.
-
-Then:
-
-1. infer what would have to be sufficiently true for the current plan / allocation to make sense;
-2. mark that interpretation as **system inference**, never as user-owned belief or external fact;
-3. allow the user to correct / reject the interpretation;
-4. consider a plausible competing explanation when it can change action;
-5. inspect the evidence landscape: support, contradiction, non-discriminating evidence and missing evidence;
-6. emit exactly one commitment outcome:
-   - `KEEP` — the prior plan survives the current challenge;
-   - `CHANGE` — action / order / allocation changes;
-   - `TEST_FIRST` — a load-bearing uncertainty remains and a smaller discriminating observation should precede the larger commitment;
-7. state what evidence would reverse the result.
-
-The desired first-session moment is not:
-
-> "The AI found my real problem."
+The desired end state is not frequent app use.
 
 It is:
 
-> **"I had not noticed that my plan was spending scarce resources as if X were already established. Now I can see what the plan is betting on, what could make that wrong, and whether I should proceed, change, or test first."**
+> **At the moment a professional commitment becomes expensive enough to matter, the user has the smallest decision-relevant check needed to expose what is being risked, what the commitment relies on, what is known versus inferred, and what future observation would justify reversal — without having to reconstruct the decision after the fact.**
+
+The product should reduce avoidable commitment to weakly grounded strategic bets while preserving agency and allowing cheap, reversible action to proceed without ceremonial analysis.
 
 ---
 
-# Plan-as-theory invariant
+# Indispensability ambition
 
-A resource-using action normally embeds a mechanism hypothesis, but the mapping is not one-to-one and must remain contestable.
+> **Unskippable by value, skippable by design.**
 
-Examples:
+A user must always be able to bypass the product.
 
-- more publishing may behave as if visibility / exposure is limiting;
-- rewriting positioning / site may behave as if translation / message is limiting;
-- case studies / testimonials may behave as if proof / legitimacy is limiting;
-- outbound / networking may behave as if access is limiting;
-- additional training may behave as if capability is limiting;
-- pricing / packaging changes may behave as if offer architecture is limiting.
+The product may not manufacture indispensability through lock-in, streaks, anxiety, hidden switching costs, notification pressure, forced waiting or unnecessary approval gates.
 
-The system may say:
+The governing product DOD is behavioral:
 
-> **"Your plan behaves as if X were load-bearing."**
+> **After experiencing real value, a suitable user voluntarily routes later material commitments through ProofMiner because the expected loss from bypassing the check or losing the pre-commitment record is now meaningful to them.**
 
-It may not silently say:
-
-> **"You believe X"** or **"X is the true problem."**
+If the user does not notice when the capability disappears, the product is not indispensable.
 
 ---
 
-# Minimum product hierarchy
+# Category hypothesis
+
+Working category:
+
+> **Commitment Safety Layer**
+
+ProofMiner is not primarily a journal, chat, dashboard, canvas, strategy report, pre-mortem engine or recommendation generator.
+
+Those may exist as subordinate surfaces or methods.
+
+The product belongs **between intention and consequential commitment**, then remains linked to execution and outcome.
+
+---
+
+# Canonical flow
 
 ```text
-PROFESSIONAL TRANSITION
-→ CURRENT PLAN / ACTIONS
-→ MATERIAL RESOURCE EXPOSURE
-→ FROZEN PRE-SYSTEM COMMITMENT
-→ CANDIDATE IMPLIED BET
-→ USER CORRECTION / CONTESTABILITY
-→ COMPETING EXPLANATION WHEN REQUISITE
-→ DECISION-RELEVANT EVIDENCE / UNKNOWN
-→ KEEP | CHANGE | TEST_FIRST
-→ REVERSAL CONDITION
-→ FIELD ACTION / OBSERVATION
-→ LEARNING / NEXT COMMITMENT
+INTENT FORMS IN EXISTING WORK
+        ↓
+CANDIDATE COMMITMENT
+        ↓
+SUPPORT-VALUE ROUTER
+   ├─ LOW VALUE → SILENT PASS
+   └─ MATERIAL
+        ↓
+FREEZE PRE-INFLUENCE STATE
+        ↓
+EXPOSE COMMITMENT + RESOURCE EXPOSURE
+        ↓
+INFER CANDIDATE LOAD-BEARING BET
+        ↓
+USER CORRECTS / REJECTS
+        ↓
+EVIDENCE / ALTERNATIVE / UNKNOWN / REVERSAL
+        ↓
+PASS | MODIFY | PROBE
+        ↓
+REAL EXECUTION
+        ↓
+EXPECTED SIGNAL / OUTCOME
+        ↓
+DECISION FLIGHT RECORDER
+        ↓
+NEXT COMMITMENT RECEIVES BETTER CONTEXT
 ```
 
-Characterization, professional operating models, external research, Wind Tunnel, dependency modeling and richer decision workspaces are subordinate capabilities. They are routed only when required to discriminate the current load-bearing bet or execute the commitment outcome responsibly.
+---
+
+# Governing invariants
+
+## 1. The system comes to the commitment
+
+The user should not need to remember to open a blank decision app and reconstruct context.
+
+An explicit one-click handoff is an acceptable first wedge. Over time, integrations may surface candidate commitments from existing work surfaces.
+
+## 2. Silence is a valid product behavior
+
+Most actions should not trigger a strategic intervention.
+
+The system must minimize both:
+
+- **missed-support error** — acting without help when help would materially improve the commitment;
+- **unnecessary-support burden** — interrupting when the check cannot justify its cost.
+
+## 3. Temporal integrity matters
+
+The true pre-commitment state must be preserved before system influence and before outcomes contaminate memory.
+
+This is a core product asset, not journaling ceremony.
+
+## 4. Provenance remains explicit
+
+Always distinguish:
+
+- user-owned statement / action;
+- system inference;
+- external observation / evidence;
+- unresolved hypothesis;
+- real outcome.
+
+No lower evidence class silently inherits higher authority.
+
+## 5. Every intervention has commitment consequence
+
+Valid outputs:
+
+- `PASS` — proceed;
+- `MODIFY` — alter commitment, sequence, scope, prerequisite or resource allocation;
+- `PROBE` — acquire a smaller discriminating observation before a larger commitment.
+
+Insight without commitment consequence is not enough.
+
+## 6. Analysis must not become avoidance
+
+`PROBE` is invalid when direct action is cheaper, reversible and at least as informative.
+
+## 7. Memory compounds only from reality
+
+Outcome-linked history may improve future support, but prior decisions remain source-linked, contestable and transferability-bounded.
+
+The product may not turn repetition into authority by default.
 
 ---
 
-# User-effort rule
+# Creative × Adversarial governance
 
-The product should infer structure from what the user is already about to do before asking them to describe the same structure abstractly.
+Every substantial product hypothesis is generated and attacked in the same iteration.
 
-Prefer:
-
-- actual planned action over generic priority rating;
-- actual hours / money / deadline over importance score;
-- actual sequence over verbal descriptions of sequence;
-- actual evidence source over confidence slider;
-- correction of a candidate inference over a long methodology questionnaire.
-
-Necessary friction is allowed when it protects baseline validity, real trade-offs, authorship, evidence boundaries or reversal conditions.
-
-Ceremonial introspection is not.
-
----
-
-# Evidence-class invariant
-
-```text
-F0 — real behavior / payment / execution / outcome
-F1 — external observed evidence / real current data
-F2 — structural or logical consequence of the represented plan
-F3 — plausible scenario / mechanism hypothesis
-F4 — synthetic stakeholder / LLM-generated behavior
-```
-
-A lower class may not silently inherit the authority of a higher class.
-
-An implied bet reconstructed from the user's plan is normally `F2/F3`: grounded in the plan structure but still an interpretation of mechanism.
-
----
-
-# Decision consequence invariant
-
-Every material reveal must terminate in one of:
-
-```text
-KEEP
-CHANGE
-TEST_FIRST
-```
-
-`interesting`, `surprising`, `deep`, `personalized`, `insightful`, `high confidence` or `AI recommends` are not commitment outcomes.
-
-### KEEP
-
-Valid when challenge and available evidence do not justify changing the current commitment.
-
-A product that forces novelty to demonstrate value fails O.
-
-### CHANGE
-
-Must change at least one real commitment:
-
-- action;
-- sequence;
-- allocation;
-- boundary;
-- prerequisite;
-- evidence acquisition.
-
-### TEST_FIRST
-
-Valid only when:
-
-- the unresolved claim is load-bearing;
-- the larger commitment is material enough to justify delay / staging;
-- the proposed test can discriminate competing explanations;
-- the test is smaller than the commitment it protects;
-- the result has registered decision consequences.
-
-`TEST_FIRST` must not become a reflexive analysis-delay mechanism.
-
----
-
-# UI / interaction telos
-
-The interface exists to make commitment logic inspectable before it becomes costly.
-
-The primary visual distinction is:
-
-```text
-YOUR COMMITMENT
-SYSTEM INFERENCE
-EVIDENCE / UNKNOWN
-```
-
-They must never be visually merged.
-
-The preferred first-session hierarchy is:
-
-```text
-WHAT YOU ARE ABOUT TO DO
-↓
-WHAT YOUR PLAN IS BETTING ON
-↓
-WHAT WE ACTUALLY KNOW
-↓
-KEEP / CHANGE / TEST FIRST
-↓
-WHAT WOULD REVERSE THIS
-```
-
-Direct manipulation remains useful when the gesture is semantically identical to the decision: allocating finite hours, changing order, moving an action or accepting/rejecting a proposed change.
-
-Interaction novelty has no authority by itself.
-
----
-
-# Characterization governance
-
-Use professional-case reconstruction / ProfessionalOperatingModel / self-application only when it can change:
-
-- the implied bet;
-- a competing explanation;
-- the evidence needed;
-- the commitment outcome;
-- the reversal condition.
-
-The user's expertise is a high-resolution lens, not a truth source.
-
-Do not run characterization merely because the user has an interesting profession.
-
----
-
-# Research governance
-
-External research is justified when the current commitment depends on an outside-world claim the user cannot know from introspection.
-
-Each research request must state:
-
-- `bet_affected`;
-- `unknown`;
-- `evidence_that_would_change_KEEP_CHANGE_TEST_FIRST`;
-- source types needed;
-- stop condition.
-
-Do not research broadly for context when a smaller discriminating observation can resolve the commitment.
-
----
-
-# Strategic Wind Tunnel governance
-
-Wind Tunnel remains subordinate.
-
-Use it only after an explicit commitment / strategy candidate exists and only when it can change:
-
-- `KEEP / CHANGE / TEST_FIRST`;
-- the resource allocation;
-- the discriminating FIELD test;
-- the reversal condition.
-
-Synthetic stakeholders remain F4 hypothesis generators only.
-
-Simulation may remove internally discoverable failure modes. It may not close willingness-to-pay, buyer behavior, execution or outcome truth.
-
----
-
-# Pre-FIELD telos — FIELD Yield
-
-The purpose of internal work before real exposure is not maximum confidence.
-
-It is:
-
-> **remove internally discoverable failure modes and isolate the smallest load-bearing claim that reality must resolve before a material commitment.**
-
-A FIELD test is high-yield when:
-
-- it attacks a registered load-bearing bet;
-- it can discriminate competing explanations;
-- each meaningful result changes `KEEP / CHANGE / TEST_FIRST` or the next commitment;
-- it is smaller than the commitment it protects;
-- it does not bundle unrelated uncertainties unnecessarily.
-
----
-
-# Business telos
-
-The business exists to capture a sustainable share of created value without distorting the product toward engagement, complexity, dependence or perpetual uncertainty.
-
-The economic value hypothesis is **avoided or improved consequential commitment**, not time spent in the product.
-
-A commercial model that requires artificial recurring use fails even if retention rises.
-
----
-
-# Recursive DOD / Pressure / Telos loop
-
-For substantial product changes:
-
-## DOD Agent
+## Creative role
 
 Ask:
 
-> **What must be observably true for this O to be realized?**
+> **What structurally different mechanism could make the product dramatically more valuable at the user’s real moment of need?**
 
-## Pressure Agent
+It is allowed to change category, interaction surface, business model, workflow and product boundary.
 
-Attack O and DOD:
+## Adversarial role
 
-> **Is this still a local optimization around the current mechanism? Could a simpler or structurally different mechanism prevent the same costly commitment with less burden or fewer unsupported assumptions?**
+For every creative proposal ask:
 
-## Telos Agent
+> **Why would a rational user still skip this, replace it with a general AI/template/human, disable it, distrust it, or fail to notice its absence?**
 
-If Pressure succeeds, reconstruct O from the user change rather than current architecture.
+Also attack privacy, burden, false positives, epistemic overclaim, cold start, integration cost, analysis paralysis and commoditization.
 
-## Tool / Mechanism Agent
-
-After O survives, choose the smallest mechanism capable of producing the required observable change.
-
-Current recorded run: `docs/RECURSIVE_MAGIC_MOMENT_V1.md`.
+A surviving idea must answer both voices simultaneously.
 
 ---
 
-# REPLAN triggers
+# Anti-recursion rule
 
-Replan when the system:
+Another internal iteration is justified only if it can change:
 
-- claims to know a true root cause without evidence capable of supporting that claim;
-- creates an alternative diagnosis mainly to generate surprise;
-- asks the user for an abstract bottleneck statement when the current plan can reveal a candidate implied bet with less burden;
-- surfaces assumptions that cannot change a commitment;
-- defaults to `TEST_FIRST` when action is cheap, reversible and learning-by-doing dominates;
-- turns every plan into a complex diagnostic canvas;
-- treats user agreement as validation of strategic truth;
-- uses system inference as if it were external evidence;
-- protects the manipulable workspace when a simpler Commitment Gate produces the same value.
+- the product category;
+- the commitment surface;
+- the support-routing rule;
+- the intervention mechanism;
+- the before-state capture;
+- the real commitment outcome;
+- the outcome-linking loop;
+- the FIELD test.
 
----
-
-# Anti-recursion / requisite information rule
-
-Before another question, object, lens, research task, scenario, visual element or reasoning method, ask:
-
-> **Which load-bearing bet, commitment outcome, resource allocation, reversal condition or FIELD test could change?**
-
-If none can materially change, reject the additional layer.
+If not, move to FIELD.
 
 ---
 
-# FIELD falsification
+# Current FIELD boundary
 
-The Commitment Gate must be compared with a strong simple alternative.
+The current hypothesis is **not proven indispensable**.
 
-### Arm S — Strong Simple
+The next evidence must test whether users who experience value voluntarily seek or accept the layer at a later consequential commitment before the outcome is known, and whether its absence produces compensatory behavior.
 
-Goal → current situation → constraints → alternatives → recommendation.
+Read with:
 
-### Arm G — Commitment Gate
+- `docs/INDISPENSABILITY_DOD_V1.md`
+- `docs/CREATIVE_ADVERSARIAL_PRODUCT_RUN_V1.md`
+- `docs/DOD_COMMITMENT_GATE_V1.md`
+- `docs/COMMITMENT_GATE_FIELD_PROTOCOL_V1.md`
 
-Freeze plan → infer candidate load-bearing bet → user corrects → competing explanation → discriminating evidence → `KEEP / CHANGE / TEST_FIRST` → reversal condition.
+Current governance outcome:
 
-Collapse G toward S if G repeatedly fails to produce unique decision-relevant value at justified effort.
-
-No credit for user enthusiasm, insight language or perceived depth alone.
-
----
-
-# STOP
-
-STOP internal escalation when:
-
-- the current O has been recalled;
-- the real intended commitment is explicit;
-- the highest-exposure load-bearing bet is sufficiently represented;
-- further internal work cannot plausibly change `KEEP / CHANGE / TEST_FIRST`, allocation, reversal or FIELD design at justified cost;
-- remaining uncertainty requires real behavior / evidence.
-
-Then the correct outcome is `FIELD`, not more refinement.
+> **REPLAN → COMMITMENT SAFETY LAYER → FIELD**
