@@ -1,3 +1,5 @@
+/* global process */
+
 import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.PROOFMINER_BASE_URL;
@@ -6,7 +8,7 @@ test.describe('production smoke', () => {
   test.beforeEach(async ({ page }) => {
     test.skip(!BASE_URL, 'Set PROOFMINER_BASE_URL to a Vercel preview or production URL.');
     await page.goto(BASE_URL, { waitUntil: 'networkidle' });
-    await page.evaluate(() => localStorage.clear());
+    await page.evaluate(() => globalThis.localStorage.clear());
     await page.reload({ waitUntil: 'networkidle' });
   });
 
