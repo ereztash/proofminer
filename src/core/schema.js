@@ -84,6 +84,12 @@ export function emptyState() {
     profile: {
       /** @type {'job'|'independent'} */
       track: 'independent',
+      /** Whether the user's work is framed mainly as consulting action or expert judgement. */
+      practiceMode: 'consultant',
+      /** Self-reported confidence that they know why to choose them over an alternative. */
+      fitConfidence: 5,
+      /** The evidence they expect should support that choice, before the miner tests it. */
+      expectedEvidence: '',
       /** Weeks the user has been at this. Sets the urgency register. */
       weeksInMotion: 0,
       /** True once the cold-start sequence has been completed. */
@@ -251,6 +257,9 @@ export function normalizeState(input) {
     locale: oneOf(input.locale, ['he', 'en'], 'he'),
     profile: {
       track: oneOf(profile.track, TRACKS, 'independent'),
+      practiceMode: oneOf(profile.practiceMode, ['consultant', 'expert'], 'consultant'),
+      fitConfidence: Math.min(10, Math.max(1, Math.round(num(profile.fitConfidence, 5)))),
+      expectedEvidence: str(profile.expectedEvidence),
       weeksInMotion: Math.max(0, Math.round(num(profile.weeksInMotion, 0))),
       onboarded: bool(profile.onboarded),
       declined: bool(profile.declined),

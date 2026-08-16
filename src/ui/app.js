@@ -233,19 +233,35 @@ export function mountApp(root) {
         toast(t('onboarding.needSituation'));
         return;
       }
-      const track = situation === 'job' ? 'job' : 'independent';
+      const practiceMode = situation === 'expert' ? 'expert' : 'consultant';
+      const confidence = Number.parseInt(val('fit-confidence') || '5', 10);
+      const claim = val('fit-claim').trim();
+      const expectedEvidence = val('fit-evidence').trim();
+      const track = 'independent';
       const weeks = Number.parseInt(
         root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
         10,
       );
+      if (!claim) {
+        toast(t('onboarding.needClaim'));
+        return;
+      }
       if (!text) {
-        toast(state.locale === 'en' ? 'Paste something first' : 'הדבק משהו קודם');
+        toast(t('onboarding.needPaste'));
         return;
       }
       store.update((draft) => {
         draft.profile.track = track;
+        draft.profile.practiceMode = practiceMode;
+        draft.profile.fitConfidence = Number.isFinite(confidence) ? confidence : 5;
+        draft.profile.expectedEvidence = expectedEvidence;
         draft.profile.weeksInMotion = Number.isFinite(weeks) ? weeks : 0;
         draft.profile.onboarded = true;
+        draft.positioning.claim = claim;
+        draft.positioning.offer =
+          practiceMode === 'expert'
+            ? t('onboarding.modeExpertOffer')
+            : t('onboarding.modeConsultantOffer');
         draft.sources.push({
           id: makeId('src'),
           name: state.locale === 'en' ? 'First source' : 'מקור ראשון',
@@ -827,6 +843,8 @@ export function mountApp(root) {
     } else if (el.name === 'weeks') {
       ui.weeks = Number.parseInt(el.value, 10);
       render();
+    } else if (el.id === 'fit-confidence') {
+      render();
     } else if (el.id === 'inv-filter') {
       ui.filter = el.value;
       render();
@@ -871,6 +889,10 @@ export function mountApp(root) {
   let draftTimer = null;
   root.addEventListener('input', (event) => {
     if (event.target.id) ui.formCache[event.target.id] = event.target.value;
+    if (event.target.id === 'fit-confidence') {
+      render();
+      return;
+    }
     if (event.target.id !== 'studio-body') return;
     ui.draftBody = event.target.value;
     if (draftTimer !== null) clearTimeout(draftTimer);
