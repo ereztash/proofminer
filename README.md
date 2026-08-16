@@ -1,104 +1,52 @@
 # ProofMiner
 
-ProofMiner is currently testing one narrow professional-transition job:
+ProofMiner is currently a **decision-safety capability under falsification**, not an entitled standalone app.
 
-> **Before you spend scarce time, money or attention on a plausible plan, make visible what that plan is implicitly betting on — then KEEP it, CHANGE it, or TEST FIRST before paying the full cost.**
+Current governing rule:
 
-The product does **not** claim to discover the one true strategic bottleneck. It is designed to reduce avoidable commitment to weakly grounded strategic bets.
+> **A suitable user should not want to make one specific recurring class of consequential commitment without the capability — regardless of whether the capability is delivered by app, plugin, agent, workflow, inline check or human service.**
 
-## Current first-session flow
-
-```text
-PROFESSIONAL TRANSITION
-→ WHAT YOU ARE ACTUALLY ABOUT TO DO
-→ RESOURCE EXPOSURE
-→ FREEZE PRE-SYSTEM PLAN
-→ WHAT THE PLAN BEHAVES AS IF IT BELIEVES
-→ USER CORRECTION
-→ COMPETING EXPLANATION WHEN NEEDED
-→ EVIDENCE / UNKNOWN
-→ KEEP | CHANGE | TEST_FIRST
-→ REVERSAL CONDITION
-→ REAL ACTION / FIELD EVIDENCE
-```
-
-### Example
-
-A professional wants to move from small-business consulting to organizational consulting and plans:
-
-- 16h rewriting the website;
-- 14h publishing more on LinkedIn;
-- 10h building a webinar.
-
-The current prototype does not tell them `the real problem is legitimacy`.
-
-It says, more carefully:
-
-> **A large share of your planned resource is being spent as if message / visibility were already established as the load-bearing constraint. Your plan currently contains no observation that can distinguish that bet from buyer criteria, proof, access or another prerequisite.**
-
-That can yield:
-
-- `KEEP` — proceed; current structural challenge does not justify change;
-- `CHANGE` — change action / sequence / allocation;
-- `TEST_FIRST` — replace a larger commitment with a smaller discriminating observation first.
-
-## Governing principle
-
-The desired product moment is not `AI surprised me`.
-
-It is:
-
-> **I noticed the strategic bet I was about to pay for before I paid for it.**
-
-System inference, user-owned state and external evidence must remain visibly distinct.
-
-## Evidence classes
+The delivery surface is subordinate to the user need.
 
 ```text
-F0 — real behavior / payment / execution / outcome
-F1 — observed external evidence / real current data
-F2 — structural or logical consequence
-F3 — plausible hypothesis / scenario
-F4 — synthetic stakeholder / LLM behavior
+USER NEED
+  ↓
+DECISION-SAFETY CAPABILITY
+  ↓
+BEST TRIGGER / PLACEMENT
+  ↓
+MINIMUM INTERACTION
+  ↓
+OPTIONAL APP SURFACE
 ```
 
-Lower evidence classes do not inherit higher authority by agreement or repetition.
+Before further destination-app investment, prove one narrow recurring commitment class against the W1–W10 gates in `docs/DEFINITION_OF_DONE.md` v8.0.
 
-## Current governance
+Current lifecycle: **FIELD / WEDGE DISCOVERY**.
 
-Read in this order:
+## Current adversarial ranking
 
-1. `docs/TELOS_GOVERNANCE.md` — governing O, v1.6;
-2. `docs/RECURSIVE_MAGIC_MOMENT_V1.md` — full recursive replan that produced the current mechanism;
-3. `docs/DOD_COMMITMENT_GATE_V1.md` — falsifiable first-session DOD;
-4. `docs/COMMITMENT_GATE_FIELD_PROTOCOL_V1.md` — Strong Simple vs Commitment Gate FIELD protocol;
-5. `docs/CHARACTERIZATION_GOVERNANCE_V1.md` — routed characterization capability;
-6. `docs/STRATEGIC_WIND_TUNNEL_GOVERNANCE_V1.md` — pre-FIELD strategy stress testing when requisite.
+Hypotheses only:
 
-## Current UI hypothesis
+1. proposal / quote / client-scope commitment;
+2. paid campaign / launch commitment;
+3. hiring / vendor commitment;
+4. broad professional-transition commitment.
 
-The UI is a **Commitment Gate first, workspace second**.
+Broad professional transition remains the richest conceptual domain but is currently the weakest software wedge because triggers are diffuse, outcomes are noisy and comparable cycles may be sparse.
 
-The first visual hierarchy is:
+## Canonical artifacts
 
-```text
-WHAT YOU ARE ABOUT TO DO
-↓
-WHAT YOUR PLAN IS BETTING ON
-↓
-WHAT WE ACTUALLY KNOW
-↓
-KEEP / CHANGE / TEST FIRST
-↓
-WHAT WOULD REVERSE THIS
-```
+- `docs/TELOS_GOVERNANCE.md` — v1.8
+- `docs/DEFINITION_OF_DONE.md` — v8.0
+- `docs/APP_NECESSITY_FALSIFICATION_V1.md`
+- `docs/INDISPENSABILITY_DOD_V1.md` — subordinate
+- prior Commitment Gate / Characterization / Wind Tunnel / UI DODs — subordinate capabilities
 
-Direct manipulation remains available for real quantities / commitments, but richer canvas interaction has no authority unless it improves the commitment outcome.
+## Stop rule
 
-## Current lifecycle
+Do not make the destination app richer until one wedge survives the strongest substitute:
 
-**FIELD — Commitment Gate vertical slice.**
+> **capable general AI + simple decision template + existing work context**.
 
-The next justified product test is one real consequential professional-transition case against a strong simple advisory process.
-
-No credit for surprise, depth, personalization or UI novelty alone. The Gate must change or robustly preserve a real commitment at justified user effort.
+If no wedge survives, kill the standalone software-product hypothesis and retain the useful method as a service / protocol / embedded agent capability.
