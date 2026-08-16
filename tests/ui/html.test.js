@@ -79,6 +79,11 @@ describe('i18n', () => {
     expect(translator('he')('nope.not.here')).toBe('nope.not.here');
   });
 
+  it('has localized validation copy for the opening wizard', () => {
+    expect(translator('he')('onboarding.needPaste')).not.toBe('onboarding.needPaste');
+    expect(translator('en')('onboarding.needPaste')).not.toBe('onboarding.needPaste');
+  });
+
   it('keeps the two bundles structurally aligned', () => {
     const shape = (obj, prefix = '') =>
       Object.entries(obj).flatMap(([key, value]) =>
@@ -224,7 +229,6 @@ describe('First Light on the sample', () => {
       }),
     );
     expect(markup).toContain(t('proofCard.title'));
-    expect(markup).toContain(t('onboarding.needPaste'));
     expect(markup).toContain(t('proofCard.limitLabel'));
     expect(markup).toContain(t('proofCard.actionLevelLabel'));
     expect(markup).toContain(t(['proofCard', 'actionLevels', 'R3']));
