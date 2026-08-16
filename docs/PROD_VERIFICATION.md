@@ -10,6 +10,7 @@ A deployment is not ready for a human decision until the production smoke verifi
 2. The user can enter a choice claim, expected evidence, and source material.
 3. First Light renders an allowed action level.
 4. Weak material cannot jump directly into a sendable draft.
+5. Material that is concrete but unrelated to the stated claim is held at R4 rather than drafted.
 
 ## How To Run
 
