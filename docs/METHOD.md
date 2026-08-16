@@ -306,10 +306,28 @@ with `MIN_OBSERVATIONS = 8` **distinct artifacts** — one post measured five
 times is one observation, not five. At that sample size roughly half the weight
 is empirical and, under noise, that half is noise: about 28% of users whose
 results are pure noise will see one dimension reach conventional significance
-across seven uncorrected comparisons. The containment is that the effect on
-actual ranking is small (measured: composites move by ≤3 points, no pairwise
-inversions) and that the panel presents itself as a hypothesis until n ≥ 15.
-This is an engineering compromise, not a sound estimator, and the UI says so.
+across seven uncorrected comparisons.
+
+Four things contain that, and one earlier claim about it was false and has been
+withdrawn:
+
+1. **Shrinkage toward the priors**, above, so eight observations move the
+   weights halfway at most.
+2. **`MAX_WEIGHT_DRIFT = 2.5`** points per dimension per calibration pass, so
+   no single round can rewrite the model.
+3. **`falsifiability` and `recency` are excluded** from calibration entirely,
+   so the model cannot learn to reward unverifiable or stale claims however
+   well they happen to perform.
+4. **The panel presents itself as a hypothesis** until n ≥ 15, and says so.
+
+**Withdrawn:** this section used to claim "no pairwise inversions" under noise.
+That is not true — adversarial review measured a re-ranking in roughly a
+quarter of noise trials on a real Hebrew CV inventory, with the top-ranked unit
+itself stable. The honest statement is that calibration *can* reorder the middle
+of the inventory on a small sample; the containment is that it moves composites
+by a few points rather than many, and that the user is told the panel is
+provisional. This is an engineering compromise, not a sound estimator, and the
+UI says so.
 
 The result is a **per-user leverage model**: which proof qualities actually move
 *this person's* audience. The priors stop being the answer and become the
@@ -347,3 +365,35 @@ Someone else calling you the thing is worth more than you calling yourself it.
   both against LinkedIn's terms and against the telos.
 - It does not score personality, tone, or "brand voice". Not measurable, not
   load-bearing.
+
+
+## Appendix — every constant the product shows a user
+
+This document opens by claiming that every number the product shows must be
+derivable from what is written here. That is only true if the constants are
+written here, so they are, in one place. Where a value is a prior rather than a
+measurement, it is a prior — see honesty rule 5.
+
+| Layer | Composition | Confidence | Notes |
+|---|---|---|---|
+| L1 PROOF | `0.5·quality + 0.2·volume + 0.3·coverage` | `Σ min(1, score/45) / 8` | quality = mean of top 10 decayed; volume = `saturate(count, 12)` |
+| L2 POSITION | `0.21·audience + 0.19·transformation + 0.21·claim + 0.10·offerCoupling + 0.16·nonGenericity + 0.13·defensibility` | `min(filled/4, 2·mean(substantive)/100)` | defensibility is I6's channel and is the only component the user cannot raise by typing |
+| L3 ARTIFACT | `0.4·cadence + 0.45·groundedness + 0.15·mix` | `published / 6` | cadence recency-weighted, 40-day half-life, saturating at 0.75/week; mix saturates at 2 formats |
+| L4 RECEPTION | rate against `RATE_ANCHOR = 0.05` | `Σ recency weights / 6` | engagement weights: substantive comment 6, saves 4, shares 3, comment 2, reaction 1; denominator floored at `MIN_AUDIENCE = 50`; 90-day half-life; locked below 3 records |
+| L5 CONVERSION | `saturate(Σ weighted, 18)` | `count / 4` | weights: deal 10, offer 9, proposal 6, interview 5, call 3, dm 1, reply 1; 60-day half-life |
+| L6 RECOGNITION | `saturate(Σ weighted, 8)` | `count / 3` | weights: feature 4, invite 4, referral 3, citation 2, endorsement 1; decay `0.4 + 0.6·0.5^(age/540)` |
+
+| Constant | Value | Where |
+|---|---|---|
+| `LIEBIG_GATE` | 25 | the ceiling on built standing above the foundation |
+| `BAND_STRONG` / `BAND_USABLE` | 68 / 45 | proof bands, calibrated against the measured distribution |
+| `STARTED` / `DEVELOPED` / `GAP_THRESHOLD` | 18 / 45 / 12 | diagnosis thresholds |
+| `MEASURED_FOUNDATION` | 0.5 | L1 confidence below which `HOLLOW` is withheld |
+| `LOW_CONFIDENCE` | 0.55 | index presented as an estimate below this |
+| `DECAY_FLOOR` | 0.35 | decay never removes more than 65% of a proof's value |
+| half-lives | credential 1460, experience 1095, outcome 730, media 540, event 365, traction 180 | days, by proof kind |
+| coverage thresholds | 45 default; ORIGIN 30, METHOD 40, CREDENTIAL 42, FAILURE 42 | measured from best-practice evidence per archetype |
+| `MIN_OBSERVATIONS` / `SHRINKAGE_K` / `CONFIDENT_OBSERVATIONS` | 8 / 8 / 15 | calibration |
+| `MAX_WEIGHT_DRIFT` | 2.5 | points per dimension per calibration pass |
+| `COMPOUND_THRESHOLD` / `COMPOUND_MIN_ENGAGEMENT` / min impressions | 1.6 / 40 / 500 | compounding gates |
+| `POSITIONING_LIFT` | *removed* | positioning reaches the foundation only through `icpFit` and `commercialProximity` |

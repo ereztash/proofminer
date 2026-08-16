@@ -822,3 +822,36 @@ describe('integrations that were alive and unreachable', () => {
     expect(nextMove(acknowledged, NOW).id).toBe('move.logConversion');
   });
 });
+
+describe('positioning confidence is about substance, not about boxes', () => {
+  it('claims no certainty from four single words', () => {
+    // `filled / 4` reported 1.00 — full certainty — over four words whose four
+    // substantive components all scored 0.
+    const thin = scorePositioning(
+      { audience: 'אנשים', transformation: 'טוב', claim: 'שיווק', offer: 'ייעוץ' },
+      [],
+    );
+    expect(thin.confidence).toBeLessThan(0.2);
+  });
+
+  it('reaches full confidence on a specific, complete positioning', () => {
+    const sharp = scorePositioning(
+      {
+        audience: 'מנהלי תפעול בחברות לוגיסטיקה בישראל',
+        transformation: 'מזמן אספקה של שבוע לשני ימים',
+        claim: 'אני בונה מערכי אספקה שאפשר לסמוך עליהם',
+        offer: 'ליווי תפעולי לשישה חודשים',
+      },
+      [],
+    );
+    expect(sharp.confidence).toBeGreaterThan(0.9);
+  });
+
+  it('never claims more confidence than it has fields', () => {
+    const partial = scorePositioning(
+      { audience: 'מנהלי תפעול בחברות לוגיסטיקה בישראל', transformation: '', claim: '', offer: '' },
+      [],
+    );
+    expect(partial.confidence).toBeLessThanOrEqual(0.25);
+  });
+});

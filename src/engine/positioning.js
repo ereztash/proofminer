@@ -6,7 +6,7 @@
  * grammatical sentence that describes half the market.
  */
 
-import { clamp100, round } from '../core/util.js';
+import { clamp100, mean, round } from '../core/util.js';
 import { tokenize, wordCount } from './text.js';
 
 /**
@@ -101,9 +101,22 @@ export function scorePositioning(positioning, recognitions = []) {
   let score = 0;
   for (const [key, w] of Object.entries(weights)) score += components[key] * w;
 
+  // Confidence over *substance*, not over how many boxes are non-empty.
+  // `filled / 4` reported 1.00 — full certainty — for four single words whose
+  // four substantive components all scored 0. Confidence is the claim "we have
+  // seen enough to say this", and four words are not enough to say anything.
+  // Each field counts for how specific it actually is.
+  const substance =
+    mean([
+      components.audience,
+      components.transformation,
+      components.claim,
+      components.offerCoupling,
+    ]) / 100;
+
   return {
     score: clamp100(score),
-    confidence: filled / 4,
+    confidence: round(Math.min(filled / 4, substance * 2), 3),
     components,
     issues: positioningIssues({ audience, transformation, claim, offer, components, p }),
   };
