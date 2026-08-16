@@ -23,8 +23,8 @@ Every recommendation is classified by:
 | --- | --- | --- |
 | R1 | Safe internal computation | score, sort, explain, preserve local state |
 | R2 | Reversible internal organization | show evidence inventory and gap diagnosis |
-| R3 | Draft for user review | generate a draft from usable evidence only |
-| R4 | Explicit human approval or strengthening first | weak evidence routes to source strengthening, not draft generation |
+| R3 | Draft for user review | generate a draft from evidence that is both usable and relevant to the stated claim |
+| R4 | Explicit human approval or strengthening first | weak or mismatched evidence routes to source strengthening, not draft generation |
 | R5 | User-only decision | publishing, sending to a client, pricing claims, legal/medical/financial claims |
 
 ## First Light Gate
@@ -33,7 +33,8 @@ First Light is not allowed to promise more than the evidence supports.
 
 - If no proof is found, the user gets a concrete explanation of what is missing.
 - If only weak traces are found, the product names that directly and routes to evidence strengthening.
-- If usable evidence is found, the product may create a draft, but the draft remains an R3 action: the user approves before anything external happens.
+- If a concrete trace does not match the user's stated claim, the product treats it as R4 even if the trace itself is strong.
+- If relevant usable evidence is found, the product may create a draft, but the draft remains an R3 action: the user approves before anything external happens.
 
 ## Operating Principle
 
