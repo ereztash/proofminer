@@ -35,6 +35,7 @@ export default {
     ],
     needSituation: 'Choose what fits you first.',
     needClaim: 'Write the claim you want the client to believe first.',
+    needPaste: 'Paste material we can test against the claim first.',
     situationQuestion: 'What best describes your work?',
     situationNote: 'This is not a market split. It only calibrates which kind of evidence we should look for first.',
     modeConsultant: 'Consultant',
