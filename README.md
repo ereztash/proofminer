@@ -1,52 +1,65 @@
-# ProofMiner
+# ProofMiner — Working Branch Governance
 
-ProofMiner is currently a **decision-safety capability under falsification**, not an entitled standalone app.
+This branch is **not** a product-replacement candidate for current `main`.
 
-Current governing rule:
+The repository now contains two divergent theses:
 
-> **A suitable user should not want to make one specific recurring class of consequential commitment without the capability — regardless of whether the capability is delivered by app, plugin, agent, workflow, inline check or human service.**
+- current `main`: a six-layer authority / evidence system;
+- this branch: a decision-safety / commitment-governance capability.
 
-The delivery surface is subordinate to the user need.
+A head-to-head adversarial tournament concluded that **neither thesis survives unchanged as the user-facing product**.
 
-```text
-USER NEED
-  ↓
-DECISION-SAFETY CAPABILITY
-  ↓
-BEST TRIGGER / PLACEMENT
-  ↓
-MINIMUM INTERACTION
-  ↓
-OPTIONAL APP SURFACE
-```
+Canonical tournament record:
 
-Before further destination-app investment, prove one narrow recurring commitment class against the W1–W10 gates in `docs/DEFINITION_OF_DONE.md` v8.0.
+- `docs/CLAUDE_VS_DECISION_SAFETY_TOURNAMENT_V1.md`
 
-Current lifecycle: **FIELD / WEDGE DISCOVERY**.
+## Current convergence thesis
 
-## Current adversarial ranking
+Working user-facing product hypothesis:
 
-Hypotheses only:
+> **Proof-to-Opportunity Layer** — help an independent expert turn evidence they have already earned into the next credible market action most likely to create a real opportunity, then learn from what actually happened.
 
-1. proposal / quote / client-scope commitment;
-2. paid campaign / launch commitment;
-3. hiring / vendor commitment;
-4. broad professional-transition commitment.
+### What survives from current `main`
 
-Broad professional transition remains the richest conceptual domain but is currently the weakest software wedge because triggers are diffuse, outcomes are noisy and comparable cycles may be sparse.
+- proof extraction and inventory;
+- provenance / grounding;
+- First Light;
+- one Next Move;
+- reception / conversion / recognition feedback links;
+- Hebrew handling, security, deterministic engine work and regression tests.
 
-## Canonical artifacts
+### What survives from this branch
 
-- `docs/TELOS_GOVERNANCE.md` — v1.8
-- `docs/DEFINITION_OF_DONE.md` — v8.0
-- `docs/APP_NECESSITY_FALSIFICATION_V1.md`
-- `docs/INDISPENSABILITY_DOD_V1.md` — subordinate
-- prior Commitment Gate / Characterization / Wind Tunnel / UI DODs — subordinate capabilities
+- user-owned state != system inference != external evidence;
+- strong-substitute kill tests;
+- app non-entitlement;
+- PASS / MODIFY / PROBE where material;
+- pre-influence capture when needed;
+- anti-paralysis rule;
+- source-linked longitudinal claims;
+- removal test.
 
-## Stop rule
+### What is killed / demoted
 
-Do not make the destination app richer until one wedge survives the strongest substitute:
+- standalone Decision-Safety as the user-facing product;
+- Authority as the end-user telos;
+- Authority Index as product truth;
+- Visibility Gap as a cardinal hero metric;
+- dual job-seeker + independent first wedge;
+- publishing cadence as a default objective;
+- further destination-app polish before FIELD.
 
-> **capable general AI + simple decision template + existing work context**.
+## Current FIELD
 
-If no wedge survives, kill the standalone software-product hypothesis and retain the useful method as a service / protocol / embedded agent capability.
+Compare on the **same real market action**:
+
+- `Arm G`: capable general AI + simple evidence template;
+- `Arm P`: Proof-to-Opportunity loop.
+
+Measure whether Arm P recovers or selects materially different proof, changes the real external action, creates justified value at acceptable burden, and is voluntarily sought again at the next comparable action.
+
+## Branch status
+
+`REPLAN PRODUCT → KEEP ENGINE ASSETS → KEEP GOVERNANCE → KILL HERO SCORES → FIELD PROOF-TO-OPPORTUNITY WEDGE`
+
+Do not merge this branch into current `main` as a wholesale product replacement.
