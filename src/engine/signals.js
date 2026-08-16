@@ -1,0 +1,200 @@
+/**
+ * Signal extraction: turn a claim sentence into structured, inspectable
+ * features. Dimension scoring reads *only* from this object.
+ *
+ * The separation matters. The previous implementation computed each dimension
+ * from its own inline regex, which meant no signal could be reused, no signal
+ * could be shown to the user, and no signal could be tested independently of
+ * the score it fed. Here every feature is named, extracted once, and visible
+ * in the UI as the reason a score is what it is.
+ */
+
+import { detectLanguage, wordCount } from './text.js';
+
+/** Marker written into demo text so demo material can never be laundered. */
+export const DEMO_MARKER = /\[(?:דמו בלבד|demo only)\]/iu;
+
+const LEX = {
+  he: {
+    /** Someone other than the author asserted or hosted this. */
+    thirdParty: /כתבה|כתבו עלי|ראיון|התראיינ|עיתון|מגזין|פודקאסט|צוטט|ציטט|מצטט|פורסם|התפרסם|כנס|וובינר|פאנל|הרצא|הזמינו אותי|המלצ|לקוח סיפר|לקוחה סיפרה|חוות דעת|ביקורת|פרס|זכי|נבחר|דורג/u,
+    /**
+     * Something changed in the world.
+     *
+     * Hebrew verb conjugation is enumerated rather than stemmed: `הפחית` and
+     * `הפחתתי` share no usable prefix, so a stem-based pattern would miss the
+     * first-person forms users actually write. Bare stems are avoided where
+     * they would create false positives (`סגר` is a substring of `מסגרת`).
+     */
+    outcome: /הגדיל|הגדלתי|הגדלנו|הגדלה|גדלו|גדל ב|צמח|צמחו|צמיחה|העלה|העליתי|הכפיל|הכפלתי|שילש|הפחית|הפחתתי|הפחתנו|הוריד|הורדתי|צמצם|צמצמתי|חסך|חסכתי|חסכנו|קיצר|קיצרתי|ייעל|ייעלתי|שיפר|שיפרתי|הציל|הצלתי|נסגר|נסגרו|סגרתי|סגרנו|הביא|הבאתי|יצר|יצרתי|השיק|השקתי|הקים|הקמתי|בנה|בניתי|הוביל|הובלתי|העביר|העברתי|גייס|גייסתי|החזיר|החזרתי|שיקם|שיקמתי|פתר|פתרתי|מנע|מנעתי/u,
+    /** Before/after tension — the raw material of a story. */
+    contrast: /לפני|אחרי|במשך|בתוך|תוך|מ-?\s*\d+\s*ל-?\s*\d+|במקום|לעומת|עד ש|מאז|בעקבות|כתוצאה|בזכות|למרות|אף על פי/u,
+    credential: /תואר|תעודה|הסמכ|הוסמכ|רישיון|בוגר|מוסמך|דוקטור|ד״ר|תזה|ציון|ממוצע|קורס מקצועי|התמחות/u,
+    /** Self-描述 personality claims: the most common and least useful thing users write. */
+    generic: /יצירתי|סקרן|אסטרטגי|מקצועי מאוד|תותח|מנוסה מאוד|שנים של ניסיון|אוהב אנשים|חושב מחוץ לקופסה|רעב|נחוש|תשוקה|אכפתי|ראש גדול|בעל ניסיון רב|מוביל דעה|מומחה מוביל/u,
+    hedge: /אולי|נראה לי|אני מאמין ש|בערך|סוג של|כנראה|לפעמים|יכול להיות|בגדול|פחות או יותר/u,
+    /** Named third-party context a sceptic could go and check. */
+    verifiable: /באתר|בכתבה|בעיתון|בגלובס|בכלכליסט|ב-?TheMarker|בפודקאסט|בכנס|בערוץ|בלינקדאין|קישור|לינק/u,
+    scale: /משתתפים|אנשים|עובדים|לקוחות|מנויים|צפיות|חברות|ארגונים|סניפים|מדינות|צוותים|תלמידים|נרשמו/u,
+    method: /שיטה|מתודולוגיה|תהליך|מודל|פריימוורק|מסגרת עבודה|שלבים|פרוטוקול|גישה|כלי שפיתחתי|מערכת שבניתי/u,
+    failure: /נכשל|כישלון|טעות|טעיתי|לא עבד|למדתי בדרך הקשה|פספסתי|החמצתי|קרסה|נסגר בהפסד|ויתרתי/u,
+    origin: /התחלתי|הגעתי|עברתי|בחרתי|למה אני|הסיפור שלי|לפני שנים|כשהייתי|מה שהוביל אותי/u,
+    /** Peer-level recognition rather than client-level. */
+    peer: /עמית|קולג|מומחה אחר|בתחום שלי|חבר לתעשייה|מנטור|שותף|ממליץ|המלצה מקצועית/u,
+    currency: /(?:₪|ש["״']?ח|שקל|שח|אלף|מיליון|מיליארד)/u,
+    duration: /(?:שנ(?:ה|תיים|ים)|חוד(?:ש|שיים|שים)|שבוע(?:ות|יים)?|ימים|יום|רבעון|סמסטר)/u,
+    relativeTime: /(?:השנה|החודש|לאחרונה|בימים אלה|כרגע|עכשיו|בשנה האחרונה|בחודשים האחרונים)/u,
+  },
+  en: {
+    thirdParty: /interview(?:ed)?|featured|quoted|cited|article|published (?:in|an|a )|press|magazine|podcast|conference|keynote|panel|webinar|testimonial|review(?:ed)?|award|won|selected|ranked|recommended by/iu,
+    outcome: /increas|grew|grow|doubl|tripl|reduc|cut|sav(?:ed|ing)|shorten|improv|optimi[sz]|clos(?:ed)|deliver|launch|built|led|raised|recover|solved|prevent|scal(?:ed)/iu,
+    contrast: /before|after|within|from\s+\d+\s+to\s+\d+|instead of|compared to|since|as a result|thanks to|despite|used to/iu,
+    credential: /degree|bachelor|master|mba|phd|certifi|licens|accredit|graduat|gpa|thesis|diploma/iu,
+    generic: /creative|curious|strategic|passionate|driven|results-?oriented|team player|think outside the box|self-?starter|thought leader|guru|ninja|rockstar|highly experienced|years of experience/iu,
+    hedge: /maybe|i think|i believe|kind of|sort of|probably|somewhat|roughly|more or less/iu,
+    verifiable: /https?:\/\/|www\.|linkedin\.com|on the site|in the article|link/iu,
+    scale: /participants|attendees|people|employees|clients|customers|subscribers|views|companies|organi[sz]ations|teams|students|countries|signups/iu,
+    method: /method|methodology|process|model|framework|playbook|protocol|approach|system i built|tool i built|steps/iu,
+    failure: /fail(?:ed|ure)|mistake|got it wrong|didn'?t work|learned the hard way|missed|shut down|lost/iu,
+    origin: /i started|i came from|i switched|i chose|why i|my story|years ago|when i was|what led me/iu,
+    peer: /peer|colleague|fellow|in my field|industry friend|mentor|partner|professional recommendation/iu,
+    currency: /(?:\$|€|£|usd|eur|ils|k\b|m\b|million|billion|thousand)/iu,
+    duration: /(?:years?|months?|weeks?|days?|quarters?|semesters?)/iu,
+    relativeTime: /(?:this year|this month|recently|currently|right now|over the past year|in recent months)/iu,
+  },
+};
+
+/** Four-digit years that are plausible career dates. */
+const YEAR_RE = /\b(19[89]\d|20[0-4]\d)\b/g;
+const URL_RE = /https?:\/\/[^\s]+|www\.[^\s]+/iu;
+const PERCENT_RE = /\d+(?:[.,]\d+)?\s*(?:%|אחוז|percent)/iu;
+/** A number, optionally with thousands separators or decimals. */
+const NUMBER_RE = /\d+(?:[.,]\d{3})*(?:[.,]\d+)?/g;
+/** Capitalised multi-word runs in Latin text — a crude proper-noun proxy. */
+const PROPER_NOUN_RE = /\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})*/g;
+/** Quoted names / org markers common in Hebrew text. */
+const HE_ORG_RE = /(?:חברת|בחברת|בארגון|בעמותת|בקבוצת|באוניברסיטת|במכללת|בבית הספר|בסטארטאפ)\s+\S+/u;
+
+/**
+ * @typedef {object} Signals
+ * @property {'he'|'en'} lang
+ * @property {number} words
+ * @property {boolean} demo
+ * @property {number[]} numbers    numeric magnitudes found
+ * @property {number} numberCount
+ * @property {boolean} hasPercent
+ * @property {boolean} hasCurrency
+ * @property {boolean} hasDuration
+ * @property {boolean} hasScaleUnit
+ * @property {number[]} years
+ * @property {boolean} hasRelativeTime
+ * @property {boolean} hasUrl
+ * @property {boolean} hasProperNoun
+ * @property {boolean} thirdParty
+ * @property {boolean} outcome
+ * @property {boolean} contrast
+ * @property {boolean} credential
+ * @property {boolean} generic
+ * @property {boolean} hedge
+ * @property {boolean} verifiableRef
+ * @property {boolean} method
+ * @property {boolean} failure
+ * @property {boolean} origin
+ * @property {boolean} peer
+ */
+
+/**
+ * Extract all signals from a claim.
+ * @param {string} text
+ * @returns {Signals}
+ */
+export function extractSignals(text) {
+  const raw = text || '';
+  const lang = detectLanguage(raw);
+  const lex = LEX[lang];
+  const other = LEX[lang === 'he' ? 'en' : 'he'];
+
+  // Test both lexicons: mixed-language text is the norm in Israeli
+  // professional writing ("הרצתי POC על AWS מול 3 לקוחות").
+  const any = (key) => lex[key].test(raw) || other[key].test(raw);
+
+  const numbers = (raw.match(NUMBER_RE) || [])
+    .map((n) => Number.parseFloat(n.replace(/,/g, '')))
+    .filter((n) => Number.isFinite(n));
+  const years = (raw.match(YEAR_RE) || []).map(Number);
+
+  return {
+    lang,
+    words: wordCount(raw),
+    demo: DEMO_MARKER.test(raw),
+    numbers,
+    // Years are dates, not magnitudes; counting them as specificity would
+    // reward "in 2019 I was employed" as much as "cut cost by 38%".
+    numberCount: numbers.filter((n) => !years.includes(n)).length,
+    hasPercent: PERCENT_RE.test(raw),
+    hasCurrency: any('currency') && numbers.length > 0,
+    hasDuration: any('duration') && numbers.length > 0,
+    hasScaleUnit: any('scale') && numbers.length > 0,
+    years,
+    hasRelativeTime: any('relativeTime'),
+    hasUrl: URL_RE.test(raw),
+    hasProperNoun: PROPER_NOUN_RE.test(raw) || HE_ORG_RE.test(raw),
+    thirdParty: any('thirdParty'),
+    outcome: any('outcome'),
+    contrast: any('contrast'),
+    credential: any('credential'),
+    generic: any('generic'),
+    hedge: any('hedge'),
+    verifiableRef: any('verifiable'),
+    method: any('method'),
+    failure: any('failure'),
+    origin: any('origin'),
+    peer: any('peer'),
+  };
+}
+
+/**
+ * Infer the proof kind, which determines the decay half-life.
+ * Order matters: the most time-sensitive interpretation wins.
+ */
+export function inferKind(signals) {
+  if (signals.credential) return 'credential';
+  if (signals.thirdParty && signals.hasScaleUnit) return 'event';
+  if (signals.thirdParty) return 'media';
+  if (signals.outcome && (signals.numberCount > 0 || signals.contrast)) return 'outcome';
+  if (signals.hasScaleUnit) return 'traction';
+  return 'experience';
+}
+
+/**
+ * Which of the eight evidence archetypes this claim covers.
+ * A claim can cover more than one.
+ * @returns {string[]}
+ */
+export function inferArchetypes(signals) {
+  const out = new Set();
+  if (signals.outcome && (signals.numberCount > 0 || signals.contrast)) out.add('OUTCOME');
+  if (signals.thirdParty) out.add('VALIDATION');
+  if (signals.hasScaleUnit) out.add('SCALE');
+  if (signals.method) out.add('METHOD');
+  if (signals.credential) out.add('CREDENTIAL');
+  if (signals.peer) out.add('PEER');
+  if (signals.failure) out.add('FAILURE');
+  if (signals.origin) out.add('ORIGIN');
+  return [...out];
+}
+
+/**
+ * Best guess at when the described event happened, for decay.
+ * Returns null when undated — decay then falls back to the capture date with
+ * reduced penalty rather than inventing a timestamp.
+ */
+export function inferOccurredAt(signals, now) {
+  if (signals.hasRelativeTime) return now;
+  if (!signals.years.length) return null;
+  const year = Math.max(...signals.years);
+  const nowYear = new Date(now).getUTCFullYear();
+  if (year > nowYear) return null;
+  // Mid-year, so a bare year is not treated as either January or December.
+  return Date.UTC(year, 6, 1);
+}

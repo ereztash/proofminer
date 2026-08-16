@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build
+  verify:
+    name: Lint, test, build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -28,12 +28,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Syntax check
-        run: node --check src/app.js
+          cache: npm
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
 
       - name: Production build
         run: npm run build
