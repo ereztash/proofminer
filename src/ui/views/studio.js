@@ -77,7 +77,13 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           )}
         </div>
 
-        ${field('studio-body', t('studio.title'), textArea('studio-body', text, { rows: 14 }))}
+        ${field(
+          'studio-body',
+          t('studio.title'),
+          textArea('studio-body', text, { rows: 14 }),
+          '',
+          { hideLabel: true },
+        )}
 
         ${liveGrounding.ok
           ? notice('info', t('studio.grounded'))

@@ -71,6 +71,7 @@ export default {
     explainNegative:
       'This is the one direction this tool stops. Before publishing more, bring evidence.',
     estimate: 'Early estimate — not enough data yet',
+    index: 'Composite index',
   },
 
   diagnosis: {

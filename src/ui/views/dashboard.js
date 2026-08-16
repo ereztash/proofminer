@@ -57,7 +57,7 @@ function gapCard(gap, foundation, built, index, lowConfidence, t) {
         <b>${bidi(b)}</b>
       </div>
       <div class="hero__stat hero__stat--muted">
-        <span>Index</span>
+        <span>${t('gap.index')}</span>
         <b>${bidi(Math.round(index))}</b>
       </div>
     </div>

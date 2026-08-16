@@ -80,9 +80,13 @@ export const section = (title, lead, body, extra = '') => html`<section class="c
   ${body}
 </section>`;
 
-/** Labelled field. `id` is required so the label actually binds. */
-export const field = (id, label, control, hint = '') => html`<div class="field">
-  <label class="field__label" for="${id}">${label}</label>
+/**
+ * Labelled field. `id` is required so the label actually binds.
+ * `hideLabel` keeps the label for assistive technology while removing the
+ * visible duplicate when the surrounding heading already says the same thing.
+ */
+export const field = (id, label, control, hint = '', { hideLabel = false } = {}) => html`<div class="field">
+  <label class="${cx('field__label', hideLabel && 'visually-hidden')}" for="${id}">${label}</label>
   ${control}
   ${hint ? html`<p class="field__hint" id="${id}-hint">${hint}</p>` : ''}
 </div>`;

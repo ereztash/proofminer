@@ -17,6 +17,8 @@ export function mineView(state, t) {
           'paste',
           t('mine.paste'),
           textArea('paste', '', { placeholder: t('onboarding.placeholder'), rows: 8 }),
+          '',
+          { hideLabel: true },
         )}
         <div class="row">
           ${button('addText', t('mine.addSource'), { variant: 'primary' })}

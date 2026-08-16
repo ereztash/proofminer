@@ -54,6 +54,8 @@ export function onboardingView(state, t) {
         'cold-paste',
         t('onboarding.firstStepTitle'),
         textArea('cold-paste', '', { placeholder: t('onboarding.placeholder'), rows: 9 }),
+        '',
+        { hideLabel: true },
       )}
 
       <div class="cold__actions">
