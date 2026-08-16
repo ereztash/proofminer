@@ -40,4 +40,17 @@ test.describe('production smoke', () => {
 
     await expect(page.locator('body')).not.toContainText(/הפוך את זה לטיוטה|Turn this into a draft/);
   });
+
+  test('concrete but mismatched evidence remains strengthening-only', async ({ page }) => {
+    await page.getByLabel(/יועץ|Consultant/i).check();
+    await page.locator('#fit-claim').fill('אני יודע לבנות תהליכי מכירה שמביאים פניות חמות');
+    await page.locator('#fit-evidence').fill('ראיה שמראה שפניות חמות הגיעו מתוכן או הפניות');
+    await page.locator('#cold-paste').fill(
+      'ניהלתי צוות תפעול של שמונה אנשים, בניתי תהליך עבודה חדש, וזמן האספקה ירד מ-19 יום ל-7 ימים בתוך חודשיים.',
+    );
+    await page.getByRole('button', { name: /מצא לי את הראיות|Find my evidence/i }).click();
+
+    await expect(page.locator('body')).toContainText('R4');
+    await expect(page.locator('body')).not.toContainText(/הפוך את זה לטיוטה|Turn this into a draft/);
+  });
 });
