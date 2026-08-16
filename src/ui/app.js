@@ -16,6 +16,8 @@ import { sampleFor } from '../data/sample.js';
 
 import { isDemoMode, mineSources, rescoreProofs } from '../engine/mine.js';
 import { computeAuthority, nextMove } from '../engine/authority.js';
+import { revealPicks } from '../engine/explain.js';
+import { parseAnalyticsPaste } from '../engine/analytics.js';
 import { activeWeights, calibrate, compound } from '../engine/feedback.js';
 import { provenanceFooter } from '../engine/drafts.js';
 import { refineDraft } from '../adapters/llm.js';
@@ -46,6 +48,8 @@ const ui = {
   expanded: new Set(),
   /** Text-field values that must survive a re-render. Cleared on submit. */
   formCache: {},
+  /** Numbers extracted from a pasted analytics block, pre-filling the form. */
+  parsedAnalytics: {},
   selectedProofId: null,
   angle: 'direct',
   cta: 'none',
@@ -88,6 +92,7 @@ export function mountApp(root) {
     ui.draftBody = null;
     ui.expanded = new Set();
     ui.formCache = {};
+    ui.parsedAnalytics = {};
     ui.filter = 'all';
   }
 
@@ -356,6 +361,10 @@ export function mountApp(root) {
     async refine() {
       const proof = state.proofs.find((p) => p.id === currentProofId());
       if (!proof) return;
+      // Restated at the point of the action, not only in Settings: this is the
+      // one moment the user's evidence leaves the device, and the first-screen
+      // pledge told them nothing ever would.
+      if (!globalThis.confirm?.(t('settings.refineDisclosure'))) return;
       ui.refining = true;
       render();
       const result = await refineDraft({
@@ -402,6 +411,7 @@ export function mountApp(root) {
         });
       });
       for (const key of ['rc-impressions', 'rc-reactions', 'rc-comments', 'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste']) delete ui.formCache[key];
+      ui.parsedAnalytics = {};
       toast(t('measure.saved'));
       // Both feedback integrations run on new reception data.
       recalibrate();
@@ -411,16 +421,33 @@ export function mountApp(root) {
       });
     },
 
+    parsePaste() {
+      const { found, matched } = parseAnalyticsPaste(val('rc-paste'));
+      if (!matched) {
+        toast(t('measure.pasteFailed'));
+        return;
+      }
+      ui.parsedAnalytics = found;
+      for (const [key, value] of Object.entries(found)) {
+        ui.formCache[`rc-${key}`] = String(value);
+      }
+    },
+
     addConversion() {
+      const artifactId = val('cv-artifact');
       store.update((draft) => {
         draft.conversions.push({
           id: makeId('cnv'),
           type: val('cv-type'),
-          artifactId: null,
+          // Attribution is what makes integration I4 possible at all: without
+          // it, `detectDrift` filters on `artifactId` and returns null in every
+          // state the app can produce.
+          artifactId: artifactId || null,
           note: val('cv-note'),
           at: realNow(),
         });
       });
+      delete ui.formCache['cv-note'];
     },
 
     addRecognition() {
@@ -507,7 +534,7 @@ export function mountApp(root) {
     if (ui.screen === 'firstLight') {
       const active = state.proofs.filter((p) => !p.dismissed);
       const ranked = sortByDesc(active, (p) => p.score);
-      return firstLightView(state, t, { proofs: ranked, top3: ranked.slice(0, 3) });
+      return firstLightView(state, t, { proofs: ranked, top3: revealPicks(ranked) });
     }
 
     switch (ui.view) {
@@ -533,7 +560,7 @@ export function mountApp(root) {
           refining: ui.refining,
         });
       case 'measure':
-        return measureView(state, t);
+        return measureView(state, t, { parsed: ui.parsedAnalytics });
       case 'settings':
         return settingsView(state, t, { storageError: Boolean(store.persistError()) });
       default:

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ANGLES,
+  authorship,
   composeDraft,
   extractNumbers,
   lengthAdvice,
@@ -18,6 +19,40 @@ describe('grounding validator', () => {
     const proof = proofFrom('ההכנסות גדלו ב-38% והגיעו ל-27,000 שקל');
     const result = validateGrounding('גדילה של 38% עד 27000 שקל', [proof]);
     expect(result.ok).toBe(true);
+  });
+
+  it('catches an invented named entity, not only an invented number', () => {
+    // The fabrication this audience would actually reach for is a bigger
+    // employer or a publication that did not run the piece — neither of which
+    // contains a digit.
+    const proof = proofFrom('I reduced onboarding time by 40% for a client in 2024.');
+    const result = validateGrounding(
+      'At Deloitte I reduced onboarding time by 40% in 2024.',
+      [proof],
+    );
+    expect(result.ok).toBe(false);
+    expect(result.entities).toContain('Deloitte');
+  });
+
+  it('catches a spelled-out magnitude the evidence does not contain', () => {
+    const proof = proofFrom('I reduced onboarding time for a client.');
+    expect(validateGrounding('I reduced it across forty teams.', [proof]).ok).toBe(false);
+  });
+
+  it('flags superlatives as overreach without hard-failing', () => {
+    const proof = proofFrom('I reduced onboarding time by 40% for a client in 2024.');
+    const result = validateGrounding(
+      'I single-handedly delivered an unprecedented 40% reduction in 2024.',
+      [proof],
+    );
+    expect(result.overreach.length).toBeGreaterThan(0);
+  });
+
+  it('states its own limit rather than claiming to verify truth', () => {
+    // A real number attached to the wrong subject passes, and must: this check
+    // compares tokens, it does not read. The UI carries that caveat.
+    const proof = proofFrom('I reduced onboarding time by 40% in 2024.');
+    expect(validateGrounding('I grew revenue by 40% in 2024.', [proof]).ok).toBe(true);
   });
 
   it('catches an invented number', () => {
@@ -43,6 +78,21 @@ describe('composeDraft', () => {
       expect(draft.grounding.ok).toBe(true);
       expect(draft.warnings).not.toContain('ungrounded-numbers');
     }
+  });
+
+  it('adds nothing at all on the default angle', () => {
+    const draft = composeDraft({ proofs: [proof], locale: 'he' });
+    // The whole point: the tool contributes no sentence the user then has to
+    // defend as their own voice.
+    expect(draft.body).toBe(proof.claim);
+    expect(authorship(draft.body, [proof], 'he').ownShare).toBe(1);
+  });
+
+  it('reports how much of the text came from the tool', () => {
+    const withCta = composeDraft({ proofs: [proof], cta: 'discussion', locale: 'he' });
+    const own = authorship(withCta.body, [proof], 'he');
+    expect(own.ownShare).toBeLessThan(1);
+    expect(own.canned.length).toBeGreaterThan(0);
   });
 
   it('inserts the evidence text verbatim', () => {

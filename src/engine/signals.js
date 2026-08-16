@@ -136,6 +136,34 @@ const NUMBER_RE = /\d+(?:[.,]\d{3})*(?:[.,]\d+)?/g;
  * inverted the proof ranking between two presses of the same button.
  */
 const PROPER_NOUN_RE = /\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})*/g;
+/**
+ * Words that are routinely capitalised without naming anything, so that a
+ * sentence opener is not mistaken for an organisation.
+ */
+const CAPITALISED_FUNCTION_WORDS = new Set([
+  'the', 'this', 'that', 'these', 'those', 'how', 'what', 'when', 'where',
+  'why', 'who', 'which', 'and', 'but', 'for', 'from', 'with', 'without',
+  'after', 'before', 'during', 'over', 'under', 'about', 'into', 'onto',
+  'there', 'here', 'they', 'their', 'our', 'your', 'his', 'her', 'its',
+  'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+  'ten', 'not', 'was', 'were', 'has', 'have', 'had', 'can', 'could', 'would',
+  'should', 'will', 'shall', 'may', 'might', 'must', 'did', 'does', 'done',
+  'now', 'then', 'also', 'still', 'just', 'only', 'more', 'most', 'less',
+]);
+
+/**
+ * True when a match sits at the start of the text or of a sentence.
+ *
+ * Only `.`, `!`, `?` and a line break count. A hyphen must not: Hebrew attaches
+ * Latin words with one ("ב-Deloitte"), so treating it as a sentence boundary
+ * made every such name invisible — including to the grounding validator, which
+ * is exactly where an invented employer would appear.
+ */
+function isSentenceInitial(text, index) {
+  if (index === 0) return true;
+  return /(?:^|[.!?\n])\s*$/u.test(text.slice(0, index));
+}
+
 /** Named organisations in Hebrew text. */
 const HE_ORG_RE = /(?:חברת|בחברת|בארגון|בעמותת|בקבוצת|באוניברסיטת|במכללת|בבית הספר|בסטארטאפ)\s+(\S+)/gu;
 
@@ -185,7 +213,14 @@ export function extractSignals(text) {
 
   // Collected as values, not probed as booleans — see PROPER_NOUN_RE above.
   const properNouns = [
-    ...[...raw.matchAll(PROPER_NOUN_RE)].map((m) => m[0]),
+    ...[...raw.matchAll(PROPER_NOUN_RE)]
+      // A capitalised word at the start of a sentence is capitalised by
+      // grammar, not because it names anything. Without this, "The context
+      // this happened in" reads as a named entity and the grounding validator
+      // rejects the product's own scaffold text.
+      .filter((m) => !isSentenceInitial(raw, m.index))
+      .map((m) => m[0])
+      .filter((name) => !CAPITALISED_FUNCTION_WORDS.has(name.toLowerCase())),
     ...[...raw.matchAll(HE_ORG_RE)].map((m) => m[1]),
   ].filter(Boolean);
 

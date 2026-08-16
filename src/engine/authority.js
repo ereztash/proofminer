@@ -13,7 +13,7 @@ import { computeLayers } from './layers.js';
 import { acquisitionPlays, stalingProofs } from './gaps.js';
 import { detectDrift, scorePositioning } from './positioning.js';
 import { isDemoMode, realProofs } from './mine.js';
-import { decayedScore } from './score.js';
+import { BAND_USABLE, decayedScore } from './score.js';
 
 /** How far built standing may exceed the evidence foundation. */
 export const LIEBIG_GATE = 25;
@@ -30,8 +30,10 @@ const BUILT_WEIGHTS = { L3: 0.3, L4: 0.25, L5: 0.25, L6: 0.2 };
  */
 export const LOW_CONFIDENCE = 0.55;
 
-/** Diagnosis threshold: above this a half of the stack counts as developed. */
-const DEVELOPED = 45;
+/** Below this on both halves, there is genuinely nothing to work with yet. */
+export const STARTED = 18;
+/** Gap magnitude at which the two halves count as out of step. */
+export const GAP_THRESHOLD = 12;
 
 /**
  * Combine layers under a weight map.
@@ -131,14 +133,20 @@ export const MEASURED_FOUNDATION = 0.5;
  * @returns {'STALLED'|'BURIED'|'HOLLOW'|'COMPOUNDING'|'UNCATALOGUED'}
  */
 export function diagnose(foundation, built, proofLayer = null) {
-  const strongFoundation = foundation >= DEVELOPED;
-  const strongBuilt = built >= DEVELOPED;
   const measured = (proofLayer?.confidence ?? 1) >= MEASURED_FOUNDATION;
+  const gap = foundation - built;
 
-  if (strongFoundation && strongBuilt) return 'COMPOUNDING';
-  if (strongFoundation && !strongBuilt) return 'BURIED';
-  if (!strongFoundation && strongBuilt) return measured ? 'HOLLOW' : 'UNCATALOGUED';
-  return 'STALLED';
+  // Genuinely nothing on either side yet.
+  if (foundation < STARTED && built < STARTED) return 'STALLED';
+
+  // Otherwise the diagnosis follows the gap — the same quantity the product
+  // leads with. Keying it to absolute thresholds instead put a hard cliff on a
+  // continuous number: a user who had just been told "we found six pieces of
+  // evidence" read "you haven't started yet" one screen later, because their
+  // foundation came out at 44 against a threshold of 45.
+  if (gap >= GAP_THRESHOLD) return 'BURIED';
+  if (gap <= -GAP_THRESHOLD) return measured ? 'HOLLOW' : 'UNCATALOGUED';
+  return 'COMPOUNDING';
 }
 
 /**
@@ -186,7 +194,7 @@ export function nextMove(state, now = Date.now()) {
 
   const publishedCount = (state.artifacts || []).filter((a) => a.status === 'published').length;
   const strongest = bestUnpublished(state, now);
-  const hasStrongProof = strongest ? decayedScore(strongest, now) >= 70 : false;
+  const hasStrongProof = strongest ? decayedScore(strongest, now) >= BAND_USABLE : false;
 
   // 3. Positioning is what makes ranking mean anything. Without an audience,
   //    icpFit is a constant and the ranking is only measuring intrinsic
@@ -265,6 +273,23 @@ export function nextMove(state, now = Date.now()) {
       effortMinutes: 3,
       view: 'measure',
       payload: { artifactId: unmeasured[0].id, pending: unmeasured.length },
+    };
+  }
+
+  // 7b. The recurring publish move.
+  //
+  //     Without this the guidance said "publish" exactly once, on the first
+  //     post, and then routed to evidence acquisition forever — in a product
+  //     whose entire purpose is converting evidence into visible standing. A
+  //     user holding strong unpublished evidence should be told to publish it,
+  //     however many times that is true.
+  if (strongest && decayedScore(strongest, now) >= BAND_USABLE && authority.gap > 8) {
+    return {
+      id: 'move.publishNext',
+      layer: 'L3',
+      effortMinutes: 12,
+      view: 'studio',
+      payload: { proofId: strongest.id },
     };
   }
 

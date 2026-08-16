@@ -14,11 +14,21 @@ product shows a user must be derivable from what is written here.
 3. **No claim the user did not supply.** Draft generation may reframe, order,
    and connect the user's own proof text. It may never introduce a fact,
    number, client, or outcome that is not present in a cited proof unit.
+   **Mechanically enforced for:** magnitudes (digits and words) and named
+   entities, plus a warning on superlatives. **Not mechanically enforceable:**
+   a correct number attached to the wrong subject, an invented title made of
+   ordinary words, a claim stitched across two separately-true proofs. The UI
+   states this limit rather than implying the check verifies truth.
 4. **Provenance is not optional.** Every generated artifact carries the IDs of
    the proof units it is grounded in.
-5. **Priors are labelled as priors.** The default dimension weights are
-   informed guesses, not findings. They are shown as such until the user's own
-   data has recalibrated them.
+5. **Priors are labelled as priors.** This applies to *every* constant in the
+   method, not only the nine dimension weights: the foundation/built splits,
+   the Liebig gate width, the `DEVELOPED` and band thresholds, the layer
+   composition mixes, the saturation half-points, the reception anchors and the
+   decay half-lives are all informed guesses. The dimension weights are the
+   only ones a user's own data can move. The band boundaries are the one set
+   calibrated against measurement — against the score distribution the engine
+   actually produces, not against round numbers.
 6. **Demo data is marked in the data itself**, not only in the UI, and marked
    proof is excluded from calibration.
 
@@ -86,8 +96,16 @@ exponential half-life:
 | `traction` | 180d | Reach and engagement numbers stale fast |
 | `experience` | 1095d | Background context |
 
-`decayedScore = score × 0.5 ^ (ageDays / halfLife)`, floored at 35% of the
-original so old strong evidence never vanishes entirely.
+The implemented form is an affine remap rather than a floored exponential:
+
+```
+factor = 0.35 + 0.65 · 0.5 ^ (ageDays / halfLife)
+```
+
+so the tabulated half-life is the half-life of the *decaying component* (65% of
+the value), not of the score. At one half-life a proof retains 67.5%, and the
+floor is approached asymptotically rather than reached. Stated here because the
+simpler formula this table used to describe is not what the engine computes.
 
 ## L2 — positioning scoring
 
@@ -115,7 +133,19 @@ the opposite.
 Weighted: comment depth > saves > shares > reactions. Reactions are the
 cheapest signal available and are weighted accordingly.
 
-Requires ≥3 reception records for non-zero confidence.
+Scored against **declared fixed anchors** (`RATE_ANCHOR = 0.05` weighted
+engagement rate, or `ABSOLUTE_ANCHOR = 30` weighted engagement when the user did
+not report impressions), not against the user's own moving mean. A rate already
+normalises for audience size, which was the only reason to avoid absolute
+figures; scoring each record against a baseline built from the user's other
+records made the layer self-referential, so a uniform improvement was invisible
+and publishing a genuine hit *lowered* the score.
+
+Relative-to-your-own-norm comparison still happens, in compounding and
+calibration, where that is the question actually being asked.
+
+Locked below 3 reception records. Impressions are optional: records with and
+without them are compared only against others in the same mode.
 
 ## L5 — conversion scoring
 

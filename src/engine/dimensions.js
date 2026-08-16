@@ -50,10 +50,12 @@ export const DIMENSIONS = [
     prior: 16,
     calibratable: true,
     // Evidence is not good in the abstract, only for an audience with a
-    // problem. Baseline 30 (not 0) because an unfilled positioning must not
-    // zero out every proof the user owns on their first run.
+    // problem. With no audience declared this returns the neutral midpoint
+    // rather than a low number: we have not measured fit, and scoring an
+    // unmeasured dimension low made a strong first paste read as "Weak" across
+    // the board on the one screen meant to tell the user the opposite.
     score: (s, ctx) => {
-      if (!ctx.audienceContext.trim()) return 34;
+      if (!ctx.audienceContext.trim()) return 50;
       const rel = contextRelevance(ctx.text, ctx.audienceContext);
       let v = 30 + rel * 74;
       if (s.outcome) v += 10;

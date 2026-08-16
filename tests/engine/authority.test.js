@@ -200,11 +200,27 @@ describe('visibility gap and diagnosis', () => {
     expect(result.diagnosis).toBe('BURIED');
   });
 
-  it('produces all four quadrants', () => {
-    expect(diagnose(20, 20)).toBe('STALLED');
-    expect(diagnose(70, 20)).toBe('BURIED');
-    expect(diagnose(20, 70)).toBe('HOLLOW');
-    expect(diagnose(70, 70)).toBe('COMPOUNDING');
+  it('produces every diagnosis, keyed to the gap rather than to cliffs', () => {
+    const measured = { confidence: 1 };
+    expect(diagnose(10, 8, measured)).toBe('STALLED');
+    expect(diagnose(70, 20, measured)).toBe('BURIED');
+    expect(diagnose(20, 70, measured)).toBe('HOLLOW');
+    expect(diagnose(70, 70, measured)).toBe('COMPOUNDING');
+    // Balanced but modest is compounding, not "not started".
+    expect(diagnose(30, 28, measured)).toBe('COMPOUNDING');
+  });
+
+  it('has no cliff: one point of foundation cannot flip the verdict', () => {
+    const measured = { confidence: 1 };
+    // A blank optional field used to move foundation from 45 to 44 and flip
+    // BURIED to "you haven't started yet" on an identical evidence base.
+    for (const f of [43, 44, 45, 46]) {
+      expect(diagnose(f, 0, measured)).toBe('BURIED');
+    }
+  });
+
+  it('says uncatalogued rather than hollow when the foundation is unmeasured', () => {
+    expect(diagnose(20, 70, { confidence: 0.1 })).toBe('UNCATALOGUED');
   });
 
   it('flags low confidence for a nearly-empty state', () => {

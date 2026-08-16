@@ -35,7 +35,7 @@ motivational mechanism.
 
 L1–L2 are the **foundation**. L3–L6 are **built** standing.
 
-## The Liebig gate — why this cannot be used to fake standing
+## The Liebig gate — what it does and does not prevent
 
 ```
 effectiveBuilt = min(built, foundation + 25)
@@ -48,6 +48,14 @@ diagnosis and an evidence-acquisition plan instead.
 Every other tool in this category rewards volume. This one refuses to — and
 that is also what makes it usable by people who would rather stay invisible
 than become "one of those people on LinkedIn".
+
+**What the gate does not do** is verify the foundation. `L2` is scored from
+text boxes and `L1` from text you supply, so someone determined to type
+impressive sentences can raise their own ceiling. The gate stops *output* from
+manufacturing standing; it does not stop *input* from doing so, and no
+client-side tool can. What it does provide against that is the
+`falsifiability` dimension, which rewards the presence of a link, a date, a
+named source — the things a fabricator has to invent in a checkable form.
 
 | | built low | built high |
 |---|---|---|
@@ -74,18 +82,43 @@ Every screen answers *"what do I do now?"* with one action, never a menu — wit
 the reason, the layer it lifts, and the effort in minutes. Doing the Next Move
 repeatedly *is* the product.
 
-## Honesty guarantees, enforced in code
+## Honesty guarantees, and their limits
 
-- **No invented evidence.** `validateGrounding()` rejects any draft containing a
-  number absent from its cited proof. Tested across every angle × CTA × locale.
+Stated as precisely as the code implements them, because a product whose axis
+is anti-hype cannot overstate its own integrity.
+
+- **Drafts cannot acquire a checkable fact you did not supply.**
+  `validateGrounding()` rejects any draft containing a number — digits or
+  spelled out — or a named entity absent from its cited proof, and flags
+  superlatives. Tested across every angle × CTA × locale, and the optional
+  model rewriter passes through the same gate.
+  **What it cannot catch:** a real number attached to the wrong subject, an
+  invented job title made of ordinary words, or a claim stitched across two
+  separately-true proofs. Those need a reader. The studio says so on screen
+  rather than implying the check is a truth gate.
 - **No score without inputs.** A layer with no data reports zero confidence and
-  says what unlocks it — never a red zero.
-- **Demo material is quarantined** in the data itself: excluded from the index,
-  from gap coverage, and from calibration.
+  says what unlocks it — never a red zero. The foundation renormalises over
+  layers that have data, so an unfilled form is not read as an absent claim.
+- **The product refuses to call you a fraud for under-reporting.** `HOLLOW` is
+  only ever returned when the evidence base has actually been measured;
+  otherwise the answer is `UNCATALOGUED` — *not written down, not absent*.
+- **Demo material cannot be laundered.** It is excluded from calibration
+  unconditionally, dropped from scoring the moment any real evidence exists,
+  refused by the compounding loop, kept out of the primary action, and its
+  marker survives into draft bodies and provenance footers.
+  **Deliberate exception:** with *only* the sample loaded, the sample is scored
+  so it can demonstrate anything at all — and every screen carries a demo
+  banner while that is true.
 - **Integrity dimensions are never tuned.** `falsifiability` and `recency` are
   excluded from calibration by design, so the model can never learn to reward
   unverifiable claims.
-- **Your data never leaves your device.** No server, no account, no telemetry.
+- **Calibration presents itself as a hypothesis** until it has the sample to be
+  anything more. Seven correlations on a small sample is mostly noise, and the
+  panel says that instead of asserting a finding.
+- **Your data never leaves your device** — no server, no account, no telemetry,
+  no external font, zero outbound requests. **Unless** you explicitly enable the
+  optional model rewriter, which sends the draft *and the evidence it cites* to
+  the provider you configured. That is stated at the point of the toggle.
 
 ## Run locally
 

@@ -8,11 +8,16 @@
  */
 
 import { bidi, html } from '../html.js';
-import { button, field, notice, section, select, textInput } from '../components.js';
+import { button, field, notice, section, select, textArea, textInput } from '../components.js';
 import { CONVERSION_TYPES, RECOGNITION_TYPES } from '../../core/schema.js';
-import { MIN_OBSERVATIONS, buildObservations, calibrationDelta } from '../../engine/feedback.js';
+import {
+  CONFIDENT_OBSERVATIONS,
+  MIN_OBSERVATIONS,
+  buildObservations,
+  calibrationDelta,
+} from '../../engine/feedback.js';
 
-export function measureView(state, t) {
+export function measureView(state, t, { parsed = {} } = {}) {
   const published = state.artifacts.filter((a) => a.status === 'published');
   const measuredIds = new Set(state.receptions.map((r) => r.artifactId));
   const pending = published.filter((a) => !measuredIds.has(a.id));
@@ -26,6 +31,17 @@ export function measureView(state, t) {
       published.length
         ? html`
             ${pending.length ? notice('warn', t('measure.pending', pending.length)) : ''}
+
+            ${field(
+              'rc-paste',
+              t('measure.paste'),
+              textArea('rc-paste', '', { rows: 3, hint: true }),
+              t('measure.pasteHint'),
+            )}
+            <div class="row">
+              ${button('parsePaste', t('measure.pasteAction'), { variant: 'secondary' })}
+            </div>
+
             ${field(
               'rc-artifact',
               t('measure.artifact'),
@@ -39,17 +55,22 @@ export function measureView(state, t) {
               ),
             )}
             <div class="grid grid--3">
-              ${field('rc-impressions', t('measure.impressions'), textInput('rc-impressions', '', { type: 'number' }))}
-              ${field('rc-reactions', t('measure.reactions'), textInput('rc-reactions', '', { type: 'number' }))}
-              ${field('rc-comments', t('measure.comments'), textInput('rc-comments', '', { type: 'number' }))}
+              ${field(
+                'rc-impressions',
+                t('measure.impressions'),
+                textInput('rc-impressions', parsed.impressions ?? '', { type: 'number', hint: true }),
+                t('measure.optional'),
+              )}
+              ${field('rc-reactions', t('measure.reactions'), textInput('rc-reactions', parsed.reactions ?? '', { type: 'number' }))}
+              ${field('rc-comments', t('measure.comments'), textInput('rc-comments', parsed.comments ?? '', { type: 'number' }))}
               ${field(
                 'rc-substantive',
                 t('measure.substantive'),
                 textInput('rc-substantive', '', { type: 'number', hint: true }),
                 t('measure.substantiveHint'),
               )}
-              ${field('rc-saves', t('measure.saves'), textInput('rc-saves', '', { type: 'number' }))}
-              ${field('rc-shares', t('measure.shares'), textInput('rc-shares', '', { type: 'number' }))}
+              ${field('rc-saves', t('measure.saves'), textInput('rc-saves', parsed.saves ?? '', { type: 'number' }))}
+              ${field('rc-shares', t('measure.shares'), textInput('rc-shares', parsed.shares ?? '', { type: 'number' }))}
             </div>
             <div class="row row--end">
               ${button('saveReception', t('measure.save'), { variant: 'primary' })}
@@ -64,6 +85,9 @@ export function measureView(state, t) {
         ${calibrated
           ? html`
               <p class="prose">${t('measure.calibrationActive', state.calibration.observations)}</p>
+              ${state.calibration.observations < CONFIDENT_OBSERVATIONS
+                ? notice('warn', t('measure.calibrationProvisional'))
+                : ''}
               <ul class="calib">
                 ${calibrationDelta(calibrated)
                   .slice(0, 5)
@@ -97,9 +121,14 @@ export function measureView(state, t) {
               label: t(['measure', 'conversionTypes', type]),
             })),
           )}
+          ${select('cv-artifact', '', [
+            { value: '', label: t('measure.fromNothing') },
+            ...published.map((a) => ({ value: a.id, label: a.body.slice(0, 50) })),
+          ])}
           ${textInput('cv-note', '', { placeholder: t('measure.note') })}
           ${button('addConversion', t('measure.addConversion'), { variant: 'secondary' })}
         </div>
+        <p class="hint">${t('measure.attributionHint')}</p>
         ${state.conversions.length
           ? html`<ul class="events">
               ${state.conversions

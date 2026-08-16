@@ -12,7 +12,7 @@
 import { html } from '../html.js';
 import { button, field, textArea } from '../components.js';
 import { scoreBand } from '../../engine/score.js';
-import { extremes } from '../../engine/score.js';
+import { reasonFor } from '../../engine/explain.js';
 
 export function onboardingView(state, t) {
   const track = state.profile.track;
@@ -29,6 +29,24 @@ export function onboardingView(state, t) {
           ${t('onboarding.pledge').map((line) => html`<li>${line}</li>`)}
         </ul>
       </div>
+
+      <h2 class="cold__step">${t('onboarding.firstStepTitle')}</h2>
+      <p class="cold__body">${t('onboarding.firstStepBody')}</p>
+
+      ${field(
+        'cold-paste',
+        t('onboarding.firstStepTitle'),
+        textArea('cold-paste', '', { placeholder: t('onboarding.placeholder'), rows: 9 }),
+        '',
+        { hideLabel: true },
+      )}
+
+      <div class="cold__actions">
+        ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
+        ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
+      </div>
+
+      <p class="cold__aside">${t('onboarding.twoMore')}</p>
 
       <fieldset class="choice">
         <legend>${t('onboarding.trackQuestion')}</legend>
@@ -47,21 +65,6 @@ export function onboardingView(state, t) {
         </div>
       </fieldset>
 
-      <h2 class="cold__step">${t('onboarding.firstStepTitle')}</h2>
-      <p class="cold__body">${t('onboarding.firstStepBody')}</p>
-
-      ${field(
-        'cold-paste',
-        t('onboarding.firstStepTitle'),
-        textArea('cold-paste', '', { placeholder: t('onboarding.placeholder'), rows: 9 }),
-        '',
-        { hideLabel: true },
-      )}
-
-      <div class="cold__actions">
-        ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
-        ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
-      </div>
     </div>
   </div>`;
 }
@@ -108,7 +111,7 @@ export function firstLightView(state, t, { proofs, top3 }) {
 
       <h2 class="cold__step">${t('firstLight.threeTitle')}</h2>
       <ol class="reveal">
-        ${top3.map((proof, index) => revealCard(proof, index + 1, t))}
+        ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs))}
       </ol>
 
       <div class="cold__actions">
@@ -118,15 +121,21 @@ export function firstLightView(state, t, { proofs, top3 }) {
   </div>`;
 }
 
-function revealCard(proof, rank, t) {
-  const { strongest } = extremes(proof.breakdown);
+function revealCard(proof, rank, t, inventory) {
+  // A reason derived from the signals actually present in this claim, and where
+  // possible from how it compares to the rest of the inventory. The previous
+  // version printed a static definition of whichever dimension scored highest,
+  // which was frequently a non-reason and sometimes plainly false against the
+  // card it sat under — "someone else said this about you" over a sentence the
+  // user wrote themselves.
+  const reason = reasonFor(proof, inventory);
   return html`<li class="reveal__item">
     <span class="reveal__rank">${rank}</span>
     <div>
       <p class="reveal__claim">${proof.claim}</p>
       <p class="reveal__why">
         <b>${t('firstLight.why')}:</b>
-        ${strongest ? t(`dimensionHelp.${strongest}`) : ''}
+        ${reason ? t(reason.id.split('.'), reason.vars) : t('reasons.none')}
       </p>
       <span class="reveal__score score--${scoreBand(proof.score)}">${Math.round(proof.score)}</span>
     </div>
