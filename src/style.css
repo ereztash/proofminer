@@ -537,6 +537,26 @@ p {
   line-height: 1.55;
 }
 
+.input--range {
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.range-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  margin-block-start: 0.35rem;
+}
+
+.range-scale b {
+  color: var(--ink);
+  font-size: 1.1rem;
+}
+
 .switch {
   display: flex;
   gap: 0.6rem;
@@ -915,6 +935,16 @@ p {
 .proof-card__title {
   font-size: 1.35rem;
   margin-block-start: 0.15rem;
+}
+
+.proof-card__verdict,
+.proof-card__authority {
+  color: var(--ink-soft);
+  margin-block-start: 0.35rem;
+}
+
+.proof-card__authority b {
+  color: var(--ink);
 }
 
 .proof-card__grid {
