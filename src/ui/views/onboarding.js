@@ -346,7 +346,7 @@ function overlapsClaim(proofClaim, targetClaim) {
 
 function contentTerms(text = '') {
   return new Set(
-    (text.toLowerCase().match(/[\\p{L}\\p{N}]+/gu) || [])
+    (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [])
       .map((term) => term.replace(/^[והבכלש](?=.{3,})/u, ''))
       .filter((term) => term.length >= 3 && !SUPPORT_STOP_WORDS.has(term)),
   );
