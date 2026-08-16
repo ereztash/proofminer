@@ -135,7 +135,7 @@ describe('the first screen qualifies rather than educates', () => {
 
   it('does not show the paste box until the question is answered', () => {
     expect(toString_(onboardingView(state, t, {}))).not.toContain('id="cold-paste"');
-    expect(toString_(onboardingView(state, t, { situation: 'job' }))).toContain('id="cold-paste"');
+    expect(toString_(onboardingView(state, t, { situation: 'consultant' }))).toContain('id="cold-paste"');
   });
 
   it('puts no action at all on the exit page', () => {
@@ -158,8 +158,17 @@ describe('the first screen qualifies rather than educates', () => {
     expect(markup).not.toContain('data-act="coldStart"');
   });
 
+  it('starts with evidence choice, not only a pain category', () => {
+    const markup = toString_(onboardingView(state, t, { situation: 'expert' }));
+
+    expect(markup).toContain(t('onboarding.fitQuestion'));
+    expect(markup).toContain('id="fit-claim"');
+    expect(markup).toContain('id="fit-evidence"');
+    expect(markup).toContain(t(['onboarding', 'modeRead', 'expert']));
+  });
+
   it('does not empty the paste box when the visitor answers the question above it', () => {
-    const ui = { situation: 'job', formCache: { 'cold-paste': 'ניהלתי צוות של שמונה אנשים' } };
+    const ui = { situation: 'consultant', formCache: { 'cold-paste': 'ניהלתי צוות של שמונה אנשים' } };
     expect(toString_(onboardingView(state, t, ui))).toContain('ניהלתי צוות של שמונה אנשים');
   });
 
@@ -216,8 +225,31 @@ describe('First Light on the sample', () => {
     );
     expect(markup).toContain(t('proofCard.title'));
     expect(markup).toContain(t('proofCard.limitLabel'));
+    expect(markup).toContain(t('proofCard.actionLevelLabel'));
+    expect(markup).toContain(t(['proofCard', 'actionLevels', 'R3']));
     expect(markup).toContain('data-act="draft"');
     expect(markup).toContain('data-id="proof_loop"');
+  });
+
+  it('does not turn weak evidence into a draftable recommendation', () => {
+    const weak = {
+      ...demoProof,
+      id: 'weak_loop',
+      score: 31,
+      demo: false,
+      archetypes: ['OUTCOME'],
+      kind: 'experience',
+    };
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs: [weak] }, t, {
+        proofs: [weak], top3: [weak], demo: false,
+      }),
+    );
+
+    expect(markup).toContain(t('proofCard.titleWeak'));
+    expect(markup).toContain(t('proofCard.strengthen'));
+    expect(markup).toContain(t(['proofCard', 'actionLevels', 'R4']));
+    expect(markup).not.toContain('data-act="draft"');
   });
 });
 
