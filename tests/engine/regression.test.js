@@ -11,8 +11,9 @@
 import { describe, expect, it } from 'vitest';
 import { analyzeClaim, mineSources } from '../../src/engine/mine.js';
 import { extractSignals, spelledNumbers } from '../../src/engine/signals.js';
-import { dedupeProofs, decayFactor, scoreBand } from '../../src/engine/score.js';
+import { BAND_USABLE, dedupeProofs, decayFactor, scoreBand } from '../../src/engine/score.js';
 import { computeLayers } from '../../src/engine/layers.js';
+import { compound } from '../../src/engine/feedback.js';
 import { acquisitionPlays, archetypeCoverage } from '../../src/engine/gaps.js';
 import { scorePositioning } from '../../src/engine/positioning.js';
 import {
@@ -529,31 +530,38 @@ describe('analytics paste', () => {
   });
 });
 
-describe('L4 confidence reflects the sample the score actually used', () => {
-  const record = (daysAgo, over = {}) =>
+describe('L4 confidence reflects how much recent evidence stands behind it', () => {
+  const record = (daysAgo) =>
     reception({
       id: `r${daysAgo}`,
       artifactId: `a${daysAgo}`,
       capturedAt: NOW - daysAgo * DAY,
       impressions: 1000,
       reactions: 40,
-      ...over,
     });
 
-  it('does not claim a settled pattern from one recent post and five stale ones', () => {
-    // The score is a recency-weighted mean, so this is arithmetically close to
-    // a single observation. Counting rows reported confidence 1.0 over it.
-    const stale = stateWith({
-      receptions: [record(1), ...[400, 430, 460, 490, 520].map((d) => record(d))],
-    });
-    const fresh = stateWith({ receptions: [1, 5, 9, 13, 17, 21].map((d) => record(d)) });
-    expect(layerReception(stale, NOW).confidence).toBeLessThan(0.5);
+  it('does not report a five-year-old number at full confidence', () => {
+    // Kish's effective sample size is scale-invariant: it corrects weight
+    // imbalance, never staleness, so six records all captured in 2021 reported
+    // confidence 1.0 while carrying a quarter of built standing.
+    const fresh = stateWith({ receptions: [1, 5, 9, 13, 17, 21].map(record) });
+    const stale = stateWith({ receptions: [1801, 1805, 1809, 1813, 1817, 1821].map(record) });
     expect(layerReception(fresh, NOW).confidence).toBeGreaterThan(0.9);
+    expect(layerReception(stale, NOW).confidence).toBeLessThan(0.1);
   });
 
-  it('gives back the plain count when the records are evenly fresh', () => {
-    const state = stateWith({ receptions: [0, 0.5, 1].map((d, i) => record(i ? d : 0)) });
-    expect(layerReception(state, NOW).inputs.effectiveN).toBeCloseTo(3, 1);
+  it('never lowers confidence for logging a fresh measurement', () => {
+    // Under ESS it did, by 4.3x: adding an unequal weight makes a sample less
+    // balanced, so obeying `move.logReception` was punished.
+    const stale = [540, 545, 550, 555, 560].map(record);
+    const before = layerReception(stateWith({ receptions: stale }), NOW);
+    const after = layerReception(stateWith({ receptions: [...stale, record(0)] }), NOW);
+    expect(after.confidence).toBeGreaterThan(before.confidence);
+  });
+
+  it('reaches full confidence on six current records', () => {
+    const state = stateWith({ receptions: [0, 1, 2, 3, 4, 5].map(record) });
+    expect(layerReception(state, NOW).confidence).toBeGreaterThan(0.97);
   });
 });
 
@@ -684,5 +692,62 @@ describe('acquisition plays can be satisfied by doing them', () => {
     expect(play.shortOfBar).toBe(true);
     expect(play.currentBest).toBeGreaterThan(0);
     expect(play.threshold).toBeGreaterThan(play.currentBest);
+  });
+});
+
+describe('self-report cannot buy the evidence half', () => {
+  const NOW_ = NOW;
+  const build = () => {
+    const state = stateWith({
+      profile: { track: 'independent', weeksInMotion: 12, onboarded: true, sawFirstLight: true, declined: false },
+      proofs: [proofFrom('ניהלתי צוות תפעול בחברה קמעונאית במשך ארבע שנים.')],
+    });
+    state.artifacts = Array.from({ length: 16 }, (_, i) =>
+      artifact({
+        id: `a${i}`,
+        proofIds: [state.proofs[0].id],
+        url: `https://linkedin.com/posts/x${i}`,
+        publishedAt: NOW_ - (i + 1) * 3 * DAY,
+      }),
+    );
+    state.receptions = Array.from({ length: 16 }, (_, i) =>
+      reception({
+        id: `r${i}`, artifactId: `a${i}`, impressions: 900,
+        reactions: i < 8 ? 3 : 70, comments: i < 8 ? 0 : 12,
+        substantiveComments: i < 8 ? 0 : 6, saves: i < 8 ? 0 : 8, shares: i < 8 ? 0 : 4,
+        capturedAt: NOW_ - (i + 1) * 2 * DAY,
+      }),
+    );
+    return state;
+  };
+
+  it('scores a typed-in reach figure below the usable band', () => {
+    // The link proves the post exists. The impression count is public nowhere,
+    // so the one fact the claim asserts is the one nobody can check — and it
+    // was scoring verification 90 / falsifiability 84, outranking real CV lines.
+    const created = compound(build(), { now: NOW_ });
+    expect(created.length).toBeGreaterThan(0);
+    for (const unit of created) expect(unit.score).toBeLessThan(BAND_USABLE);
+  });
+
+  it('does not mint one unit per post from the same sentence', () => {
+    // Compounded units bypassed dedupe, so N posts minted N near-identical
+    // traction claims, each counting toward volume, quality and confidence.
+    const state = build();
+    const created = compound(state, { now: NOW_ });
+    const mined = mineSources({ ...state, proofs: [...state.proofs, ...created] }, { now: NOW_ });
+    expect(created.length).toBeGreaterThan(2);
+    expect(mined.filter((p) => p.origin === 'compounded').length).toBeLessThan(created.length);
+  });
+
+  it('barely moves the ceiling the gate is measured against', () => {
+    const state = build();
+    const before = computeAuthority(state, NOW_);
+    const created = compound(state, { now: NOW_ });
+    const after = computeAuthority(
+      { ...state, proofs: mineSources({ ...state, proofs: [...state.proofs, ...created] }, { now: NOW_ }) },
+      NOW_,
+    );
+    expect(after.foundation - before.foundation).toBeLessThan(8);
   });
 });

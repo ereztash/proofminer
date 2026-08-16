@@ -85,46 +85,38 @@ function weightedLayers(layers, weights) {
   return { score: clamp100(score / total), confidence: confidence / total };
 }
 
-/** Most a sharp positioning can add to the evidence it aims. */
-export const POSITIONING_LIFT = 0.25;
-
 /**
- * The foundation: evidence, aimed.
+ * The foundation **is** the evidence layer. Nothing else feeds it.
  *
- * **Positioning multiplies the evidence; it never substitutes for it.** That is
- * the whole shape of this function and it is load-bearing in both directions:
+ * This arrived at its final shape through two failures worth recording, because
+ * both are tempting and both are wrong.
  *
- * - Blending L1 and L2 as peers let four text boxes carry the foundation. On
- *   one weak CV line, completing the positioning form moved the foundation from
- *   18 to 71 and the index from 32 to 67, switching *off* the Liebig gate — the
- *   mechanism this module exists to enforce. A claim about your evidence cannot
- *   be worth more than the evidence.
- * - Blending them as peers in the other direction meant answering the form at
- *   all lowered the headline number, because a half-finished positioning scores
- *   low. The product punished obedience to its own instruction.
+ * Blending L1 and L2 as peers let four text boxes carry the foundation: on one
+ * weak CV line, completing the positioning form moved the foundation from 18 to
+ * 71 and the index from 32 to 67, switching *off* the Liebig gate. Replacing
+ * the blend with a bounded multiplier — at most a quarter more — shrank that
+ * defect without removing it: with no new evidence at all, filling the form
+ * still moved a user from `HOLLOW` to `COMPOUNDING`, and in another state
+ * flipped `gated` from true to false.
  *
- * A multiplier bounded at [1, 1+POSITIONING_LIFT] resolves both. Sharpening
- * your claim makes the same evidence worth up to a quarter more; leaving the
- * form blank or filling it with category filler simply earns no lift. There is
- * no arrangement of text that raises the evidence half on its own.
+ * The multiplier was also **double counting**, which is the part that settles
+ * it. Positioning already reaches the evidence score, through the route the
+ * product's thesis actually names: `icpFit` (prior 16) and
+ * `commercialProximity` (prior 8) score each proof unit against the declared
+ * audience and offer, so a sharp positioning raises L1 by re-ranking the
+ * evidence it aims. Adding a separate multiplier on top paid for the same work
+ * twice, and it was the second payment that bought the gate.
  *
- * Confidence is L1's: the foundation is a statement about evidence, and how
- * sure we are of it is how much evidence we have actually seen.
+ * So: no multiplier. Positioning's effect on the foundation is exactly its
+ * effect on how well the user's evidence speaks to the audience they chose —
+ * measured per proof unit, where it can be explained — and **no arrangement of
+ * text raises the evidence half on its own** is now literally true rather than
+ * approximately true.
  */
 function foundationOf(layers) {
   const proof = layers.L1;
-  const position = layers.L2;
-  if (proof?.locked) return { score: 0, confidence: 0, lift: 0 };
-
-  const lift = position?.locked
-    ? 0
-    : POSITIONING_LIFT * (position.score / 100) * position.confidence;
-
-  return {
-    score: clamp100(proof.score * (1 + lift)),
-    confidence: proof.confidence,
-    lift: round(lift, 3),
-  };
+  if (proof?.locked) return { score: 0, confidence: 0 };
+  return { score: proof.score, confidence: proof.confidence };
 }
 
 /**
@@ -140,8 +132,9 @@ export function computeAuthority(state, now = Date.now()) {
 
   // Liebig's law of the minimum: the ceiling on built standing is the
   // foundation that supports it.
-  const effectiveBuilt = Math.min(built.score, foundation.score + LIEBIG_GATE);
-  const gated = built.score > foundation.score + LIEBIG_GATE;
+  const ceiling = foundation.score + LIEBIG_GATE;
+  const effectiveBuilt = Math.min(built.score, ceiling);
+  const gated = built.score > ceiling;
 
   const index = clamp100(0.45 * foundation.score + 0.55 * effectiveBuilt);
   const gap = Math.round(foundation.score - built.score);
@@ -159,7 +152,6 @@ export function computeAuthority(state, now = Date.now()) {
     layers,
     demo,
     foundation: foundation.score,
-    positioningLift: foundation.lift,
     built: built.score,
     effectiveBuilt: Math.round(effectiveBuilt),
     gated,

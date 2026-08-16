@@ -109,17 +109,29 @@ describe('layer scores', () => {
 
 /**
  * Loud: heavy publishing, reception, conversion — on a measured but weak
- * evidence base. Four proofs is the point at which L1 confidence reaches the
- * threshold for the product to be willing to say "hollow" at all.
+ * evidence base.
+ *
+ * The evidence here is real and ordinary, not filler, and that distinction is
+ * now load-bearing. L1 confidence weighs each unit against the usable band, so
+ * a base of four platitudes no longer reaches `MEASURED_FOUNDATION` and the
+ * product correctly answers `UNCATALOGUED` — *not written down* — rather than
+ * accusing the user of being louder than evidence it never measured. To test
+ * the gate we have to give it something it can actually measure.
  */
 function hollowState({ volume = 1 } = {}) {
   return stateWith({
     positioning: { audience: 'אנשים', transformation: 'טוב יותר' },
     proofs: [
-      proofFrom('אני אדם מאוד מקצועי ומנוסה בתחום שלי'),
-      proofFrom('אני מאמין בעבודת צוות ובלמידה מתמדת לאורך כל הדרך'),
-      proofFrom('יש לי גישה אישית ותשומת לב לפרטים בכל פרויקט'),
-      proofFrom('אני דינמי ופרואקטיבי עם מוטיבציה גבוהה מאוד'),
+      proofFrom('ריכזתי את העבודה מול ספקי הלוגיסטיקה של החברה בשנת 2023.'),
+      proofFrom('כתבתי נהלי עבודה למחלקת התפעול והדרכתי עליהם את הצוות.'),
+      proofFrom('ליוויתי את המעבר של המשרד למערכת דיווח שעות חדשה ב-2025.'),
+      proofFrom('טיפלתי בפניות של לקוחות מול מחלקת השירות לאורך התקופה.'),
+      proofFrom('השתתפתי בוועדת ההיגוי של הפרויקט מטעם מחלקת התפעול.'),
+      proofFrom('סייעתי בהכנת החומרים לישיבות ההנהלה הרבעוניות בארגון.'),
+      proofFrom('עבדתי מול צוותי הביצוע באתר על לוחות הזמנים של ההקמה.'),
+      proofFrom('ליוויתי עובדים חדשים בשבועות הראשונים שלהם במחלקה.'),
+      proofFrom('ריכזתי את הדיווח השבועי להנהלה על ביצועי התפעול.'),
+      proofFrom('השתתפתי בהטמעה של מערכת ניהול המלאי במחסן המרכזי.'),
     ],
     artifacts: Array.from({ length: 8 * volume }, () => artifact({ proofIds: [] })),
     receptions: Array.from({ length: 6 * volume }, (_, i) =>
@@ -352,13 +364,22 @@ describe('next move', () => {
   });
 
   it('tells a HOLLOW user to stop publishing and acquire evidence', () => {
+    // Real but ordinary evidence, not platitudes: L1 confidence now weighs each
+    // unit against the usable band, and a base of four self-descriptions
+    // correctly reads as UNCATALOGUED rather than earning the HOLLOW verdict.
     const hollow = stateWith({
       positioning: { audience: 'אנשים בתעשייה', transformation: 'משהו טוב יותר' },
       proofs: [
-        proofFrom('אני אדם מאוד מקצועי ומנוסה בתחום שלי'),
-        proofFrom('אני מאמין בעבודת צוות ובלמידה מתמדת לאורך כל הדרך'),
-        proofFrom('יש לי גישה אישית ותשומת לב לפרטים בכל פרויקט'),
-        proofFrom('אני דינמי ופרואקטיבי עם מוטיבציה גבוהה מאוד'),
+        proofFrom('ריכזתי את העבודה מול ספקי הלוגיסטיקה של החברה בשנת 2023.'),
+        proofFrom('כתבתי נהלי עבודה למחלקת התפעול והדרכתי עליהם את הצוות.'),
+        proofFrom('ליוויתי את המעבר של המשרד למערכת דיווח שעות חדשה ב-2025.'),
+        proofFrom('טיפלתי בפניות של לקוחות מול מחלקת השירות לאורך התקופה.'),
+        proofFrom('השתתפתי בוועדת ההיגוי של הפרויקט מטעם מחלקת התפעול.'),
+        proofFrom('סייעתי בהכנת החומרים לישיבות ההנהלה הרבעוניות בארגון.'),
+        proofFrom('עבדתי מול צוותי הביצוע באתר על לוחות הזמנים של ההקמה.'),
+        proofFrom('ליוויתי עובדים חדשים בשבועות הראשונים שלהם במחלקה.'),
+        proofFrom('ריכזתי את הדיווח השבועי להנהלה על ביצועי התפעול.'),
+        proofFrom('השתתפתי בהטמעה של מערכת ניהול המלאי במחסן המרכזי.'),
       ],
       artifacts: Array.from({ length: 10 }, () => artifact({ proofIds: [] })),
       receptions: Array.from({ length: 6 }, (_, i) =>

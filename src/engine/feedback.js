@@ -12,6 +12,7 @@
 import { correlation, makeId, mean, round, sumValues } from '../core/util.js';
 import { CALIBRATABLE_KEYS, DIMENSION_KEYS, PRIOR_WEIGHTS } from './dimensions.js';
 import { analyzeClaim } from './mine.js';
+import { compositeScore } from './score.js';
 import { engagementWeight, relativeReceptionScore, receptionSignal } from './layers.js';
 
 /**
@@ -208,6 +209,27 @@ export const COMPOUND_THRESHOLD = 1.6;
 export const COMPOUND_MIN_ENGAGEMENT = 40;
 
 /**
+ * What the URL on a traction claim actually proves.
+ *
+ * The generated sentence carries a link and a specific figure, so the scorer
+ * read it as highly checkable — `verification` 90, `falsifiability` 84 — and
+ * the resulting unit outscored the user's real CV lines. But the link evidences
+ * that *the post exists*; the impression count is not public on any of these
+ * platforms, so the one fact the claim asserts is precisely the one a sceptic
+ * cannot open and check. It is a number the user typed about themselves.
+ *
+ * So both dimensions are overridden and the composite recomputed. The unit is
+ * still evidence — reach is real and this is the integration that makes output
+ * an input — but it is self-reported evidence and is scored as such.
+ */
+const SELF_REPORTED = { verification: 30, falsifiability: 40 };
+
+function selfReported(analysis) {
+  const breakdown = { ...analysis.breakdown, ...SELF_REPORTED };
+  return { ...analysis, breakdown, score: compositeScore(breakdown) };
+}
+
+/**
  * Integration I1 — compounding. An artifact that meaningfully outperformed the
  * user's own baseline *is itself evidence*: reach and response are traction,
  * and traction is a claim a sceptic can check.
@@ -283,7 +305,9 @@ export function compound(state, { now = Date.now(), minImpressions = 500 } = {})
 
     // Built only from observed numbers. No adjectives, no interpretation.
     const claim = buildTractionClaim(reception, artifact.url, state.locale);
-    const analysis = analyzeClaim(claim, { positioning: state.positioning, now });
+    const analysis = selfReported(
+      analyzeClaim(claim, { positioning: state.positioning, now }),
+    );
 
     alreadyCompounded.add(reception.artifactId);
     created.push({
