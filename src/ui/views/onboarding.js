@@ -48,14 +48,14 @@ export function onboardingView(state, t, ui = {}) {
         <legend>${t('onboarding.situationQuestion')}</legend>
         <p class="choice__note">${t('onboarding.situationNote')}</p>
         <div class="choice__row">
-          ${situationOption('independent', situation, t('onboarding.trackIndependent'), t('onboarding.trackIndependentHint'))}
-          ${situationOption('job', situation, t('onboarding.trackJob'), t('onboarding.trackJobHint'))}
+          ${situationOption('consultant', situation, t('onboarding.modeConsultant'), t('onboarding.modeConsultantHint'))}
+          ${situationOption('expert', situation, t('onboarding.modeExpert'), t('onboarding.modeExpertHint'))}
         </div>
         ${situationOption(NOT_ME, situation, t('onboarding.notMe'), t('onboarding.notMeHint'), 'choice__opt--wide')}
       </fieldset>
 
       ${situation === NOT_ME ? notForYou(t) : ''}
-      ${situation && situation !== NOT_ME ? coldStartBody(t, weeks, ui) : ''}
+      ${situation && situation !== NOT_ME ? coldStartBody(t, weeks, ui, situation) : ''}
     </div>
   </div>`;
 }
@@ -84,8 +84,54 @@ function notForYou(t) {
   </div>`;
 }
 
-function coldStartBody(t, weeks, ui) {
+function coldStartBody(t, weeks, ui, situation) {
+  const confidence = ui.formCache?.['fit-confidence'] ?? '5';
+  const modeRead = t(['onboarding', 'modeRead', situation]);
+
   return html`<div class="cold__step-block">
+    <p class="pledge__lead">${modeRead}</p>
+
+    <fieldset class="choice">
+      <legend>${t('onboarding.fitQuestion')}</legend>
+      <p class="choice__note">${t('onboarding.fitNote')}</p>
+      <input
+        class="input input--range"
+        id="fit-confidence"
+        name="fit-confidence"
+        type="range"
+        min="1"
+        max="10"
+        step="1"
+        value="${confidence}"
+        aria-describedby="fit-confidence-scale"
+      />
+      <div class="range-scale" id="fit-confidence-scale">
+        <span>${t('onboarding.fitLow')}</span>
+        <b>${confidence}</b>
+        <span>${t('onboarding.fitHigh')}</span>
+      </div>
+    </fieldset>
+
+    ${field(
+      'fit-claim',
+      t('onboarding.claimQuestion'),
+      textArea('fit-claim', ui.formCache?.['fit-claim'] ?? '', {
+        placeholder: t('onboarding.claimPlaceholder'),
+        rows: 3,
+      }),
+      t('onboarding.claimHint'),
+    )}
+
+    ${field(
+      'fit-evidence',
+      t('onboarding.evidenceQuestion'),
+      textArea('fit-evidence', ui.formCache?.['fit-evidence'] ?? '', {
+        placeholder: t('onboarding.evidencePlaceholder'),
+        rows: 3,
+      }),
+      t('onboarding.evidenceHint'),
+    )}
+
     <fieldset class="choice">
       <legend>${t('onboarding.weeksQuestion')}</legend>
       <div class="choice__row choice__row--tight">
@@ -190,7 +236,7 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
         ${thin ? t('firstLight.thinTitle') : t('firstLight.threeTitle')}
       </h2>
       ${thin ? html`<p class="cold__body">${t('firstLight.thinBody')}</p>` : ''}
-      ${primary ? proofLoopCard(primary, t, proofs, signalCache, state) : ''}
+      ${primary ? proofLoopCard(primary, t, proofs, signalCache, state, { thin }) : ''}
 
       <ol class="reveal">
         ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
@@ -199,15 +245,24 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
   </div>`;
 }
 
-function proofLoopCard(proof, t, inventory, signalCache, state) {
+function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false } = {}) {
   const reason = reasonFor(proof, inventory, signalCache);
   const archetype = proof.archetypes?.[0] || 'OUTCOME';
   const dimension = strongestDimension(proof.breakdown || {});
   const limit = transferLimit(proof);
+  const actionLevel = thin ? 'R4' : 'R3';
 
   return html`<section class="proof-card" aria-labelledby="proof-card-title">
     <p class="proof-card__eyebrow">${t('proofCard.eyebrow')}</p>
-    <h3 class="proof-card__title" id="proof-card-title">${t('proofCard.title')}</h3>
+    <h3 class="proof-card__title" id="proof-card-title">
+      ${thin ? t('proofCard.titleWeak') : t('proofCard.title')}
+    </h3>
+    <p class="proof-card__verdict">
+      ${thin ? t('proofCard.weakVerdict') : t('proofCard.readyVerdict')}
+    </p>
+    <p class="proof-card__authority">
+      <b>${t('proofCard.actionLevelLabel')}</b> ${t(['proofCard', 'actionLevels', actionLevel])}
+    </p>
 
     <dl class="proof-card__grid">
       <div class="proof-card__cell proof-card__cell--wide">
@@ -237,7 +292,9 @@ function proofLoopCard(proof, t, inventory, signalCache, state) {
     </dl>
 
     <div class="proof-card__actions">
-      ${button('draft', t('proofCard.draft'), { variant: 'primary', payload: { id: proof.id } })}
+      ${thin
+        ? button('goto', t('proofCard.strengthen'), { variant: 'primary', payload: { view: 'mine' } })
+        : button('draft', t('proofCard.draft'), { variant: 'primary', payload: { id: proof.id } })}
       ${button('firstLightDone', t('proofCard.fullPicture'), { variant: 'ghost' })}
     </div>
   </section>`;
