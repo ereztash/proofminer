@@ -111,7 +111,14 @@ export function createStore(initial = loadState(), storage = safeStorage()) {
     update(recipe) {
       const draft = deepClone(state);
       const result = recipe(draft);
-      state = normalizeState(result === undefined ? draft : result);
+      // Only an object counts as a replacement. Accepting any non-undefined
+      // return meant `store.update((d) => d.sources.push(x))` — a perfectly
+      // ordinary expression body — returned a number, which `normalizeState`
+      // turned into an empty state, silently wiping the one thing in this
+      // product that is expensive to rebuild.
+      const next =
+        result !== null && typeof result === 'object' && !Array.isArray(result) ? result : draft;
+      state = normalizeState(next);
       schedulePersist();
       emit();
       return state;

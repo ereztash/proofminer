@@ -3,6 +3,8 @@ import { bidi, cx, escapeHtml, html, raw, toString_ } from '../../src/ui/html.js
 import { translator } from '../../src/i18n/index.js';
 import heBundle from '../../src/i18n/he.js';
 import enBundle from '../../src/i18n/en.js';
+import { NOT_ME, onboardingView } from '../../src/ui/views/onboarding.js';
+import { emptyState } from '../../src/core/schema.js';
 
 describe('escaping', () => {
   it('escapes every dangerous character', () => {
@@ -105,6 +107,40 @@ describe('i18n', () => {
           expect(pattern.test(text), `"${text}" matched ${pattern}`).toBe(false);
         }
       }
+    }
+  });
+});
+
+describe('the first screen qualifies rather than educates', () => {
+  // The ICP is an awareness segment: someone who already knows it hurts. A
+  // product that cannot say "this is not for you" has no standing to tell a
+  // user their visibility exceeds their evidence.
+  const t = translator('he');
+  const state = { ...emptyState(), profile: { ...emptyState().profile, track: 'independent' } };
+
+  it('offers a real way out, at the same weight as the two situations', () => {
+    const markup = toString_(onboardingView(state, t, {}));
+    expect(markup).toContain(`value="${NOT_ME}"`);
+    expect(markup).toContain(t('onboarding.notMe'));
+  });
+
+  it('replaces the paste box with an honest exit when the visitor says it is not them', () => {
+    const markup = toString_(onboardingView(state, t, { situation: NOT_ME }));
+    expect(markup).toContain(t('notForYou.title'));
+    // No paste box, no analyse button: we are not going to try again.
+    expect(markup).not.toContain('id="cold-paste"');
+    expect(markup).not.toContain('data-act="coldStart"');
+  });
+
+  it('does not empty the paste box when the visitor answers the question above it', () => {
+    const ui = { situation: 'job', formCache: { 'cold-paste': 'ניהלתי צוות של שמונה אנשים' } };
+    expect(toString_(onboardingView(state, t, ui))).toContain('ניהלתי צוות של שמונה אנשים');
+  });
+
+  it('asks how long it has been hurting, not how long they have been working at it', () => {
+    for (const locale of ['he', 'en']) {
+      const q = translator(locale)('onboarding.weeksQuestion');
+      expect(q).toMatch(/מציק|bothering/);
     }
   });
 });

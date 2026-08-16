@@ -1,5 +1,41 @@
 # UX — designing for the pain the user is already feeling
 
+## The qualifying condition: they already know it hurts
+
+The ICP is an **awareness** segment, not a demographic one (`TELOS.md`,
+"Primary actor"). The user we design for has already named the loss to
+themselves. Everyone else — same job title, same experience, same LinkedIn — is
+out of scope.
+
+This changes the first screen from a pitch into a **question**:
+
+> Which of these is true for you right now?
+>
+> - I keep sending applications, and the silence is getting to me.
+> - My clients are happy, and I have no idea where the next ones come from.
+> - **None of these. I do not feel I have a problem right now.**
+
+Three properties make that a qualifying question rather than a segmentation one:
+
+- **The options are the pain, not the goal.** "Looking for a role" is a
+  category someone selects. "The silence is getting to me" is something someone
+  recognises about themselves. Only the second sorts by awareness.
+- **The third option is real.** Full width, same visual weight, no small print.
+  Choosing it renders the honest exit: who the tool is for, when to come back,
+  and nothing else. No email capture, no "are you sure", no second pitch.
+- **The answer sets the track.** The same click that qualifies the user also
+  configures the archetype weights and the conversion funnel, so qualification
+  costs the user nothing.
+
+The disqualification screen is a **feature of the trust model**, not lost
+conversion. This product's central claim is a number that tells users
+uncomfortable things about themselves — that their visibility exceeds their
+evidence, that their strongest proof is one they were embarrassed by. A product
+that will not say "this is not for you" has no standing to say any of that.
+
+**Corollary for every screen: never sell the problem.** No screen argues the
+user has a problem. The product measures a problem the user brought with them.
+
 ## The conscious pain
 
 The pain the target actor can *name* is not the pain our method diagnoses.
@@ -65,11 +101,14 @@ they came to escape.
 
 **Cold start sequence:**
 
-1. **Screen 0 — mirror the pain, offer one action.**
-   No navigation. No score. One sentence that names what they feel, one
-   paste box, one button. Under the button, the anti-hype pledge in plain
-   language, because Pain B has to be neutralised before they will paste
-   anything personal.
+1. **Screen 0 — mirror the pain, qualify, offer one action.**
+   No navigation. No score. One sentence that names what they feel, then the
+   qualifying question above, then one paste box and one button. Under the
+   button, the anti-hype pledge in plain language, because Pain B has to be
+   neutralised before they will paste anything personal. Answering the
+   qualifying question re-renders the screen, so the paste box renders from the
+   form cache — a box that empties itself when the user answers a question
+   above it is the worst possible bug on this screen.
 
 2. **Screen 1 — First Light.** After the first mine, a dedicated reveal state
    — *not* the dashboard. `"מצאנו 14 הוכחות במה שהדבקת."` Then the three they
@@ -95,9 +134,13 @@ funnel, and the recommended plays:
 | Recommended surface | profile headline, About, targeted posts | posts, comments, case studies |
 | Urgency framing | weeks since last interview | pipeline conversations open |
 
-A third field — **how long have you been at this** — sets the urgency register.
-Someone four months in gets shorter, more directive copy than someone planning
-ahead while still employed.
+A second field — **how long has this been bothering you** — sets the urgency
+register. Deliberately phrased about the pain rather than about the activity:
+"how long have you been at this" measures effort, and someone can be six months
+into a search while only recently feeling it, or feeling it acutely without
+having started. The awareness clock is the one that should set the tone, and
+asking about it also re-confirms the qualifying condition without a second
+screen.
 
 ## Emotional register
 

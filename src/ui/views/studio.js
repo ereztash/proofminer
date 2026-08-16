@@ -98,10 +98,10 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           ? notice('stop', t('studio.ungrounded', liveGrounding.unsupported.join(', ')))
           : ''}
         ${liveGrounding.entities.length
-          ? notice('stop', t('studio.ungroundedEntities', liveGrounding.entities.join(', ')))
+          ? notice('warn', t('studio.ungroundedEntities', liveGrounding.entities.join(', ')))
           : ''}
         ${liveGrounding.overreach.length ? notice('warn', t('studio.overreach')) : ''}
-        ${liveGrounding.ok
+        ${liveGrounding.ok && !liveGrounding.entities.length
           ? notice(
               'info',
               liveGrounding.entityCoverage === 'full'

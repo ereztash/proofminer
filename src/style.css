@@ -714,10 +714,18 @@ p {
   margin-block-start: var(--step);
 }
 
+.pledge__lead {
+  color: var(--ink-soft);
+  margin-block-start: 0.75rem;
+  font-size: 0.95rem;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px solid var(--line);
+}
+
 .pledge {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: var(--step);
+  padding: 0.75rem var(--step);
   margin-block-start: calc(var(--step) * 1.5);
   background: var(--surface);
 }
@@ -725,6 +733,7 @@ p {
 .pledge__title {
   font-size: 0.95rem;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .pledge__list {
@@ -793,6 +802,39 @@ p {
 .choice__hint {
   font-size: 0.82rem;
   color: var(--ink-soft);
+}
+
+/* The qualifying question leads the screen, so it carries more weight than the
+   secondary choices further down. */
+.choice--lead {
+  margin-block-start: calc(var(--step) * 2);
+}
+
+.choice--lead legend {
+  font-size: 1.1rem;
+}
+
+.choice__note {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin: 0 0 0.7rem;
+}
+
+/* "None of these" is a full-width option rather than a link in small print:
+   an escape hatch the user has to hunt for is not an honest one. */
+.choice__opt--wide {
+  margin-block-start: 0.6rem;
+}
+
+.notme {
+  margin-block-start: calc(var(--step) * 2);
+  padding-block-start: calc(var(--step) * 1.5);
+  border-block-start: 1px solid var(--line);
+}
+
+.notme__title {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
 }
 
 .urgency {

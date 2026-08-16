@@ -18,12 +18,12 @@ import {
   receptionScore,
   receptionSignal,
 } from '../../src/engine/layers.js';
-import { computeAuthority, nextMove } from '../../src/engine/authority.js';
+import { LIEBIG_GATE, computeAuthority, nextMove } from '../../src/engine/authority.js';
 import { normalizeState } from '../../src/core/schema.js';
 import { saturate } from '../../src/core/util.js';
 import { escapeHtml, toString_ } from '../../src/ui/html.js';
 import { button } from '../../src/ui/components.js';
-import { NOW, DAY, artifact, proofFrom, reception, stateWith } from '../helpers.js';
+import { NOW, DAY, artifact, minedSource, proofFrom, reception, stateWith } from '../helpers.js';
 
 describe('determinism', () => {
   // A module-level /g regex probed with .test() advances its own lastIndex, so
@@ -384,12 +384,83 @@ describe('contact details are not evidence', () => {
       id: 's1', name: 'cv', demo: false, addedAt: NOW, minedAt: null,
       text: [
         'מנהל תפעול ולוגיסטיקה בכיר | תל אביב | 052-8841203 | ronen.avidan@gmail.com',
-        'linkedin.com/in/ronen-avidan — פרופיל מקצועי מלא עם המלצות',
         'קיצרתי את זמן האספקה הממוצע מ-19 יום ל-7 ימים במהלך 2025.',
       ].join('\n'),
     };
     const proofs = mineSources(stateWith({ sources: [source] }), { now: NOW });
     expect(proofs).toHaveLength(1);
-    expect(proofs[0].claim).not.toMatch(/052|gmail|linkedin\.com/);
+    expect(proofs[0].claim).not.toMatch(/052|gmail/);
+  });
+
+  it('keeps a claim that merely contains a link', () => {
+    // Silently deleting evidence is the wrong default for a product whose job
+    // is to stop the user's evidence going missing.
+    const source = {
+      id: 's2', name: 'notes', demo: false, addedAt: NOW, minedAt: null,
+      text: 'המלצה כתובה מסמנכ״לית התפעול לשעבר יושבת בכתובת linkedin.com/in/yael-b ומאשרת את התוצאה.',
+    };
+    expect(mineSources(stateWith({ sources: [source] }), { now: NOW })).toHaveLength(1);
+  });
+
+  it('keeps a testimonial and its attribution as one unit', () => {
+    const source = {
+      id: 's3', name: 'rec', demo: false, addedAt: NOW, minedAt: null,
+      text: '"רונן היה האדם שסידר לנו את התפעול. אחרי שנה היה לנו דוח יומי שאפשר לסמוך עליו." - יעל ברקוביץ, מנכ"לית תפעול לשעבר',
+    };
+    const proofs = mineSources(stateWith({ sources: [source] }), { now: NOW });
+    expect(proofs).toHaveLength(1);
+    // The attribution is what makes it evidence rather than a nice sentence.
+    expect(proofs[0].claim).toContain('יעל ברקוביץ');
+    expect(proofs[0].archetypes).toContain('VALIDATION');
+  });
+});
+
+describe('positioning cannot stand in for evidence', () => {
+  const thin = () => stateWith({
+    profile: { track: 'independent', locale: 'he', startedAt: NOW },
+    sources: [minedSource({ text: 'ליוויתי לקוחות בתהליכי שיווק.' })],
+    proofs: [proofFrom('ליוויתי לקוחות בתהליכי שיווק.')],
+  });
+
+  const sharp = {
+    audience: 'מנהלי שיווק בחברות B2B בישראל',
+    problem: 'קמפיינים שמביאים לידים שלא נסגרים',
+    method: 'אבחון מסע לקוח ובנייה מחדש של המשפך',
+    proofPoint: 'הכפלתי המרות אצל שלושה לקוחות',
+    updatedAt: NOW,
+  };
+
+  it('does not let a filled positioning form carry the evidence half', () => {
+    // Blending L1 and L2 as peers let four text boxes move the foundation from
+    // 18 to 71 on one weak CV line, switching *off* the Liebig gate — the
+    // mechanism this module exists to enforce.
+    const before = computeAuthority(thin(), NOW);
+    const after = computeAuthority({ ...thin(), positioning: sharp }, NOW);
+    expect(after.foundation).toBeLessThanOrEqual(before.foundation * 1.25 + 1);
+  });
+
+  it('never lowers the headline number for answering its own prompt', () => {
+    // The mirror defect: a half-finished positioning scored low as a peer, so
+    // obeying the product's instruction cost the user points.
+    const before = computeAuthority(thin(), NOW);
+    const half = { ...sharp, method: '', proofPoint: '' };
+    const after = computeAuthority({ ...thin(), positioning: half }, NOW);
+    expect(after.foundation).toBeGreaterThanOrEqual(before.foundation);
+    expect(after.index).toBeGreaterThanOrEqual(before.index);
+  });
+
+  it('keeps the gate closed on a thin foundation however loud the built half', () => {
+    const loud = {
+      ...thin(),
+      positioning: sharp,
+      artifacts: [artifact({ id: 'a1' }), artifact({ id: 'a2' }), artifact({ id: 'a3' })],
+      receptions: [
+        reception({ artifactId: 'a1' }),
+        reception({ artifactId: 'a2' }),
+        reception({ artifactId: 'a3' }),
+      ],
+    };
+    const result = computeAuthority(loud, NOW);
+    expect(result.effectiveBuilt).toBeLessThanOrEqual(result.foundation + LIEBIG_GATE);
   });
 });

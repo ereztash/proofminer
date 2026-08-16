@@ -165,6 +165,7 @@ const GENERIC_ACRONYMS = new Set([
  * sentence opener is not mistaken for an organisation.
  */
 const CAPITALISED_FUNCTION_WORDS = new Set([
+  // Grammar
   'the', 'this', 'that', 'these', 'those', 'how', 'what', 'when', 'where',
   'why', 'who', 'which', 'and', 'but', 'for', 'from', 'with', 'without',
   'after', 'before', 'during', 'over', 'under', 'about', 'into', 'onto',
@@ -173,6 +174,27 @@ const CAPITALISED_FUNCTION_WORDS = new Set([
   'ten', 'not', 'was', 'were', 'has', 'have', 'had', 'can', 'could', 'would',
   'should', 'will', 'shall', 'may', 'might', 'must', 'did', 'does', 'done',
   'now', 'then', 'also', 'still', 'just', 'only', 'more', 'most', 'less',
+  'every', 'each', 'some', 'many', 'both', 'because', 'while', 'since',
+  'though', 'although', 'however', 'instead', 'within', 'across', 'through',
+  // Ordinary professional vocabulary that routinely starts a sentence.
+  // Without these the check cried wolf on correctly-grounded text — flagging
+  // "Onboarding", "Evidence" and "Revenue" as invented organisations — and a
+  // warning that fires on ordinary nouns is a warning users learn to ignore.
+  'onboarding', 'evidence', 'revenue', 'customers', 'clients', 'growth',
+  'results', 'delivery', 'quality', 'process', 'processes', 'product',
+  'products', 'project', 'projects', 'team', 'teams', 'training', 'support',
+  'sales', 'marketing', 'operations', 'engineering', 'design', 'research',
+  'strategy', 'planning', 'budget', 'costs', 'cost', 'time', 'reporting',
+  'hiring', 'retention', 'churn', 'conversion', 'performance', 'efficiency',
+  'automation', 'migration', 'launch', 'rollout', 'adoption', 'usage',
+  'feedback', 'testing', 'security', 'compliance', 'documentation', 'data',
+  'analysis', 'reviews', 'review', 'meetings', 'workshops', 'workshop',
+  'management', 'leadership', 'experience', 'expertise', 'knowledge',
+  'working', 'building', 'leading', 'running', 'managing', 'creating',
+  'together', 'overall', 'previously', 'currently', 'recently', 'earlier',
+  'later', 'first', 'second', 'third', 'finally', 'today', 'yesterday',
+  'monday', 'friday', 'january', 'december', 'week', 'month', 'quarter',
+  'year', 'years', 'people', 'everyone', 'nobody', 'something', 'nothing',
 ]);
 
 /**
@@ -187,7 +209,12 @@ const CAPITALISED_FUNCTION_WORDS = new Set([
  * shape of the guarantee.
  */
 export function entityCoverage(text) {
-  return detectLanguage(text) === 'he' ? 'partial' : 'full';
+  // Any Hebrew content at all makes the check partial. Keying on the *dominant*
+  // script meant an English-dominant draft containing an invented Hebrew
+  // employer came back `full`, and the studio printed an unqualified "no names
+  // absent from the evidence" over it — the same false assurance this function
+  // exists to prevent, one language mix over.
+  return /[א-ת]/u.test(text || '') ? 'partial' : 'full';
 }
 
 /**
@@ -199,7 +226,7 @@ export function entityCoverage(text) {
  * `entityCoverage()` below.
  */
 const HE_ORG_RE =
-  /(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)\s+(\S+(?:\s+\S+)?)/gu;
+  /(?<![א-ת])(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)(?![א-ת])\s+([א-ת\w'׳"״-]+)/gu;
 
 /**
  * Hebrew-language organisations and publications common enough in Israeli
@@ -229,9 +256,25 @@ const HE_KNOWN_ENTITIES = [
  * reveal, while `Lean` in a skills list was detected as a proper noun.
  */
 const HE_PERSON_RES = [
-  /(?:מנכ["״']?ל(?:ית)?|סמנכ["״']?ל(?:ית)?|מנהל(?:ת)?|יו["״']?ר|ד["״']?ר|פרופ|רו["״']?ח|עו["״']?ד|ראש(?: צוות| אגף| מחלקה)?|שותף|מייסד(?:ת)?)\s+([א-ת]{2,}(?:\s+[א-ת]{2,})?)/gu,
-  /([א-ת]{2,}\s+[א-ת]{2,}["״']?)\s*,\s*(?=מנכ|סמנכ|מנהל|יו["״']?ר|ראש|שותף|מייסד|לשעבר)/gu,
+  // Role word, optionally followed by the department it heads, then the name.
+  // A Hebrew given name never takes the definite article, so tokens starting
+  // with ה or ו are skipped rather than captured — without that, "מנהל הייצור
+  // והמחסן" ("head of production and warehousing") was reported to the user as
+  // a named person absent from their evidence.
+  /(?<![א-ת])(?:מנכ["״']?ל(?:ית)?|סמנכ["״']?ל(?:ית)?|מנהל(?:ת)?|יו["״']?ר|ד["״']?ר|פרופ|רו["״']?ח|עו["״']?ד|ראש(?: צוות| אגף| מחלקה)|שותף|מייסד(?:ת)?)(?![א-ת])(?:\s+ה[א-ת]{2,})*\s+((?![הו])[א-ת]{2,}(?:\s+(?![הו])[א-ת]{2,})?)/gu,
+  /(?<![א-ת])((?![הו])[א-ת]{2,}\s+(?![הו])[א-ת]{2,}["״']?)\s*,\s*(?=מנכ|סמנכ|מנהל|יו["״']?ר|ראש|שותף|מייסד|לשעבר)/gu,
 ];
+
+/**
+ * A quoted passage with someone's name attached to it.
+ *
+ * A written recommendation is the single most valuable thing in a typical CV
+ * and it rarely contains a cue word like "interviewed" or "featured" — it is
+ * just a quotation followed by a name and a title. Without this the strongest
+ * evidence in the document scored 38, rendered no reason, and never reached the
+ * reveal, in both languages.
+ */
+const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
 
 const HE_KNOWN_RE = new RegExp(`(?:^|[^א-ת])(${HE_KNOWN_ENTITIES.map((e) => e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![א-ת])`, 'gu');
 
@@ -327,7 +370,9 @@ export function extractSignals(text) {
     hasUrl: URL_RE.test(raw),
     properNouns,
     hasProperNoun: properNouns.length > 0,
-    thirdParty: any('thirdParty'),
+    // A quotation with a name attached is third-party validation even when the
+    // sentence contains no cue word.
+    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

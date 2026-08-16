@@ -25,20 +25,27 @@ export default {
     painTitle: 'You know you are good. Nobody else does.',
     painBody:
       'This is not a confidence problem and it is not a content problem. You have years of work nobody ever collected as evidence, so it does not count.',
-    pledgeTitle: 'Before you paste anything personal:',
+    pledgeLead:
+      'Everything stays on your machine — no server, no account. This tool will not invent achievements.',
+    pledgeTitle: 'What else to know before you paste',
     pledge: [
       'Everything stays on your machine. No server, no account, nobody reading it but you.',
       'This tool will not invent achievements. It works only with what you wrote.',
       'It will not let your visibility run ahead of your evidence, and it will tell you when that happens. What you type here it takes as given — it cannot verify that for you.',
     ],
-    twoMore: 'Two short questions, so the ranking fits you.',
-    trackQuestion: 'Where are you right now?',
-    trackJob: 'Looking for a role',
-    trackJobHint: 'You want to be recognised, get replies, get invited to talk',
-    trackIndependent: 'Building an independent practice',
-    trackIndependentHint: 'You want clients to come to you instead of chasing them',
-    weeksQuestion: 'How long have you been at this?',
-    weeksNotYet: 'Not started yet',
+    oneMore: 'One short question, to set the pace.',
+    situationQuestion: 'Which of these is true for you right now?',
+    situationNote:
+      'This tool is built for someone who already feels it. If none of these describes you, say so — it saves us both the time.',
+    trackJob: 'I keep sending applications, and the silence is getting to me',
+    trackJobHint: 'You know you fit these roles. It just never reaches anyone.',
+    trackIndependent: 'My clients are happy, and I have no idea where the next ones come from',
+    trackIndependentHint:
+      'Every new engagement arrives through someone who already knows you, and you can feel the ceiling.',
+    notMe: 'None of these. I do not feel I have a problem right now.',
+    notMeHint: 'A completely fair answer. Pick it and see what it means.',
+    weeksQuestion: 'How long has this been bothering you?',
+    weeksNotYet: 'Started recently',
     weeksMonths: 'A few months',
     weeksLong: 'Too long',
     start: 'Show me what I already have',
@@ -48,6 +55,22 @@ export default {
     placeholder: 'Paste here. Messy is fine — exactly as you have it.',
     analyze: 'Find my evidence',
     orSample: 'I have nothing ready — show me on a sample',
+  },
+
+  notForYou: {
+    title: 'Then this is probably not your tool. Not right now, anyway.',
+    body:
+      'We are not going to argue you into a problem. If work reaches you, and nothing you have done feels like it went missing on the way, there is nothing here that improves your situation and we are not going to pretend otherwise.',
+    forWhom:
+      'This is built for someone who already knows it hurts: applications that go unanswered, or work that only ever arrives through someone who already knows you. It does not teach you that you have a problem — it measures one you already feel.',
+    comeBackTitle: 'When it is worth coming back',
+    comeBack: [
+      'When someone less experienced than you gets the thing you wanted.',
+      'When you have to explain why you are the right choice and have nothing to point at but your own word.',
+      'When the stream of work that came through people who know you starts drying up.',
+      'When you are about to leave a role and find that everything you did exists only inside the organisation you are leaving.',
+    ],
+    sample: 'Just show me how it works, on a sample',
   },
 
   firstLight: {
@@ -177,6 +200,12 @@ export default {
       v.n === 1
         ? `This is the only one of your ${v.total} pieces containing a checkable number.`
         : `Only two of your ${v.total} pieces contain a checkable number. This is one of them.`,
+    rareLink: (v) =>
+      v.n === 1
+        ? `This is the only one of your ${v.total} pieces containing a link. It can be opened, not just believed.`
+        : `Few of your pieces contain a link. This is one of them — it can be opened, not just believed.`,
+    rareBeforeAfter:
+      'This is one of the few of yours with both a before and an after. That is what turns a job description into something checkable.',
     onlyFailure:
       'This is your only piece where you analyse something that did not work. Professional judgement shows there more than in any success.',
     onlyMethod:
@@ -398,7 +427,7 @@ export default {
     groundedCaveat:
       'This check compares numbers and names. It cannot tell whether a correct number was attached to the wrong claim — only you can check that.',
     ungroundedEntities: (list) =>
-      `The text names things absent from the evidence: ${list}. If it is true, add it to the source. If not, remove it.`,
+      `Names we did not find in the evidence: ${list}. If they are correct, add them to the source. If not, remove them. This detection is approximate, so an ordinary word may be flagged.`,
     overreach:
       'There is inflated wording here. That is exactly what makes people stop believing a post. Take it out.',
     ungrounded: (list) =>
@@ -413,7 +442,7 @@ export default {
   measure: {
     title: 'Measure',
     subtitle: 'These numbers are what turn this from a ranker into something that learns. Without them it guesses, like everything else.',
-    pending: (n) => `${n} publications with no data`,
+    pending: (n) => (n === 1 ? 'One publication with no data' : `${n} publications with no data`),
     artifact: 'Publication',
     impressions: 'Impressions',
     reactions: 'Reactions',
@@ -423,6 +452,7 @@ export default {
     saves: 'Saves',
     savesHint: 'LinkedIn does not always show this. If it is missing, skip it.',
     minimum: 'The minimum that works: impressions + reactions. The rest sharpens the picture, it does not gate it.',
+    savedPartial: 'Saved. Without impressions this will not count toward reception.',
     shares: 'Shares',
     save: 'Save measurement',
     saved: 'Saved',
@@ -433,7 +463,7 @@ export default {
     pasteHint: 'Select the stats block on the post page, copy, and paste. We will pull the numbers out.',
     pasteAction: 'Extract numbers',
     pasteFailed: 'No numbers found in that text.',
-    optional: 'Optional — without impressions we compare absolute engagement',
+    optional: 'Without impressions we cannot score how the post landed — the record counts toward cadence only.',
     conversions: 'What moved because of it',
     addConversion: 'Add inbound',
     fromNothing: 'Not from a specific post',

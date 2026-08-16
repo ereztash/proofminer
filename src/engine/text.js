@@ -178,15 +178,38 @@ export function contextRelevance(text, context) {
  * first promise is that nothing leaves your machine, suggesting the user's own
  * phone number as publishable evidence is the wrong kind of surprise.
  */
-const PII_OR_FURNITURE = [
+const CONTACT_MARKERS = [
   /[\w.+-]+@[\w-]+\.[\w.]{2,}/u,
   /(?:^|\D)0\d{1,2}[-\s]?\d{3}[-\s]?\d{4}(?:\D|$)/u,
   /\+\d{1,3}[-\s]?\d{2,3}[-\s]?\d{3}[-\s]?\d{4}/u,
   /linkedin\.com\/in\//iu,
-  /^(?:קורות חיים|resume|curriculum vitae|cv)\b/iu,
 ];
 
-export const isContactOrFurniture = (line) => PII_OR_FURNITURE.some((re) => re.test(line));
+/** A document title standing alone on its own line. */
+const HEADER_LINE = /^\s*(?:קורות חיים|resume|curriculum vitae|cv)\s*[-–—:|]?\s*$/iu;
+
+/**
+ * True when a line is contact details or document furniture rather than a claim.
+ *
+ * Two rules, both deliberately narrow. A contact marker only disqualifies a
+ * line that is *mostly* contact details — a header of name, city, phone and
+ * email separated by pipes — because a legitimate claim can contain a link or
+ * an address ("grew the newsletter to 40,000 subscribers at support@acme.co.il")
+ * and silently deleting it is exactly the wrong default for a product whose
+ * job is to stop the user's evidence going missing. A document title
+ * disqualifies a line only when it is the whole line: `\b` is ASCII-only even
+ * under `/u`, so the Hebrew pattern this filter exists for never matched, while
+ * the English one dropped ordinary sentences beginning "CV coaching…".
+ */
+export function isContactOrFurniture(line) {
+  if (HEADER_LINE.test(line)) return true;
+  if (!CONTACT_MARKERS.some((re) => re.test(line))) return false;
+
+  // Mostly-contact heuristic: heavy separator use, or short with little prose.
+  const separators = (line.match(/[|·•]/gu) || []).length;
+  const words = line.split(/\s+/u).filter(Boolean).length;
+  return separators >= 2 || (words <= 10 && separators >= 1);
+}
 
 /**
  * Split a source document into candidate proof-unit sentences.
@@ -199,7 +222,15 @@ export function splitSentences(text, minLength = 30) {
   if (!text) return [];
   return text
     .split(/\r?\n+/)
-    .flatMap((line) => line.split(/(?<=[.!?׃…])\s+/u))
+    // A line carrying a quotation stays whole. Splitting on the full stops
+    // inside a testimonial separated the quotation from the name attached to
+    // it, and the attribution — the part that makes it evidence — became a
+    // fragment too short to survive the length floor.
+    .flatMap((line) =>
+      /["״”].*["״”]/u.test(line) && line.length <= 400
+        ? [line]
+        : line.split(/(?<=[.!?׃…])\s+/u),
+    )
     .flatMap((chunk) => chunk.split(/\s*[•·▪]\s*/u))
     .map((s) => s.replace(/^\s*[-–—*+\d]+[.)\]]?\s*/u, '').trim())
     .filter((s) => s.length >= minLength)

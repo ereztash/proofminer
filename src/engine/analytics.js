@@ -79,22 +79,33 @@ export function parseAnalyticsPaste(text) {
     return m ? parseMagnitude(m[1], m[2]) : null;
   };
 
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const key = LABELS.find(([, patterns]) => patterns.some((re) => re.test(line)))?.[0];
-    if (!key || found[key] !== undefined) continue;
+  const labelAt = (line) =>
+    LABELS.find(([, patterns]) => patterns.some((re) => re.test(line)))?.[0] ?? null;
 
-    // Same line first, then the line after, then the line before. LinkedIn's
-    // web panel stacks the label above its number, which is the ordinary thing
-    // a user copies — requiring them on one line made the parser return nothing
-    // on the common layout, which was the entire point of the feature.
-    const inline = line.match(NUMBER);
+  const labelled = lines
+    .map((line, i) => ({ i, line, key: labelAt(line), inline: line.match(NUMBER) }))
+    .filter((entry) => entry.key);
+
+  // Determine the layout once, from the whole paste, instead of guessing per
+  // line. LinkedIn stacks the label above its number on some surfaces and below
+  // it on others; preferring "the line after" unconditionally meant the
+  // number-above-label card parsed with every value shifted one row, reported
+  // `matched: 4`, and fed a 32x understated impression count straight into the
+  // reception denominator. Confidently wrong is worse here than empty.
+  const stackedAfter = labelled.filter((e) => !e.inline && bareNumber(lines[e.i + 1]) !== null).length;
+  const stackedBefore = labelled.filter((e) => !e.inline && bareNumber(lines[e.i - 1]) !== null).length;
+  const preferBefore = stackedBefore > stackedAfter;
+
+  for (const entry of labelled) {
+    if (found[entry.key] !== undefined) continue;
+    const neighbours = preferBefore
+      ? [bareNumber(lines[entry.i - 1]), bareNumber(lines[entry.i + 1])]
+      : [bareNumber(lines[entry.i + 1]), bareNumber(lines[entry.i - 1])];
     const value =
-      (inline ? parseMagnitude(inline[1], inline[2]) : null) ??
-      bareNumber(lines[i + 1]) ??
-      bareNumber(lines[i - 1]);
-
-    if (value !== null && value !== undefined) found[key] = value;
+      (entry.inline ? parseMagnitude(entry.inline[1], entry.inline[2]) : null) ??
+      neighbours.find((n) => n !== null) ??
+      null;
+    if (value !== null) found[entry.key] = value;
   }
 
   return { found, matched: Object.keys(found).length };

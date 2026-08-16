@@ -18,7 +18,6 @@ import { BAND_USABLE, decayedScore } from './score.js';
 /** How far built standing may exceed the evidence foundation. */
 export const LIEBIG_GATE = 25;
 
-const FOUNDATION_WEIGHTS = { L1: 0.55, L2: 0.45 };
 const BUILT_WEIGHTS = { L3: 0.3, L4: 0.25, L5: 0.25, L6: 0.2 };
 
 /**
@@ -37,53 +36,67 @@ export const DEVELOPED = 45;
 /** Gap magnitude at which the two halves count as out of step. */
 export const GAP_THRESHOLD = 12;
 
+const sumWeights = (weights) => Object.values(weights).reduce((s, w) => s + w, 0);
+
 /**
- * Combine layers under a weight map.
+ * Combine layers under a weight map. Used for the built half only.
  *
- * `skipLocked` renormalises over the layers that actually have data, and the
- * asymmetry between the two halves of the stack is deliberate:
- *
- * - **Foundation (L1, L2) skips locked layers.** A locked L2 means the user has
- *   not filled in the positioning form yet — it does not mean they have no
- *   claim. Averaging in a zero there charges them for the incompleteness of
- *   *our* form, and it is what made someone who had just pasted fifteen years
- *   of work read "you haven't started yet".
- * - **Built (L3–L6) counts locked layers as zero.** A locked L3 means nothing
- *   has been published. That is a real fact about the world, and it is exactly
- *   the gap this product exists to name.
+ * Locked layers count as zero here, deliberately: a locked L3 means nothing has
+ * been published, which is a real fact about the world and exactly the gap this
+ * product exists to name.
  */
-function weightedLayers(layers, weights, { skipLocked = false } = {}) {
+function weightedLayers(layers, weights) {
   let score = 0;
   let confidence = 0;
-  let totalWeight = 0;
+  const total = sumWeights(weights);
   for (const [key, w] of Object.entries(weights)) {
-    const layer = layers[key];
-    if (skipLocked && layer?.locked) continue;
-    // Weight each layer by how much of it we actually know. Without this,
-    // typing one character into the positioning form unlocked L2 at a very low
-    // score and blended it in at full weight — dropping the headline number by
-    // 20 points as a direct consequence of obeying the product's own
-    // instruction, and leaving a competent full answer still below the score
-    // for leaving the form blank.
-    // Squared, so a quarter-answered form contributes a sixteenth of its
-    // weight rather than a quarter of it. A partial answer is not a quarter of
-    // a positioning — it is barely a positioning, and weighting it as though we
-    // knew a quarter of the truth still cost the user points for starting.
-    const known = skipLocked ? Math.max(0.02, (layer?.confidence ?? 1) ** 2) : 1;
-    const effective = w * known;
-    score += (layer?.score ?? 0) * effective;
-    confidence += (layer?.confidence ?? 0) * w;
-    totalWeight += effective;
+    score += (layers[key]?.score ?? 0) * w;
+    confidence += (layers[key]?.confidence ?? 0) * w;
   }
-  if (totalWeight <= 0) return { score: 0, confidence: 0 };
-  const divisor = skipLocked ? totalWeight : sumWeights(weights);
-  return {
-    score: clamp100(score / divisor),
-    confidence: confidence / (skipLocked ? sumWeights(weights) : sumWeights(weights)),
-  };
+  return { score: clamp100(score / total), confidence: confidence / total };
 }
 
-const sumWeights = (weights) => Object.values(weights).reduce((s, w) => s + w, 0);
+/** Most a sharp positioning can add to the evidence it aims. */
+export const POSITIONING_LIFT = 0.25;
+
+/**
+ * The foundation: evidence, aimed.
+ *
+ * **Positioning multiplies the evidence; it never substitutes for it.** That is
+ * the whole shape of this function and it is load-bearing in both directions:
+ *
+ * - Blending L1 and L2 as peers let four text boxes carry the foundation. On
+ *   one weak CV line, completing the positioning form moved the foundation from
+ *   18 to 71 and the index from 32 to 67, switching *off* the Liebig gate — the
+ *   mechanism this module exists to enforce. A claim about your evidence cannot
+ *   be worth more than the evidence.
+ * - Blending them as peers in the other direction meant answering the form at
+ *   all lowered the headline number, because a half-finished positioning scores
+ *   low. The product punished obedience to its own instruction.
+ *
+ * A multiplier bounded at [1, 1+POSITIONING_LIFT] resolves both. Sharpening
+ * your claim makes the same evidence worth up to a quarter more; leaving the
+ * form blank or filling it with category filler simply earns no lift. There is
+ * no arrangement of text that raises the evidence half on its own.
+ *
+ * Confidence is L1's: the foundation is a statement about evidence, and how
+ * sure we are of it is how much evidence we have actually seen.
+ */
+function foundationOf(layers) {
+  const proof = layers.L1;
+  const position = layers.L2;
+  if (proof?.locked) return { score: 0, confidence: 0, lift: 0 };
+
+  const lift = position?.locked
+    ? 0
+    : POSITIONING_LIFT * (position.score / 100) * position.confidence;
+
+  return {
+    score: clamp100(proof.score * (1 + lift)),
+    confidence: proof.confidence,
+    lift: round(lift, 3),
+  };
+}
 
 /**
  * @param {object} state
@@ -93,7 +106,7 @@ const sumWeights = (weights) => Object.values(weights).reduce((s, w) => s + w, 0
 export function computeAuthority(state, now = Date.now()) {
   const layers = computeLayers(state, now);
 
-  const foundation = weightedLayers(layers, FOUNDATION_WEIGHTS, { skipLocked: true });
+  const foundation = foundationOf(layers);
   const built = weightedLayers(layers, BUILT_WEIGHTS);
 
   // Liebig's law of the minimum: the ceiling on built standing is the
@@ -117,6 +130,7 @@ export function computeAuthority(state, now = Date.now()) {
     layers,
     demo,
     foundation: foundation.score,
+    positioningLift: foundation.lift,
     built: built.score,
     effectiveBuilt: Math.round(effectiveBuilt),
     gated,
@@ -154,7 +168,7 @@ export const MEASURED_FOUNDATION = 0.5;
  * So HOLLOW is only ever returned when the evidence base has actually been
  * measured. Otherwise the product says the true thing: we do not know yet.
  *
- * @returns {'STALLED'|'BURIED'|'HOLLOW'|'COMPOUNDING'|'UNCATALOGUED'}
+ * @returns {'STALLED'|'BURIED'|'HOLLOW'|'COMPOUNDING'|'UNCATALOGUED'|'EARLY'}
  */
 export function diagnose(foundation, built, proofLayer = null) {
   const measured = (proofLayer?.confidence ?? 1) >= MEASURED_FOUNDATION;
@@ -247,13 +261,18 @@ export function nextMove(state, now = Date.now()) {
   //    is the one case where the product actively tells the user to stop.
   if (authority.diagnosis === 'HOLLOW' || authority.gated) {
     const play = acquisitionPlays(state, now)[0];
-    return {
-      id: 'move.acquireProof',
-      layer: 'L1',
-      effortMinutes: play?.effortMinutes ?? 20,
-      view: 'gaps',
-      payload: { play },
-    };
+    // With every archetype already covered there is no play to offer, and the
+    // gaps screen would render "all eight covered" under an instruction to go
+    // and get evidence. Send them to deepen what they have instead.
+    return play
+      ? {
+          id: 'move.acquireProof',
+          layer: 'L1',
+          effortMinutes: play.effortMinutes,
+          view: 'gaps',
+          payload: { play },
+        }
+      : { id: 'move.deepenEvidence', layer: 'L1', effortMinutes: 10, view: 'mine' };
   }
 
   // 5. Evidence exists, nothing published. The BURIED state — the reason this
@@ -275,8 +294,13 @@ export function nextMove(state, now = Date.now()) {
   }
 
   // 6. Evidence with a shelf life, still unpublished (integration I5).
-  const staling = stalingProofs(state, now)[0];
-  if (staling && staling.daysLeft <= 45) {
+  // Quality-gated, and only ahead of the ordinary publish rule when the piece
+  // is at least as good. Without this it routed the single Next Move at a
+  // "weak"-band proof while an 87-scoring one sat unpublished one screen away.
+  const staling = stalingProofs(state, now).find(
+    (entry) => entry.current >= BAND_USABLE && (!strongest || entry.current >= decayedScore(strongest, now) - 10),
+  );
+  if (staling) {
     return {
       id: 'move.publishStaling',
       layer: 'L3',
@@ -328,16 +352,38 @@ export function nextMove(state, now = Date.now()) {
   const publishedWithReception = (state.artifacts || []).filter(
     (a) => a.status === 'published' && (state.receptions || []).some((r) => r.artifactId === a.id),
   ).length;
-  if (publishedWithReception >= 2 && !(state.conversions || []).length) {
+
+  // Keyed to the scoring window, not to "have you ever". Gating on an empty
+  // array meant the product asked for a conversion exactly once in a user's
+  // lifetime — and `layerConversion` then scores only the trailing 90 days, so
+  // the single logged event aged out and left L5 as an unlocked hard zero at
+  // full weight that nothing would ever ask to refill.
+  const DAY = 24 * 60 * 60 * 1000;
+  const recentConversions = (state.conversions || []).filter((c) => now - c.at <= 90 * DAY).length;
+  const recentRecognitions = (state.recognitions || []).filter((r) => now - r.at <= 180 * DAY).length;
+
+  if (publishedWithReception >= 2 && recentConversions === 0) {
     return { id: 'move.logConversion', layer: 'L5', effortMinutes: 2, view: 'measure' };
   }
-  if (publishedWithReception >= 3 && !(state.recognitions || []).length) {
+  if (publishedWithReception >= 3 && recentRecognitions === 0) {
     return { id: 'move.logRecognition', layer: 'L6', effortMinutes: 2, view: 'measure' };
+  }
+  // I4 needs conversions attributed to artifacts. Asking once and defaulting the
+  // picker to "not from a post" made drift detection structurally unreachable.
+  if (
+    recentConversions > 0 &&
+    (state.conversions || []).filter((c) => c.artifactId).length < 3 &&
+    publishedWithReception >= 3
+  ) {
+    return { id: 'move.attributeConversion', layer: 'L5', effortMinutes: 2, view: 'measure' };
   }
 
   // 8. Weakest of the covered archetypes, once the loop is running.
-  const play = acquisitionPlays(state, now)[0];
-  if (play && !recentlyAttempted(state, play, now)) {
+  // Rotate rather than repeat. `recentlyAttempted` used to release as soon as
+  // any source was added — and obeying a play *is* adding a source, so the
+  // identical 20-minute task was re-issued to the user who had just done it.
+  const play = acquisitionPlays(state, now).find((p) => !recentlyAttempted(state, p, now));
+  if (play) {
     return {
       id: 'move.closeGap',
       layer: 'L1',
@@ -370,16 +416,23 @@ export function nextMove(state, now = Date.now()) {
     };
   }
 
-  // 11. Everything is healthy — the weakest unlocked layer is next.
+  // 11. Everything the earlier rules cover is healthy. Route to the weakest
+  //     unlocked layer with an action that belongs to it — never back to the
+  //     screen the user is already looking at.
   const weakest = Object.entries(layers)
     .filter(([, l]) => !l.locked)
-    .sort((a, b) => a[1].score - b[1].score)[0];
-  return {
-    id: 'move.strengthenLayer',
-    layer: weakest?.[0] ?? 'L1',
-    effortMinutes: 15,
-    view: 'dashboard',
+    .sort((a, b) => a[1].score - b[1].score)[0]?.[0];
+
+  const BY_LAYER = {
+    L1: { id: 'move.deepenEvidence', view: 'mine', effortMinutes: 10 },
+    L2: { id: 'move.sharpenPositioning', view: 'position', effortMinutes: 8 },
+    L3: { id: 'move.publishNext', view: 'studio', effortMinutes: 12 },
+    L4: { id: 'move.logReception', view: 'measure', effortMinutes: 3 },
+    L5: { id: 'move.logConversion', view: 'measure', effortMinutes: 2 },
+    L6: { id: 'move.logRecognition', view: 'measure', effortMinutes: 2 },
   };
+  const action = BY_LAYER[weakest] ?? BY_LAYER.L1;
+  return { ...action, layer: weakest ?? 'L1' };
 }
 
 /**
@@ -393,8 +446,7 @@ export function nextMove(state, now = Date.now()) {
 function recentlyAttempted(state, play, now) {
   const attempt = state.playLog?.[play.archetype];
   if (!Number.isFinite(attempt)) return false;
-  const addedSince = (state.sources || []).some((s) => s.addedAt > attempt);
-  return !addedSince && now - attempt < 7 * 24 * 60 * 60 * 1000;
+  return now - attempt < 14 * 24 * 60 * 60 * 1000;
 }
 
 /**

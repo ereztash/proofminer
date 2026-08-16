@@ -12,7 +12,7 @@
 
 import { ARCHETYPES } from '../core/schema.js';
 import { clamp100, sortByDesc } from '../core/util.js';
-import { BAND_USABLE, daysUntilStale, decayedScore } from './score.js';
+import { BAND_USABLE, HALF_LIFE_DAYS, daysUntilStale, decayedScore } from './score.js';
 import { realProofs } from './mine.js';
 
 /**
@@ -128,11 +128,7 @@ export function acquisitionPlays(state, now = Date.now()) {
  * High-value proof that will lose meaningful value soon gets publishing
  * priority over equally strong but stable evidence.
  */
-export function stalingProofs(
-  state,
-  now = Date.now(),
-  { withinDays = 90, minScore = BAND_USABLE } = {},
-) {
+export function stalingProofs(state, now = Date.now(), { minScore = BAND_USABLE } = {}) {
   const published = new Set(
     (state.artifacts || [])
       .filter((a) => a.status === 'published')
@@ -150,18 +146,19 @@ export function stalingProofs(
     // proof to still be above the threshold after the decay that put it in this
     // window in the first place — which needed raw scores above the engine's
     // own ceiling, so the integration could never fire.
-    // Bounded on both sides. With only an upper bound, evidence that crossed
-    // the threshold years ago returned a large negative, passed the filter,
-    // was clamped to "0 days left", and sorted first — so the single Next Move
-    // pointed at the user's most-decayed material three steps running, while
-    // stronger unpublished evidence sat one screen away in the picker.
-    .filter(
-      ({ proof, daysLeft }) =>
-        proof.score >= minScore &&
-        daysLeft !== null &&
-        daysLeft <= withinDays &&
-        daysLeft >= -14,
-    )
+    // The window is a share of the proof kind's own half-life, not a flat 90
+    // days. A fixed window sat around a crossing point 248 to 4,025 days out
+    // depending on kind and dating, so the integration produced zero candidates
+    // across a five-year weekly sweep — it was alive and unreachable.
+    //
+    // Bounded below as well: with only an upper bound, evidence that crossed
+    // the threshold years ago returned a large negative, was clamped to
+    // "0 days left", and sorted first.
+    .filter(({ proof, daysLeft }) => {
+      if (proof.score < minScore || daysLeft === null) return false;
+      const halfLife = HALF_LIFE_DAYS[proof.kind] ?? HALF_LIFE_DAYS.experience;
+      return daysLeft <= halfLife * 0.35 && daysLeft >= -14;
+    })
     .map((entry) => ({ ...entry, daysLeft: Math.max(0, entry.daysLeft) }))
     .sort((a, b) => a.daysLeft - b.daysLeft);
 }

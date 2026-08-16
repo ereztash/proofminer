@@ -24,7 +24,7 @@ import { refineDraft } from '../adapters/llm.js';
 import { sortByDesc } from '../core/util.js';
 import { decayedScore } from '../engine/score.js';
 
-import { firstLightView, onboardingView } from './views/onboarding.js';
+import { NOT_ME, firstLightView, onboardingView } from './views/onboarding.js';
 import { dashboardView } from './views/dashboard.js';
 import { mineView } from './views/mine.js';
 import { positionView } from './views/position.js';
@@ -44,6 +44,12 @@ const VIEWS = ['dashboard', 'mine', 'position', 'inventory', 'gaps', 'studio', '
 const ui = {
   view: 'dashboard',
   screen: 'app', // 'onboarding' | 'firstLight' | 'app'
+  /**
+   * Which situation the visitor recognised on the first screen, including
+   * `NOT_ME`. Held here rather than in the profile because "this is not my
+   * problem" is not a track — it must never be written into the record as one.
+   */
+  situation: null,
   filter: 'all',
   expanded: new Set(),
   /** Text-field values that must survive a re-render. Cleared on submit. */
@@ -204,7 +210,11 @@ export function mountApp(root) {
 
     coldStart() {
       const text = val('cold-paste').trim();
-      const track = root.querySelector('input[name="track"]:checked')?.value || 'independent';
+      const situation = root.querySelector('input[name="situation"]:checked')?.value;
+      // The button is not rendered under NOT_ME; this is belt-and-braces so a
+      // "this is not my problem" answer can never be recorded as a track.
+      if (situation === NOT_ME) return;
+      const track = situation === 'job' ? 'job' : 'independent';
       const weeks = Number.parseInt(
         root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
         10,
@@ -432,7 +442,9 @@ export function mountApp(root) {
       });
       for (const key of ['rc-impressions', 'rc-reactions', 'rc-comments', 'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste']) delete ui.formCache[key];
       ui.parsedAnalytics = {};
-      toast(t('measure.saved'));
+      // Say plainly when a saved record cannot answer the question the screen
+      // is about, rather than confirming a save that counts for nothing.
+      toast(record.impressions > 0 ? t('measure.saved') : t('measure.savedPartial'));
       // Both feedback integrations run on new reception data.
       recalibrate();
       store.update((draft) => {
@@ -570,7 +582,7 @@ export function mountApp(root) {
   function body() {
     const nowTs = realNow();
 
-    if (ui.screen === 'onboarding') return onboardingView(state, t);
+    if (ui.screen === 'onboarding') return onboardingView(state, t, ui);
 
     if (ui.screen === 'firstLight') {
       const active = state.proofs.filter((p) => !p.dismissed);
@@ -710,7 +722,10 @@ export function mountApp(root) {
   root.addEventListener('change', async (event) => {
     const el = event.target;
     if (el.id && el.type !== 'file' && el.type !== 'checkbox') ui.formCache[el.id] = el.value;
-    if (el.id === 'inv-filter') {
+    if (el.name === 'situation') {
+      ui.situation = el.value;
+      render();
+    } else if (el.id === 'inv-filter') {
       ui.filter = el.value;
       render();
     } else if (el.id === 'studio-proof') {
