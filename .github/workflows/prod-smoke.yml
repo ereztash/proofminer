@@ -2,6 +2,13 @@ name: Production Smoke
 
 on:
   deployment_status:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/prod-smoke.yml"
+      - "tests/e2e/prod-smoke.spec.mjs"
+      - "package.json"
+      - "package-lock.json"
   workflow_dispatch:
     inputs:
       base_url:
@@ -13,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: prod-smoke-${{ github.event.deployment_status.deployment.id || github.event.inputs.base_url }}
+  group: prod-smoke-${{ github.event.deployment_status.deployment.id || github.event.inputs.base_url || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -21,10 +28,10 @@ jobs:
     name: Browser smoke against deployed app
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    if: github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
 
     env:
-      PROOFMINER_BASE_URL: ${{ github.event.inputs.base_url || github.event.deployment_status.environment_url }}
+      PROOFMINER_BASE_URL: ${{ github.event.inputs.base_url || github.event.deployment_status.environment_url || 'https://proofminer-gamma.vercel.app' }}
 
     steps:
       - name: Checkout
