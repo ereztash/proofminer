@@ -239,6 +239,46 @@ export default {
 
   bands: { strong: 'Strong', usable: 'Usable', weak: 'Weak' },
 
+  proofCard: {
+    eyebrow: 'Proof Loop v0',
+    title: 'First proof card',
+    traceLabel: 'What actually happened',
+    mechanismLabel: 'What this likely proves',
+    supportLabel: 'What claim this can support',
+    confidenceLabel: 'Certainty right now',
+    limitLabel: 'Transfer limit',
+    draft: 'Turn this into a draft',
+    fullPicture: 'Show me the full picture',
+    supportsSpecific: (claim) => `This can support the claim: "${claim}" — if the limit stays visible.`,
+    supports: {
+      OUTCOME: 'A claim about producing measurable change, not only holding a role.',
+      VALIDATION: 'A claim that other people have already trusted you or seen value from you.',
+      SCALE: 'A claim about scale, load or responsibility beyond a one-off task.',
+      METHOD: 'A claim that you have a way of working that can be explained and repeated.',
+      CREDENTIAL: 'A claim about professional grounding or training that can support the conversation.',
+      PEER: 'A claim that carries weight from people who understand the field.',
+      FAILURE: 'A claim about judgement, learning and correction under cost.',
+      ORIGIN: 'A claim about a distinct angle, not necessarily a result.',
+    },
+    mechanisms: {
+      OUTCOME: 'Something changed in the world here, so it can be worked outward.',
+      VALIDATION: 'There is a sign here that somebody else already trusted you.',
+      SCALE: 'There is countable scale here, not just a general impression.',
+      METHOD: 'There is a method or process here, not only a one-off event.',
+      CREDENTIAL: 'There is formal grounding here that can support a claim.',
+      PEER: 'There is confirmation from someone who knows the professional standard.',
+      FAILURE: 'There is learning under cost here, which is strong trust material.',
+      ORIGIN: 'There is a source for your angle here, but it must be tied carefully to a claim.',
+    },
+    limits: {
+      falsifiability: 'Right now this is hard for a sceptic to check. Add a name, date, number or link to raise certainty.',
+      verification: 'Most of the weight still comes from your own word. Strengthen it with a quote, referral or external confirmation.',
+      outcome: 'It is not yet clear what changed. Without an outcome, this supports professional identity more than a value promise.',
+      domain: 'This does not prove experience in the same arena. It proves a mechanism that may transfer there, and that limit has to stay visible.',
+      scope: 'This is usable, but do not stretch it beyond what the evidence itself can hold.',
+    },
+  },
+
   archetypes: {
     OUTCOME: 'Outcome',
     VALIDATION: 'External validation',

@@ -200,6 +200,25 @@ describe('First Light on the sample', () => {
     expect(markup).not.toContain('demobar');
     expect(markup).toContain('במה שהדבקת');
   });
+
+  it('turns the first reveal into one proof loop, not only an inventory teaser', () => {
+    const real = {
+      ...demoProof,
+      id: 'proof_loop',
+      demo: false,
+      archetypes: ['OUTCOME'],
+      kind: 'experience',
+    };
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs: [real] }, t, {
+        proofs: [real], top3: [real], demo: false,
+      }),
+    );
+    expect(markup).toContain(t('proofCard.title'));
+    expect(markup).toContain(t('proofCard.limitLabel'));
+    expect(markup).toContain('data-act="draft"');
+    expect(markup).toContain('data-id="proof_loop"');
+  });
 });
 
 describe('the reveal does not promise more than it found', () => {
