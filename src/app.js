@@ -1,161 +1,151 @@
-const STORAGE_KEY = 'proofminer-transition-v6-workspace';
-const uid = () => Math.random().toString(36).slice(2, 10);
+const STORAGE_KEY='proofminer-commitment-gate-v1';
+const uid=()=>Math.random().toString(36).slice(2,10);
 
-const blank = {
-  transition: '', desiredState: '', horizon: 3, totalHours: 50,
-  actions: [], baselineFrozen: false, baselineSnapshot: null,
-  systemChallenge: null, newAction: '',
+const MECHANISMS={
+  visibility:{label:'חשיפה',statement:'שהחסם המרכזי הוא חשיפה: אם יותר מהאנשים הנכונים יראו אותך, המעבר יתקדם.',alt:['תרגום/מיצוב','הוכחה/לגיטימציה','גישה לאנשים הנכונים'],test:'בדוק עם 5 אנשים מקהל היעד: האם כבר נחשפו אליך, האם הם מבינים במה אתה רלוונטי, ומה עדיין מונע מהם להתקדם איתך.'},
+  translation:{label:'תרגום ומיצוב',statement:'שהחסם המרכזי הוא איך הערך שלך מתורגם ומוצג: שינוי המסר או הנכס יפתח את המעבר.',alt:['הוכחה/לגיטימציה','גישה לאנשים הנכונים','התאמת ההצעה'],test:'הצג את המסר/העמוד הנוכחי ל-5 אנשים מקהל היעד ובקש מהם להסביר בחזרה למי זה מיועד, איזו בעיה זה פותר ומה חסר להם כדי להאמין שזה רלוונטי.'},
+  proof:{label:'הוכחה ולגיטימציה',statement:'שהחסם המרכזי הוא proof: יותר ראיות, cases או לגיטימציה יורידו מספיק סיכון כדי לאפשר את הצעד הבא.',alt:['גישה','תרגום ומיצוב','התאמת ההצעה'],test:'שאל 5 אנשים מקהל היעד איזה proof הם היו צריכים לראות כדי להסכים לצעד הבא, והשווה את התשובות למה שכבר יש לך.'},
+  access:{label:'גישה',statement:'שהחסם המרכזי הוא גישה: אם תגיע לאנשים הנכונים, מה שכבר יש לך מספיק טוב כדי להתקדם.',alt:['תרגום ומיצוב','הוכחה/לגיטימציה','התאמת ההצעה'],test:'בצע 10 פניות ממוקדות עם ההצעה והחומרים הנוכחיים. הפרד בין לא-הגעתי, הגעתי-אבל-לא-הבנתי, והבנתי-אבל-לא-השתכנעתי.'},
+  offer:{label:'מבנה ההצעה',statement:'שהחסם המרכזי הוא ההצעה עצמה: תמחור, packaging או צורת השירות מונעים את הצעד הבא.',alt:['גישה','הוכחה/לגיטימציה','תרגום ומיצוב'],test:'הצג את ההצעה הנוכחית ללא שינוי ל-5 לקוחות מתאימים ותעד את קריטריון הסירוב לפני שאתה משנה מחיר או packaging.'},
+  capability:{label:'יכולת',statement:'שהחסם המרכזי הוא יכולת: לפני שהמעבר יכול להתקדם חסרה לך מיומנות או כשירות מקצועית.',alt:['גישה','הוכחה/לגיטימציה','תרגום ומיצוב'],test:'נסה 2 משימות אמיתיות שמייצגות את העבודה החדשה לפני השקעה בהכשרה נוספת, ותעד איפה היכולת הנוכחית באמת נשברת.'},
+  capacity:{label:'קיבולת ותפעול',statement:'שהחסם המרכזי הוא קיבולת: בלי שינוי בתהליך, אוטומציה או חלוקת עבודה לא תוכל לבצע את המעבר.',alt:['ביקוש/גישה','התאמת ההצעה','סדר הפעולות'],test:'מדוד שבוע עבודה אמיתי אחד: איפה הזמן נצרך, איזה עומס באמת חוסם את המהלך, ומה יקרה אם לא תבנה תשתית נוספת.'},
+  unknown:{label:'הנחת ביצוע',statement:'שהפעולות שבחרת תוקפות את החסם הנכון — למרות שהתוכנית עדיין לא מכילה דרך ברורה לבדוק זאת.',alt:['החסם נמצא מוקדם יותר','החסם נמצא אצל ה-buyer','הפעולה נכונה אבל הסדר שגוי'],test:'לפני הרחבת הביצוע, אסוף 5 תצפיות קצרות מהשטח שמסוגלות לשנות את הפעולה הבאה שלך.'}
 };
 
-const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-const state = { ...blank, ...(stored || {}) };
-if (!Array.isArray(state.actions)) state.actions = [];
-const app = document.querySelector('#app');
+const blank={transition:'',desiredState:'',horizon:3,totalHours:50,actions:[],newAction:'',baseline:null,reveal:null,betOverride:null};
+const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+const state={...blank,...(saved||{})};
+if(!Array.isArray(state.actions))state.actions=[];
+const app=document.querySelector('#app');
 
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function esc(v=''){ return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
-function clamp(n,min,max){ return Math.max(min,Math.min(max,Number(n)||0)); }
-function allocatedHours(){ return state.actions.reduce((s,a)=>s+(Number(a.hours)||0),0); }
-function reserveHours(){ return Math.max(0,Number(state.totalHours||0)-allocatedHours()); }
-function actionById(id){ return state.actions.find(a=>a.id===id); }
-const statusLabel=s=>({now:'עכשיו',later:'אחר כך',learn:'לברר'}[s]||s);
+const esc=(v='')=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const save=()=>localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+const allocated=()=>state.actions.reduce((s,a)=>s+(Number(a.hours)||0),0);
+const reserve=()=>Math.max(0,(Number(state.totalHours)||0)-allocated());
+const byId=id=>state.actions.find(a=>a.id===id);
 
-function allocationSegmentsHTML(){
-  const total=Math.max(1,Number(state.totalHours)||1);
-  const used=state.actions.filter(a=>a.hours>0).map(a=>{
-    const w=Math.max(2,(a.hours/total)*100);
-    return `<div class="resource-segment" style="--segment:${w}%" title="${esc(a.title)} · ${esc(a.hours)} שעות"><span><strong>${esc(a.hours)}h</strong><small>${esc(a.title)}</small></span></div>`;
-  }).join('');
-  const reserve=reserveHours();
-  const rw=Math.max(0,(reserve/total)*100);
-  return `${used}<div class="reserve-segment" style="--segment:${rw}%"><span>${esc(reserve)}h פנויות</span></div>`;
-}
-
-function refreshAllocationUI(){
-  const bar=document.querySelector('.allocation-bar');
-  if(bar) bar.innerHTML=allocationSegmentsHTML();
-  state.actions.forEach(action=>{
-    const value=document.querySelector(`[data-hours-value="${action.id}"]`);
-    const maxLabel=document.querySelector(`[data-hours-max="${action.id}"]`);
-    const slider=document.querySelector(`[data-hours="${action.id}"]`);
-    const max=(Number(action.hours)||0)+reserveHours();
-    if(value) value.textContent=`${action.hours}h`;
-    if(maxLabel) maxLabel.textContent=`מקסימום זמין עכשיו: ${max}h`;
-    if(slider){ slider.max=String(max); slider.value=String(action.hours); }
-  });
+function classify(title){
+  const t=String(title||'').toLowerCase();
+  if(/ראיונ|מחקר|שיחות עם|buyer|סקר|survey|ניסוי|בדיק|validation|ללמוד מהשוק/.test(t))return'discovery';
+  if(/קייס|case study|case|testimonial|המלצ|הוכח|proof|פורטפוליו|portfolio/.test(t))return'proof';
+  if(/פנייה|פניות|outreach|נטוורק|network|קשרים|לידים|cold|מנכ|שיחת מכירה|referral/.test(t))return'access';
+  if(/אתר|מיצוב|מסר|מיתוג|דף נחיתה|פרופיל|ניסוח|position|branding|website/.test(t))return'translation';
+  if(/לינקדאין|תוכן|פוסט|וובינר|פודקאסט|הרצא|פרסום|קמפיין|חשיפה|content|linkedin|webinar/.test(t))return'visibility';
+  if(/מחיר|תמחור|חבילה|הצעה|מוצר|שירות|pricing|package|offer/.test(t))return'offer';
+  if(/קורס|ללמוד|הכשרה|הסמכה|מיומנות|training|course|skill/.test(t))return'capability';
+  if(/אוטומצ|מערכת|תהליך|תפעול|להעסיק|עובד|delegate|automation|process/.test(t))return'capacity';
+  return'unknown';
 }
 
-function addAction(title,status='now',hours=0){
-  const clean=String(title||'').trim(); if(!clean)return;
-  state.actions.push({id:uid(),title:clean,status,hours:Math.min(Number(hours)||0,reserveHours()),source:'user'});
-  state.newAction=''; state.systemChallenge=null; save(); render();
-}
-function removeAction(id){ state.actions=state.actions.filter(a=>a.id!==id); state.systemChallenge=null; save(); render(); }
-function moveAction(id,d){
-  const i=state.actions.findIndex(a=>a.id===id),t=i+d; if(i<0||t<0||t>=state.actions.length)return;
-  const next=[...state.actions]; [next[i],next[t]]=[next[t],next[i]]; state.actions=next; save(); render();
-}
-function setActionStatus(id,status){ const a=actionById(id); if(!a)return; a.status=status; save(); render(); }
-function setActionHours(id,requested,{renderAfter=false}={}){
-  const a=actionById(id); if(!a)return;
-  const current=Number(a.hours)||0,max=current+reserveHours();
-  a.hours=clamp(requested,0,max); save();
-  if(renderAfter) render(); else refreshAllocationUI();
-}
-function updateTotalHours(v){
-  const next=Math.max(1,Number(v)||1); state.totalHours=next;
-  const used=allocatedHours();
-  if(used>next&&used>0){
-    const ratio=next/used; let allocated=0;
-    state.actions.forEach((a,i)=>{
-      if(i===state.actions.length-1)a.hours=Math.max(0,next-allocated);
-      else{ a.hours=Math.floor((Number(a.hours)||0)*ratio); allocated+=a.hours; }
-    });
-  }
-  save(); render();
-}
-
-function freezeBaseline(){
-  if(!state.transition.trim()||!state.actions.length)return;
-  state.baselineSnapshot={transition:state.transition,desiredState:state.desiredState,horizon:state.horizon,totalHours:state.totalHours,actions:state.actions.map(({id,title,hours,status})=>({id,title,hours,status})),frozenAt:new Date().toISOString()};
-  state.baselineFrozen=true; state.systemChallenge=null; save(); render();
-}
-function unfreezeBaseline(){ state.baselineFrozen=false; state.baselineSnapshot=null; state.systemChallenge=null; save(); render(); }
-
-function runChallenge(){
-  if(!state.baselineFrozen)return;
-  const text=`${state.transition} ${state.desiredState}`.toLowerCase();
-  const org=/ארגונ|מנהלים|חברות|enterprise|b2b/.test(text),suggestions=[];
+function exposure(){
+  const groups={};let discoveryHours=0,nonDiscovery=0;
   state.actions.forEach((a,index)=>{
-    const title=a.title.toLowerCase(); let suggestedStatus=a.status;
-    let reason='אין כרגע סיבה מבנית לשנות את המיקום שלך.';
-    let reverse='ראיה חדשה שמגלה dependency, קהל אחר או מנגנון אחר יכולה לשנות את האתגר.';
-    if(org&&/אתר|פודקאסט|תוכן|לינקדאין|וובינר|מיתוג/.test(title)){
-      suggestedStatus='later';
-      reason='זו פעולה סבירה, אבל היא מקבעת מסר או ערוץ לפני שנבדק מספיק טוב מי בוחר ולפי איזה קריטריון.';
-      reverse='אם כבר קיימת ראיה ישירה ועדכנית לגבי buyer, criterion ו-proof נדרש — אפשר להחזיר אותה קדימה.';
-    }else if(/שיח|ראיונ|לקוח|מנהלים|פנייה|outreach|מחקר/.test(title)){
-      suggestedStatus='learn';
-      reason='הפעולה יכולה להחזיר מידע שמבדיל בין כמה מסלולים לפני התחייבות גדולה יותר.';
-      reverse='אם המידע כבר קיים ממקור חיצוני אמין, אין צורך לבצע את הלמידה שוב.';
-    }else if(index===0){
-      suggestedStatus='now'; reason='הפעולה הראשונה נשארת ברירת המחדל כל עוד אין ראיה שמצדיקה להפוך אותה.';
-    }
-    if(suggestedStatus!==a.status||reason!=='אין כרגע סיבה מבנית לשנות את המיקום שלך.') suggestions.push({actionId:a.id,suggestedStatus,reason,reverse,applied:false,rejected:false});
+    const kind=classify(a.title),hours=Number(a.hours)||0,weight=allocated()>0?hours:1;
+    if(kind==='discovery'){discoveryHours+=weight;return;}
+    nonDiscovery+=weight;
+    if(!groups[kind])groups[kind]={kind,weight:0,actions:[],firstIndex:index};
+    groups[kind].weight+=weight;groups[kind].actions.push(a);
   });
-  const hasDiscovery=state.actions.some(a=>/שיח|ראיונ|לקוח|מנהלים|מחקר/.test(a.title.toLowerCase()));
-  const proposedAction=org&&!hasDiscovery?{id:uid(),title:'לקיים 5 שיחות קצרות עם בעלי תפקידים רלוונטיים לפני בניית המעטפת',status:'learn',hours:Math.min(8,reserveHours()),reason:'החוב המרכזי הוא להבין מי בוחר, לפי מה, ואיזה proof מוריד סיכון. זו פעולה שמחזירה מידע לפני lock-in.',reverse:'אם המידע כבר קיים ממקור חיצוני עדכני ואמין, אין צורך להוסיף את הפעולה.'}:null;
-  state.systemChallenge={generatedAt:new Date().toISOString(),suggestions,proposedAction}; save(); render();
-}
-function applySuggestion(id){ const c=state.systemChallenge?.suggestions?.find(x=>x.actionId===id),a=actionById(id); if(!c||!a)return; a.status=c.suggestedStatus;c.applied=true;c.rejected=false;save();render(); }
-function rejectSuggestion(id){ const c=state.systemChallenge?.suggestions?.find(x=>x.actionId===id);if(!c)return;c.rejected=true;c.applied=false;save();render(); }
-function acceptProposedAction(){ const p=state.systemChallenge?.proposedAction;if(!p)return;state.actions.push({id:p.id,title:p.title,status:p.status,hours:Math.min(p.hours,reserveHours()),source:'system-proposal'});state.systemChallenge.proposedAction=null;save();render(); }
-function reset(){ Object.assign(state,JSON.parse(JSON.stringify(blank)));save();render(); }
-function loadDemo(){
-  Object.assign(state,JSON.parse(JSON.stringify(blank)));
-  state.transition='אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים בלי לבזבז חודשים על מיתוג שלא יזיז את העסק.';
-  state.desiredState='שמנהלים בארגונים יראו בי אופציה לגיטימית ויקבעו שיחות על תהליכי ייעוץ.';
-  state.horizon=3;state.totalHours=50;
-  state.actions=[
-    {id:uid(),title:'לשכתב את האתר',hours:16,status:'now',source:'user'},
-    {id:uid(),title:'להתחיל לפרסם יותר בלינקדאין',hours:14,status:'now',source:'user'},
-    {id:uid(),title:'לבנות וובינר למנהלים',hours:10,status:'later',source:'user'},
-  ];save();render();
+  const sorted=Object.values(groups).sort((a,b)=>b.weight-a.weight);
+  return{sorted,dominant:sorted[0]||null,nonDiscovery,discoveryHours};
 }
 
-function header(){return `<header class="site-header"><div class="brand-lockup"><div class="logo-mark">P</div><div><b>ProofMiner</b><span>מרחב החלטה מקצועי</span></div></div><div class="header-actions"><span class="preview-badge">Preview ניסויי</span><button class="text-btn" data-action="demo">טען דוגמה</button><button class="text-btn" data-action="reset">אפס</button></div></header>`;}
+function deriveReveal(){
+  const ex=exposure();
+  const chosen=state.betOverride||ex.dominant?.kind||'unknown';
+  const m=MECHANISMS[chosen]||MECHANISMS.unknown;
+  const dominantWeight=ex.dominant?.weight||0;
+  const share=ex.nonDiscovery?dominantWeight/ex.nonDiscovery:0;
+  const dominantHours=allocated()>0?dominantWeight:null;
+  const total=Number(state.totalHours)||0;
+  const substantial=allocated()>0?dominantWeight>=Math.min(10,total*.2):dominantWeight>=2;
+  const concentrated=share>=.5;
+  const discoveryAction=state.actions.find(a=>classify(a.title)==='discovery');
+  let outcome='KEEP',why='לא זוהה כרגע הימור יחיד שמרכז מספיק מהתוכנית כדי להצדיק עצירה או שינוי.';
+  if(concentrated&&substantial&&!discoveryAction){
+    outcome='TEST_FIRST';
+    why='חלק גדול מהמחויבות שלך תלוי באותו מנגנון, אבל התוכנית עצמה אינה כוללת כרגע פעולה שמבדילה אם המנגנון הזה באמת load-bearing.';
+  }else if(concentrated&&discoveryAction){
+    const idxDiscovery=state.actions.findIndex(a=>a.id===discoveryAction.id);
+    const idxDominant=ex.dominant?.firstIndex??0;
+    if(idxDiscovery>idxDominant){
+      outcome='CHANGE';
+      why='כבר יש בתוכנית פעולה שמייצרת מידע, אבל היא מופיעה אחרי חלק מהמחויבות שהיא אמורה לבדוק. השינוי המינימלי הוא להקדים את הלמידה.';
+    }else{
+      outcome='KEEP';
+      why='התוכנית מרכזת משאבים בהימור ברור, אבל כבר כוללת פעולה מוקדמת שמחזירה מידע לפני רוב המחויבות. כרגע אין סיבה מבנית לשנות מעבר לכך.';
+    }
+  }
+  const structural=`${dominantHours!==null?`${Math.round(dominantHours)} מתוך ${Math.round(allocated())} השעות שהקצית`:`רוב הפעולות שבחרת`} מכוונות בעיקר ל${m.label}.`;
+  return{
+    mechanism:chosen,label:m.label,statement:m.statement,alternatives:m.alt,test:m.test,outcome,why,structural,
+    evidence:[
+      {type:'F2',relation:'OBSERVED',text:structural},
+      {type:'MISSING',relation:'MISSING',text:'עדיין לא צורפה ראיה חיצונית שמסוגלת להכריע אם ההימור הזה הוא אכן החסם המרכזי.'}
+    ],
+    reversal: outcome==='TEST_FIRST'?'אם התצפית הקטנה תראה שההימור הנוכחי כן מסביר היטב את החסם, נחזור לתוכנית ונאיץ אותה.':outcome==='CHANGE'?'אם יתברר שהלמידה אינה יכולה לשנות את הפעולות שכבר לפניה, אין הצדקה להקדים אותה.':'ראיה חדשה שמראה שמנגנון אחר הוא prerequisite או צוואר בקבוק מוקדם יותר תפתח את התוכנית מחדש.'
+  };
+}
 
-function setupPanel(){return `<section class="setup-panel paper"><div class="section-head"><div><span class="eyebrow">01 · מגדירים את המעבר</span><h1>מה אתה מנסה לשנות מקצועית?</h1></div><span class="quiet-badge">לא צריך לדעת עדיין מה הפתרון</span></div><label class="big-field"><span>המעבר במילים שלך</span><textarea id="transition" rows="4" placeholder="לדוגמה: אני רוצה לעבור מייעוץ לעצמאים לייעוץ לארגונים, ולא ברור לי במה להשקיע קודם.">${esc(state.transition)}</textarea></label><div class="two-fields"><label><span>מה היית רוצה שיהיה נכון במקום? <small>אופציונלי</small></span><input id="desiredState" value="${esc(state.desiredState)}" placeholder="למשל: שמנהלים יפנו אליי..." /></label><label class="horizon-field"><span>אופק החלטה: <b data-horizon-value>${esc(state.horizon)} חודשים</b></span><input id="horizon" type="range" min="1" max="12" step="1" value="${esc(state.horizon)}" /></label></div></section>`;}
-function actionComposer(){return `<section class="action-composer paper"><div><span class="eyebrow">02 · מה באמת על השולחן?</span><h2>הוסף את הפעולות שאתה שוקל</h2><p>לא צריך תוכנית מלאה. רק דברים שבאמת מתחרים עכשיו על הזמן שלך.</p></div><div class="composer-row"><input id="newAction" value="${esc(state.newAction)}" placeholder="למשל: לשכתב אתר" /><button class="primary" data-action="add-action">הוסף פעולה</button></div></section>`;}
-function resourceBar(){const total=Math.max(1,Number(state.totalHours)||1);return `<section class="resource-panel paper"><div class="resource-head"><div><span class="eyebrow">03 · משאב מוגבל</span><h2>יש לך ${esc(total)} שעות להקצות</h2></div><label class="total-hours"><span>סה״כ שעות</span><input id="totalHours" type="number" min="1" max="500" value="${esc(total)}" /></label></div><div class="allocation-bar" aria-label="חלוקת שעות">${allocationSegmentsHTML()}</div><p class="resource-rule">כשאתה נותן יותר שעות לפעולה אחת, הן נגרעות מהיתרה. אי אפשר לתת לכולן עדיפות מלאה.</p></section>`;}
+function addAction(title,hours=0){
+  const clean=String(title||'').trim();if(!clean)return;
+  state.actions.push({id:uid(),title:clean,hours:Math.min(Number(hours)||0,reserve())});
+  state.newAction='';state.baseline=null;state.reveal=null;state.betOverride=null;save();render();
+}
+function removeAction(id){state.actions=state.actions.filter(a=>a.id!==id);state.baseline=null;state.reveal=null;state.betOverride=null;save();render();}
+function moveAction(id,d){const i=state.actions.findIndex(a=>a.id===id),j=i+d;if(i<0||j<0||j>=state.actions.length)return;[state.actions[i],state.actions[j]]=[state.actions[j],state.actions[i]];state.baseline=null;state.reveal=null;save();render();}
+function setHours(id,v){const a=byId(id);if(!a)return;const max=(Number(a.hours)||0)+reserve();a.hours=Math.max(0,Math.min(max,Number(v)||0));state.baseline=null;state.reveal=null;save();render();}
+function updateTotal(v){state.totalHours=Math.max(1,Number(v)||1);if(allocated()>state.totalHours){let left=state.totalHours;state.actions.forEach(a=>{a.hours=Math.min(Number(a.hours)||0,left);left-=a.hours;});}state.baseline=null;state.reveal=null;save();render();}
+function freezeAndReveal(){
+  if(!state.transition.trim()||!state.actions.length)return;
+  state.baseline={transition:state.transition,desiredState:state.desiredState,horizon:state.horizon,totalHours:state.totalHours,actions:state.actions.map(a=>({...a})),frozenAt:new Date().toISOString()};
+  state.reveal=deriveReveal();save();render();
+}
+function applyBetOverride(kind){state.betOverride=kind||null;state.reveal=deriveReveal();save();render();}
+function applyOutcome(){
+  if(!state.reveal)return;
+  if(state.reveal.outcome==='TEST_FIRST'){
+    const budget=Math.min(6,Math.max(2,Math.floor((Number(state.totalHours)||10)*.12)));
+    let need=budget;
+    [...state.actions].sort((a,b)=>(b.hours||0)-(a.hours||0)).forEach(a=>{if(need<=0)return;const take=Math.min(Number(a.hours)||0,need);a.hours-=take;need-=take;});
+    state.actions.unshift({id:uid(),title:`ניסוי קטן: ${state.reveal.test}`,hours:budget,status:'test'});
+  }else if(state.reveal.outcome==='CHANGE'){
+    const i=state.actions.findIndex(a=>classify(a.title)==='discovery');if(i>0){const [a]=state.actions.splice(i,1);state.actions.unshift(a);}
+  }
+  state.baseline=null;state.reveal=null;state.betOverride=null;save();render();
+}
+function reset(){Object.assign(state,JSON.parse(JSON.stringify(blank)));save();render();}
+function demo(){Object.assign(state,JSON.parse(JSON.stringify(blank)));state.transition='אני רוצה לעבור מייעוץ לעצמאים קטנים לייעוץ לארגונים, ולא לבזבז חודשים על מהלך שלא יזיז את העסק.';state.desiredState='שמנהלים בארגונים יראו בי אופציה לגיטימית ויקבעו איתי שיחות.';state.totalHours=50;state.actions=[{id:uid(),title:'לשכתב את האתר',hours:16},{id:uid(),title:'להתחיל לפרסם יותר בלינקדאין',hours:14},{id:uid(),title:'לבנות וובינר למנהלים',hours:10}];save();render();}
 
-function challengeBlock(a,c){const changed=c.suggestedStatus!==a.status;return `<div class="challenge-block ${c.applied?'accepted':''} ${c.rejected?'rejected':''}"><div class="challenge-head"><span aria-label="אתגר של המערכת">אתגר</span>${changed?`<b>${statusLabel(a.status)} → ${statusLabel(c.suggestedStatus)}</b>`:'<b>בדיקת הנחה</b>'}</div><p>${esc(c.reason)}</p><details><summary>מה יגרום לאתגר הזה להיעלם?</summary><p>${esc(c.reverse)}</p></details><div class="challenge-actions"><button class="mini-primary" data-apply-suggestion="${esc(a.id)}">החל את השינוי</button><button class="mini-secondary" data-reject-suggestion="${esc(a.id)}">אני לא מקבל</button></div></div>`;}
-function actionCard(a){const max=(Number(a.hours)||0)+reserveHours(),c=state.systemChallenge?.suggestions?.find(x=>x.actionId===a.id);return `<article class="action-card" draggable="true" data-action-id="${esc(a.id)}"><div class="drag-handle" aria-hidden="true">⋮⋮</div><div class="action-main"><input class="action-title-input" data-action-title="${esc(a.id)}" value="${esc(a.title)}" aria-label="שם הפעולה" /><div class="status-switch" role="group" aria-label="מצב הפעולה">${['now','later','learn'].map(s=>`<button class="status-btn ${a.status===s?'active':''}" data-set-status="${s}" data-id="${esc(a.id)}">${statusLabel(s)}</button>`).join('')}</div><div class="hours-control"><div class="hours-label"><span>שעות</span><b data-hours-value="${esc(a.id)}">${esc(a.hours)}h</b><small data-hours-max="${esc(a.id)}">מקסימום זמין עכשיו: ${esc(max)}h</small></div><input type="range" min="0" max="${esc(max)}" step="1" value="${esc(a.hours)}" data-hours="${esc(a.id)}" aria-label="שעות לפעולה ${esc(a.title)}" /><div class="hours-buttons"><button data-hours-step="-1" data-id="${esc(a.id)}">−</button><button data-hours-step="1" data-id="${esc(a.id)}">+</button></div></div></div><div class="action-tools"><button class="icon-btn" data-move="-1" data-id="${esc(a.id)}" title="הזז למעלה">↑</button><button class="icon-btn" data-move="1" data-id="${esc(a.id)}" title="הזז למטה">↓</button><button class="icon-btn danger" data-remove="${esc(a.id)}" title="מחק">×</button></div>${c?challengeBlock(a,c):''}</article>`;}
-function lane(status,title,subtitle){const actions=state.actions.filter(a=>a.status===status);return `<section class="lane" data-lane="${status}"><header><div><span>${title}</span><small>${subtitle}</small></div><b>${actions.length}</b></header><div class="lane-dropzone" data-drop-status="${status}">${actions.length?actions.map(actionCard).join(''):'<div class="empty-lane">גרור לכאן פעולה או השתמש בכפתורי המצב</div>'}</div></section>`;}
-function baselineStrip(){if(!state.baselineFrozen||!state.baselineSnapshot)return'';return `<section class="baseline-strip"><div><span>נקודת ההתחלה נשמרה</span><b>${state.baselineSnapshot.actions.length} פעולות · ${esc(state.baselineSnapshot.totalHours)} שעות</b></div><button class="text-btn" data-action="unfreeze">פתח מחדש</button></section>`;}
-function proposedActionBlock(){const p=state.systemChallenge?.proposedAction;if(!p)return'';return `<section class="proposed-action paper"><span class="eyebrow">פעולה שהמערכת מציעה להוסיף — לא עובדה מהשטח</span><h3>${esc(p.title)}</h3><p>${esc(p.reason)}</p><div><b>${esc(p.hours)} שעות מוצעות</b><button class="primary" data-action="accept-proposed">הוסף למרחב שלי</button></div></section>`;}
+function allocationBar(){
+  const total=Math.max(1,Number(state.totalHours)||1);
+  const segs=state.actions.filter(a=>a.hours>0).map(a=>`<div class="resource-segment" style="--segment:${Math.max(2,a.hours/total*100)}%"><span><strong>${a.hours}h</strong><small>${esc(a.title)}</small></span></div>`).join('');
+  return `<div class="allocation-bar">${segs}<div class="reserve-segment" style="--segment:${Math.max(0,reserve()/total*100)}%"><span>${reserve()}h פנויות</span></div></div>`;
+}
+function header(){return `<header class="site-header"><div class="brand-lockup"><div class="logo-mark">P</div><div><b>ProofMiner</b><span>בדיקת מחויבות לפני שאתה משלם עליה</span></div></div><div class="header-actions"><span class="preview-badge">Commitment Gate · ניסוי</span><button class="text-btn" data-act="demo">טען דוגמה</button><button class="text-btn" data-act="reset">אפס</button></div></header>`;}
+function intro(){return `<section class="setup-panel"><div class="section-head"><div><span class="eyebrow">לפני שאתה מתחייב</span><h1>על מה התוכנית שלך בעצם מהמרת?</h1><p class="lead">ספר מה אתה מנסה לשנות ומה אתה עומד לעשות. המערכת לא תחפש "אבחנה חכמה" — היא תבדוק מה חייב להיות נכון כדי שההשקעה שלך תהיה הגיונית.</p></div></div><label class="big-field"><span>מה אתה מנסה לשנות מקצועית?</span><textarea id="transition" placeholder="לדוגמה: לעבור מייעוץ לעצמאים לייעוץ לארגונים">${esc(state.transition)}</textarea></label><div class="two-fields"><label><span>מה היית רוצה שיהיה נכון במקום? <small>אופציונלי</small></span><input id="desired" value="${esc(state.desiredState)}" placeholder="למשל: שמנהלים יקבעו איתי שיחות" /></label><label class="horizon-field"><span>אופק: <b data-horizon>${state.horizon} חודשים</b></span><input id="horizon" type="range" min="1" max="12" value="${state.horizon}" /></label></div></section>`;}
+function plan(){return `<section class="commitment-plan"><div class="section-head"><div><span class="eyebrow">התוכנית שלך לפני המערכת</span><h2>מה אתה באמת עומד לעשות?</h2><p>הכנס פעולות אמיתיות והקצה להן זמן. זה ה-baseline — לא תשובה לשאלון.</p></div><label class="total-hours"><span>סה״כ שעות זמינות</span><input id="totalHours" type="number" min="1" max="500" value="${state.totalHours}" /></label></div><div class="composer-row"><input id="newAction" value="${esc(state.newAction)}" placeholder="למשל: לשכתב את האתר"/><button class="primary" data-act="add">הוסף פעולה</button></div>${state.actions.length?`<div class="plan-list">${state.actions.map((a,i)=>`<article class="plan-action"><div class="plan-order"><button data-move="-1" data-id="${a.id}" ${i===0?'disabled':''}>↑</button><button data-move="1" data-id="${a.id}" ${i===state.actions.length-1?'disabled':''}>↓</button></div><input class="action-title-input" data-title="${a.id}" value="${esc(a.title)}"/><div class="plan-hours"><b>${a.hours}h</b><input type="range" min="0" max="${a.hours+reserve()}" value="${a.hours}" data-hours="${a.id}"/><button class="icon-btn danger" data-remove="${a.id}">×</button></div></article>`).join('')}</div><section class="resource-panel"><div class="resource-head"><div><span class="eyebrow">המחויבות בפועל</span><h2>${allocated()} מתוך ${state.totalHours} שעות כבר מוקצות</h2></div></div>${allocationBar()}</section><button class="primary reveal-cta" data-act="reveal">בדוק על מה התוכנית שלי מהמרת</button>`:`<div class="empty-workspace"><b>הוסף לפחות פעולה אחת.</b><span>הערך מתחיל מהתוכנית שאתה באמת עומד לבצע.</span></div>`}</section>`;}
 
-function workspaceScreen(){const canFreeze=state.transition.trim()&&state.actions.length>0;return `${header()}<main class="workspace-shell">${setupPanel()}${actionComposer()}${state.actions.length?resourceBar():''}${baselineStrip()}${state.actions.length?`<section class="board-head"><div><span class="eyebrow">04 · תזיז את התוכנית, לא את הטקסט</span><h2>איפה כל פעולה נמצאת עכשיו?</h2><p>גרור בין אזורים, סדר מחדש, או השתמש בכפתורים. המודל נשמר תוך כדי.</p></div><div class="board-actions">${!state.baselineFrozen?`<button class="primary" data-action="freeze" ${canFreeze?'':'disabled'}>שמור את התוכנית שלי לפני האתגר</button>`:`<button class="primary" data-action="challenge">${state.systemChallenge?'הרץ אתגר מחדש':'אתגר את התוכנית שלי'}</button>`}</div></section><section class="decision-board direct-board">${lane('now','עכשיו','משהו שאתה באמת מתכוון לבצע')}${lane('later','אחר כך','סביר, אבל לא צריך משאב עכשיו')}${lane('learn','לברר','פעולה שמטרתה להחזיר מידע')}</section>${proposedActionBlock()}`:'<section class="empty-workspace"><b>המרחב ייבנה מתוך הפעולות שלך.</b><span>הוסף פעולה אחת כדי להתחיל.</span></section>'}<footer class="workspace-footer"><span>Preview ניסויי · האתגרים כאן הם מסקנות/השערות של המערכת, לא מחקר שוק מאומת.</span></footer></main>`;}
+function reveal(){
+  const r=state.reveal;if(!r)return'';
+  const outcomeLabel={KEEP:'KEEP · אפשר להמשיך',CHANGE:'CHANGE · שנה את הסדר',TEST_FIRST:'TEST FIRST · בדוק לפני שאתה מתחייב'}[r.outcome];
+  const opts=Object.entries(MECHANISMS).filter(([k])=>k!=='unknown').map(([k,v])=>`<option value="${k}" ${r.mechanism===k?'selected':''}>${v.label}</option>`).join('');
+  return `<section class="reveal-shell"><div class="reveal-title"><span class="eyebrow">Diagnostic Reveal — בלי להעמיד פנים שזו אמת מהשוק</span><h2>${outcomeLabel}</h2><p>${esc(r.why)}</p></div><div class="reveal-grid"><article class="reveal-panel user-panel"><span>1 · המחויבות שלך</span><h3>${esc(r.structural)}</h3><p>זה נתון מהתוכנית שהקפאת — לא פרשנות של המערכת.</p></article><article class="reveal-panel system-panel"><span>2 · ההימור שהמערכת מזהה</span><h3>${esc(r.statement)}</h3><p>זו inference מהפעולות שלך. היא יכולה להיות שגויה.</p><label class="bet-correction">הפירוש שלי שונה:<select id="betOverride">${opts}<option value="unknown" ${r.mechanism==='unknown'?'selected':''}>לא ניתן להסיק מנגנון אחד</option></select></label></article><article class="reveal-panel evidence-panel"><span>3 · מה אנחנו באמת יודעים</span>${r.evidence.map(e=>`<div class="evidence-row ${e.relation.toLowerCase()}"><b>${e.type}</b><p>${esc(e.text)}</p></div>`).join('')}<div class="alternatives"><b>מה עוד יכול להסביר את אותו מצב?</b><div>${r.alternatives.map(a=>`<span>${esc(a)}</span>`).join('')}</div></div></article></div><article class="decision-consequence ${r.outcome.toLowerCase()}"><span>4 · המשמעות להקצאה</span>${r.outcome==='TEST_FIRST'?`<h3>אל תחליף 40 שעות ב-40 שעות אחרות. קנה קודם מידע זול יותר.</h3><p><b>ניסוי מוצע:</b> ${esc(r.test)}</p>`:r.outcome==='CHANGE'?`<h3>הקדם את פעולת הלמידה לפני הפעולות שהיא אמורה לבדוק.</h3><p>לא צריך כרגע להחליף את כל האסטרטגיה — רק לתקן את הסדר.</p>`:`<h3>אין כרגע סיבה מבנית לשנות את התוכנית.</h3><p>KEEP אינו כישלון. המשמעות היא שה-pass הזה לא מצא הימור מרוכז ולא-נבדק שמצדיק שינוי.</p>`}<details><summary>מה יגרום לנו לשנות שוב?</summary><p>${esc(r.reversal)}</p></details>${r.outcome!=='KEEP'?`<button class="primary" data-act="apply">החל את השינוי על התוכנית</button>`:''}</article></section>`;
+}
 
-function render(){app.innerHTML=workspaceScreen();bind();}
+function render(){app.innerHTML=`${header()}<main class="workspace-shell">${intro()}${plan()}${reveal()}<footer class="workspace-footer">Preview ניסויי · המערכת חושפת הימורים ומבנה מחויבות; היא לא טוענת שזיהתה את "הבעיה האמיתית" בלי ראיות מהשטח.</footer></main>`;bind();}
 function bind(){
-  document.querySelector('#transition')?.addEventListener('input',e=>{state.transition=e.target.value;save();});
-  document.querySelector('#desiredState')?.addEventListener('input',e=>{state.desiredState=e.target.value;save();});
-  document.querySelector('#horizon')?.addEventListener('input',e=>{state.horizon=Number(e.target.value);save();const n=document.querySelector('[data-horizon-value]');if(n)n.textContent=`${state.horizon} חודשים`;});
+  document.querySelector('#transition')?.addEventListener('input',e=>{state.transition=e.target.value;state.baseline=null;state.reveal=null;save();});
+  document.querySelector('#desired')?.addEventListener('input',e=>{state.desiredState=e.target.value;state.baseline=null;state.reveal=null;save();});
+  document.querySelector('#horizon')?.addEventListener('input',e=>{state.horizon=Number(e.target.value);document.querySelector('[data-horizon]').textContent=`${state.horizon} חודשים`;save();});
   document.querySelector('#newAction')?.addEventListener('input',e=>{state.newAction=e.target.value;save();});
   document.querySelector('#newAction')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addAction(e.target.value);}});
-  document.querySelector('#totalHours')?.addEventListener('change',e=>updateTotalHours(e.target.value));
-  document.querySelectorAll('[data-action-title]').forEach(input=>input.addEventListener('change',e=>{const a=actionById(e.target.dataset.actionTitle);if(!a)return;a.title=e.target.value.trim()||a.title;save();render();}));
-  document.querySelectorAll('[data-hours]').forEach(input=>{input.addEventListener('input',e=>setActionHours(e.target.dataset.hours,e.target.value));input.addEventListener('change',e=>setActionHours(e.target.dataset.hours,e.target.value,{renderAfter:true}));});
-  document.querySelectorAll('[data-hours-step]').forEach(b=>b.addEventListener('click',()=>{const a=actionById(b.dataset.id);if(a)setActionHours(a.id,(Number(a.hours)||0)+Number(b.dataset.hoursStep),{renderAfter:true});}));
-  document.querySelectorAll('[data-set-status]').forEach(b=>b.addEventListener('click',()=>setActionStatus(b.dataset.id,b.dataset.setStatus)));
-  document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>moveAction(b.dataset.id,Number(b.dataset.move))));
-  document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>removeAction(b.dataset.remove)));
-  document.querySelectorAll('[data-apply-suggestion]').forEach(b=>b.addEventListener('click',()=>applySuggestion(b.dataset.applySuggestion)));
-  document.querySelectorAll('[data-reject-suggestion]').forEach(b=>b.addEventListener('click',()=>rejectSuggestion(b.dataset.rejectSuggestion)));
-  document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const x=b.dataset.action;if(x==='add-action')addAction(state.newAction);if(x==='freeze')freezeBaseline();if(x==='unfreeze')unfreezeBaseline();if(x==='challenge')runChallenge();if(x==='accept-proposed')acceptProposedAction();if(x==='demo')loadDemo();if(x==='reset')reset();}));
-  let draggedId=null;
-  document.querySelectorAll('.action-card[draggable="true"]').forEach(card=>{card.addEventListener('dragstart',e=>{draggedId=card.dataset.actionId;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';});card.addEventListener('dragend',()=>{draggedId=null;card.classList.remove('dragging');document.querySelectorAll('.lane').forEach(x=>x.classList.remove('drag-over'));});});
-  document.querySelectorAll('[data-drop-status]').forEach(zone=>{zone.addEventListener('dragover',e=>{e.preventDefault();zone.closest('.lane')?.classList.add('drag-over');});zone.addEventListener('dragleave',()=>zone.closest('.lane')?.classList.remove('drag-over'));zone.addEventListener('drop',e=>{e.preventDefault();if(draggedId&&zone.dataset.dropStatus)setActionStatus(draggedId,zone.dataset.dropStatus);});});
+  document.querySelector('#totalHours')?.addEventListener('change',e=>updateTotal(e.target.value));
+  document.querySelector('#betOverride')?.addEventListener('change',e=>applyBetOverride(e.target.value));
+  document.querySelectorAll('[data-title]').forEach(x=>x.addEventListener('change',e=>{const a=byId(e.target.dataset.title);if(a){a.title=e.target.value.trim()||a.title;state.baseline=null;state.reveal=null;state.betOverride=null;save();render();}}));
+  document.querySelectorAll('[data-hours]').forEach(x=>x.addEventListener('change',e=>setHours(e.target.dataset.hours,e.target.value)));
+  document.querySelectorAll('[data-remove]').forEach(x=>x.addEventListener('click',()=>removeAction(x.dataset.remove)));
+  document.querySelectorAll('[data-move]').forEach(x=>x.addEventListener('click',()=>moveAction(x.dataset.id,Number(x.dataset.move))));
+  document.querySelectorAll('[data-act]').forEach(x=>x.addEventListener('click',()=>{const a=x.dataset.act;if(a==='demo')demo();if(a==='reset')reset();if(a==='add')addAction(state.newAction);if(a==='reveal')freezeAndReveal();if(a==='apply')applyOutcome();}));
 }
 render();
