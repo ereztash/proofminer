@@ -112,8 +112,28 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
   // Routing them straight to `preserved` meant N published posts minted N
   // traction units differing only in their URL, each one counting separately
   // toward volume, quality and confidence — and so toward the gate ceiling.
-  const ranked = sortByDesc([...preserved, ...candidates], (p) => p.score);
-  const deduped = dedupeProofs(ranked, { protect: cited });
+  // Compounded units dedupe on identity, not on prose. They are generated text
+  // with a known key, and token overlap made the size of the evidence base
+  // depend on the interface language: two genuinely distinct high-performing
+  // posts produced Hebrew claims overlapping at exactly 0.800 — the threshold —
+  // so one was destroyed, while the English claims for the same two posts
+  // overlapped at 0.75 and both survived. Same user, same posts, same numbers.
+  const seenSources = new Set();
+  const identityDeduped = [];
+  for (const proof of sortByDesc([...preserved, ...candidates], (p) => p.score)) {
+    if (proof.origin === 'compounded') {
+      if (seenSources.has(proof.sourceId)) continue;
+      seenSources.add(proof.sourceId);
+    }
+    identityDeduped.push(proof);
+  }
+
+  const deduped = dedupeProofs(identityDeduped, {
+    protect: cited,
+    // Generated traction claims all share a sentence template, so prose dedupe
+    // reads them as duplicates of each other whatever the numbers say.
+    skip: (p) => p.origin === 'compounded',
+  });
 
   // Truncation must never destroy a decision the user made. A pinned unit that
   // happened to score low was being dropped by the score-sorted cut, taking the

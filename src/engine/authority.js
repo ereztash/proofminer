@@ -410,10 +410,16 @@ export function nextMove(state, now = Date.now()) {
     const weeksPublishing = Number.isFinite(oldestMeasured)
       ? (now - oldestMeasured) / (7 * DAY)
       : 0;
+    // Wired the right way round. `acknowledged` gates the *escape*, not the
+    // question: clicking "nobody has been in touch yet" is the user telling us
+    // the answer, so it must stop us asking — and letting the record lapse is
+    // what earns the question back. Inverted, the button pinned the dashboard's
+    // single primary action to the same unanswerable question for three weeks,
+    // while the toast promised the opposite.
     const acknowledged =
       Number.isFinite(state.profile?.noInboundAt) && now - state.profile.noInboundAt <= 21 * DAY;
 
-    if (weeksPublishing >= 3 && !acknowledged) {
+    if (weeksPublishing >= 3 || acknowledged) {
       // Which problem it is, is measurable. If people responded and nobody
       // moved, the posts land and do not ask. If they did not respond either,
       // the evidence is not carrying — and that is an L1 problem, not an L5 one.

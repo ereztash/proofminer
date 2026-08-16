@@ -175,3 +175,56 @@ describe('real clipboard content', () => {
     expect(parts.some((p) => p.startsWith('היי'))).toBe(false);
   });
 });
+
+describe('the product does not edit what the user wrote', () => {
+  it('never strips a leading magnitude off a claim', () => {
+    // The list-marker pattern's digit class was unanchored, so it ate leading
+    // numbers — and rewrote "3.2 מיליון" to "2 מיליון", silently altering a
+    // money figure in an app whose first screen promises it works only with
+    // what you wrote.
+    for (const [input, expected] of [
+      ['17 שנה אני עושה את זה בתחום התפעול והלוגיסטיקה', '17 שנה'],
+      ['40 לקוחות חתמו איתי במהלך השנה האחרונה בלבד', '40 לקוחות'],
+      ['3.2 מיליון ש"ח נחסכו בזכות המהלך הזה במהלך השנה', '3.2 מיליון'],
+    ]) {
+      expect(splitSentences(input)[0], input).toContain(expected);
+    }
+  });
+
+  it('still strips real list markers', () => {
+    expect(splitSentences('1. הובלתי את הפרויקט הראשון מול שלושה קבלני משנה')[0]).not.toMatch(/^1\./u);
+    expect(splitSentences('- ניהלתי צוות של שנים עשר אנשים במשך שלוש שנים')[0]).not.toMatch(/^-/u);
+  });
+
+  it('never stamps one employer onto another job\'s achievement', () => {
+    // Role headings contain a role word by construction, so the attribution
+    // rule folded the *next* job's heading onto the *previous* job's bullet —
+    // and the grounding check passed it, because every name came from the
+    // "evidence". The user publishes a false employment claim.
+    const twoJobs = [
+      'מנהלת תפעול, קבוצת אלפא (2019-2025)',
+      'ניהלתי צוות של 22 עובדים בשלושה אתרים, כולל אחריות מלאה על',
+      'תקציב שנתי של 12 מיליון ש"ח ועל תהליכי הרכש מול 60 ספקים.',
+      'מנהלת לוגיסטיקה, חברת בטא (2014-2019)',
+      'הובלתי את המעבר למערכת ERP חדשה בארבעה סניפים במהלך 2017.',
+    ].join('\n');
+    for (const part of splitSentences(twoJobs)) {
+      expect(part, part).not.toContain('חברת בטא');
+    }
+  });
+
+  it('does not synthesise an attribution without a sign-off above it', () => {
+    // A CV references block is not a letter signature. Gluing the referee's
+    // name onto the user's own achievement bullet presents a named real person
+    // as endorsing a sentence they never wrote.
+    const cvWithReferees = [
+      'הובלתי צוות של 12 מפתחים ואספקת המוצר עברה משלושה חודשים לשלושה שבועות.',
+      'הגדלתי את ההכנסות של קו המוצר ב-40 אחוז במהלך 2023.',
+      'המלצות:',
+      'יעל ברקוביץ, מנכ"לית תפעול, גמא טכנולוגיות',
+    ].join('\n');
+    for (const part of splitSentences(cvWithReferees)) {
+      if (part.includes('הגדלתי')) expect(part).not.toContain('יעל ברקוביץ');
+    }
+  });
+});

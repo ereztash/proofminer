@@ -17,7 +17,7 @@
  *
  * ENGINE INDEPENDENCE: every score, layer, diagnosis and next move in this
  * product is computed by deterministic code. The LLM never scores anything and
- * never introduces facts. It only rewrites text the user already owns, and its
+ * never scores anything, and its output passes the same grounding check as a template draft — which blocks an unsupported number and only warns on an unsupported name. It only rewrites text the user already owns, and its
  * output is rejected unless it passes the same grounding validator that
  * template drafts pass.
  */

@@ -235,11 +235,14 @@ const SUPPORT_STOP_WORDS = new Set([
 export function firstLightView(state, t, { proofs, top3, demo = false }) {
   const signalCache = inventorySignals(proofs);
   // The escape hatch fired only at *zero* proofs, so a paste that yielded four
-  // weak fragments still got "three you would never have published yourself"
-  // printed over three cards in the weak band, each explained with "not enough
-  // signs here to say anything definite". Promising a reveal and delivering
-  // that inverts the one screen the whole product hangs on. Quality decides,
-  // not count.
+  // Card-wise, not inventory-wise. Gating only on "does anything clear the
+  // band" left one 45-scoring unit switching the honest state off for the whole
+  // screen, and `revealPicks` backfills to three unconditionally — so the
+  // headline promised "three you would never have published yourself" over a
+  // pleasantry and a list of languages spoken, each annotated "not enough signs
+  // here to say anything definite". Show what actually clears the bar.
+  const strong = top3.filter((p) => p.score >= BAND_USABLE);
+  const shown = demo ? top3 : strong;
   const primary = top3.find((p) => p.score >= BAND_USABLE) || proofs.find((p) => p.score >= BAND_USABLE) || top3[0] || proofs[0];
   const thin = !demo && (!primary || primary.score < BAND_USABLE);
   if (!proofs.length) {
@@ -269,7 +272,7 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       ${primary ? proofLoopCard(primary, t, proofs, signalCache, state, { thin }) : ''}
 
       <ol class="reveal">
-        ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
+        ${shown.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
     </div>
   </div>`;
