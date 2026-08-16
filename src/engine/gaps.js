@@ -12,7 +12,7 @@
 
 import { ARCHETYPES } from '../core/schema.js';
 import { clamp100, sortByDesc } from '../core/util.js';
-import { BAND_USABLE, daysUntilStale, decayedScore } from './score.js';
+import { BAND_USABLE, HALF_LIFE_DAYS, daysUntilStale, decayedScore } from './score.js';
 import { realProofs } from './mine.js';
 
 /**
@@ -32,13 +32,36 @@ const ARCHETYPE_WEIGHT = {
 };
 
 /**
- * A proof must reach the `usable` band (after decay) to count as coverage.
+ * What a proof must score, after decay, for its archetype to count as covered.
  *
- * Tied to the band boundary rather than set independently: an archetype is
- * covered when the user holds evidence of it the product would call usable,
- * and those two statements must not be able to disagree.
+ * `BAND_USABLE` by default — an archetype is covered when the user holds
+ * evidence of it the product would call usable, and those two statements must
+ * not be able to disagree.
+ *
+ * Four archetypes are exceptions, and they are exceptions for a real reason:
+ * the dimension scorer rewards checkability, magnitude and external
+ * attribution, and some kinds of evidence structurally cannot carry those. An
+ * origin story has no percentage in it. Measured on best-practice evidence
+ * written exactly as each play instructs (pinned in
+ * `tests/engine/regression.test.js > acquisition plays`):
+ *
+ *   OUTCOME 68 · VALIDATION 65 · PEER 57 · SCALE 55
+ *   FAILURE 47 · CREDENTIAL 47 · METHOD 45 · ORIGIN 36
+ *
+ * Holding all eight to 45 meant four plays instructed the user to produce
+ * evidence that could not satisfy them. A user who obeyed for 24 weeks saw
+ * coverage never move and the Visibility Gap widen, with the same instruction
+ * re-issued every fortnight. The threshold now asks each archetype for the
+ * best that archetype can be, not for the best an OUTCOME can be.
  */
-const COVERAGE_THRESHOLD = BAND_USABLE;
+const COVERAGE_CEILING = {
+  ORIGIN: 30,
+  METHOD: 40,
+  CREDENTIAL: 42,
+  FAILURE: 42,
+};
+
+const coverageThreshold = (archetype) => COVERAGE_CEILING[archetype] ?? BAND_USABLE;
 
 /**
  * Acquisition plays, one per archetype. `effortMinutes` is honest: asking a
@@ -60,22 +83,38 @@ const PLAYS = {
 
 /**
  * Coverage of each archetype by the user's real (non-demo) evidence.
- * @returns {Array<{archetype:string, covered:boolean, count:number, best:number, weight:number}>}
+ *
+ * Takes no clock: coverage is a question about what the user holds, and the
+ * answer does not change overnight. Callers still pass `now` positionally
+ * through `coverageScore` and `acquisitionPlays`, which do use it.
+ * @returns {Array<{archetype:string, covered:boolean, count:number, best:number,
+ *   threshold:number, weight:number}>}
  */
-export function archetypeCoverage(state, now = Date.now()) {
+export function archetypeCoverage(state) {
   const track = state.profile?.track === 'job' ? 'job' : 'independent';
   const weights = ARCHETYPE_WEIGHT[track];
   const proofs = realProofs(state);
 
   return ARCHETYPES.map((archetype) => {
     const matching = proofs.filter((p) => p.archetypes.includes(archetype));
-    const scores = matching.map((p) => decayedScore(p, now));
+    // Undecayed, deliberately. Coverage asks *do you hold evidence of this
+    // kind*, and holding it is not time-sensitive — a degree earned in 2018 is
+    // still a degree. Gating it on the decayed score meant an ordinary older
+    // credential scored 24 against a bar of 42, so the CREDENTIAL play could
+    // not be satisfied by doing exactly what it said. What decay is for is how
+    // much the evidence is *worth*, and that is already measured: L1's quality
+    // term runs on decayed scores, and I5 handles publishing freshness.
+    const scores = matching.map((p) => p.score);
     const best = scores.length ? Math.max(...scores) : 0;
+    const threshold = coverageThreshold(archetype);
     return {
       archetype,
       count: matching.length,
       best: Math.round(best),
-      covered: best >= COVERAGE_THRESHOLD,
+      // Reported so the guidance can say "what you added scored 38, this needs
+      // 42" instead of silently re-issuing an identical instruction.
+      threshold,
+      covered: best >= threshold,
       weight: weights[archetype],
     };
   });
@@ -85,8 +124,8 @@ export function archetypeCoverage(state, now = Date.now()) {
  * Coverage as a 0..100 score, weighted by track importance.
  * Feeds the L1 layer score.
  */
-export function coverageScore(state, now = Date.now()) {
-  const coverage = archetypeCoverage(state, now);
+export function coverageScore(state) {
+  const coverage = archetypeCoverage(state);
   let earned = 0;
   let possible = 0;
   for (const c of coverage) {
@@ -94,7 +133,7 @@ export function coverageScore(state, now = Date.now()) {
     // Partial credit below the threshold: having a weak OUTCOME proof is
     // genuinely better than having none, and an all-or-nothing gate would
     // make the first weeks of use feel static.
-    earned += c.weight * Math.min(1, c.best / COVERAGE_THRESHOLD);
+    earned += c.weight * Math.min(1, c.best / c.threshold);
   }
   return possible > 0 ? clamp100((earned / possible) * 100) : 0;
 }
@@ -103,8 +142,8 @@ export function coverageScore(state, now = Date.now()) {
  * Acquisition plays for uncovered archetypes, best value first.
  * @returns {Array<object>}
  */
-export function acquisitionPlays(state, now = Date.now()) {
-  const coverage = archetypeCoverage(state, now);
+export function acquisitionPlays(state) {
+  const coverage = archetypeCoverage(state);
   const plays = coverage
     .filter((c) => !c.covered)
     .map((c) => {
@@ -114,6 +153,9 @@ export function acquisitionPlays(state, now = Date.now()) {
         archetype: c.archetype,
         weight: c.weight,
         currentBest: c.best,
+        threshold: c.threshold,
+        /** True once the user has evidence of this type that is simply not strong enough. */
+        shortOfBar: c.count > 0,
         // Value = how much this archetype matters here, how strong the play
         // is, and how cheap it is. Users in this state have limited energy;
         // the cheapest high-impact move must sort first.
@@ -128,11 +170,7 @@ export function acquisitionPlays(state, now = Date.now()) {
  * High-value proof that will lose meaningful value soon gets publishing
  * priority over equally strong but stable evidence.
  */
-export function stalingProofs(
-  state,
-  now = Date.now(),
-  { withinDays = 90, minScore = BAND_USABLE } = {},
-) {
+export function stalingProofs(state, now = Date.now(), { minScore = BAND_USABLE } = {}) {
   const published = new Set(
     (state.artifacts || [])
       .filter((a) => a.status === 'published')
@@ -150,18 +188,19 @@ export function stalingProofs(
     // proof to still be above the threshold after the decay that put it in this
     // window in the first place — which needed raw scores above the engine's
     // own ceiling, so the integration could never fire.
-    // Bounded on both sides. With only an upper bound, evidence that crossed
-    // the threshold years ago returned a large negative, passed the filter,
-    // was clamped to "0 days left", and sorted first — so the single Next Move
-    // pointed at the user's most-decayed material three steps running, while
-    // stronger unpublished evidence sat one screen away in the picker.
-    .filter(
-      ({ proof, daysLeft }) =>
-        proof.score >= minScore &&
-        daysLeft !== null &&
-        daysLeft <= withinDays &&
-        daysLeft >= -14,
-    )
+    // The window is a share of the proof kind's own half-life, not a flat 90
+    // days. A fixed window sat around a crossing point 248 to 4,025 days out
+    // depending on kind and dating, so the integration produced zero candidates
+    // across a five-year weekly sweep — it was alive and unreachable.
+    //
+    // Bounded below as well: with only an upper bound, evidence that crossed
+    // the threshold years ago returned a large negative, was clamped to
+    // "0 days left", and sorted first.
+    .filter(({ proof, daysLeft }) => {
+      if (proof.score < minScore || daysLeft === null) return false;
+      const halfLife = HALF_LIFE_DAYS[proof.kind] ?? HALF_LIFE_DAYS.experience;
+      return daysLeft <= halfLife * 0.35 && daysLeft >= -14;
+    })
     .map((entry) => ({ ...entry, daysLeft: Math.max(0, entry.daysLeft) }))
     .sort((a, b) => a.daysLeft - b.daysLeft);
 }

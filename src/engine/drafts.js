@@ -82,14 +82,29 @@ const DEMO_BANNER = {
  * Numeric tokens in a text, normalised. Used by the grounding validator.
  * Formatting separators are removed so "5,500" and "5500" compare equal.
  */
+/**
+ * Numeric tokens paired with the text the user actually wrote, so a message
+ * about an unsupported magnitude can quote their own words back.
+ */
+export function numberTokens(text) {
+  const digits = ((text || '').match(/\d[\d.,]*/g) || []).map((raw) => ({
+    surface: raw,
+    normalised: raw.replace(/[.,]$/, '').replace(/[, \s]/g, ''),
+  }));
+  const words = [];
+  for (const token of (text || '').split(/[^\p{L}]+/u)) {
+    if (!token) continue;
+    const [value] = spelledNumbers(token);
+    if (value !== undefined) words.push({ surface: token, normalised: String(value) });
+  }
+  return [...digits, ...words];
+}
+
 export function extractNumbers(text) {
-  const digits = ((text || '').match(/\d[\d.,]*/g) || [])
-    .map((n) => n.replace(/[.,]$/, '').replace(/[, \s]/g, ''))
-    .filter(Boolean);
   // Spelled-out magnitudes count too. "eight months" and "שמונה חודשים" are
   // facts a draft can invent just as easily as "8", and the product's own
   // bundled sample contains one.
-  return [...digits, ...spelledNumbers(text).map(String)];
+  return numberTokens(text).map(({ normalised }) => normalised);
 }
 
 /** Superlatives and causal overreach a draft must not acquire on its way out. */
@@ -128,23 +143,50 @@ export function validateGrounding(body, proofs) {
   const evidence = cited.map((p) => p.claim).join('\n');
 
   const supportedNumbers = new Set(extractNumbers(evidence));
-  const unsupported = [...new Set(extractNumbers(body))].filter((n) => !supportedNumbers.has(n));
+  // Reported as the user typed them. Echoing the normalised value showed
+  // "1000000" over a draft that says "מיליון", which reads as the tool
+  // objecting to something the user cannot see in their own text.
+  const unsupported = [
+    ...new Set(
+      numberTokens(body)
+        .filter(({ normalised }) => !supportedNumbers.has(normalised))
+        .map(({ surface }) => surface),
+    ),
+  ];
 
-  const supportedEntities = new Set(
-    extractSignals(evidence).properNouns.map((e) => e.toLowerCase()),
+  // Compared on normalised head tokens rather than raw spans: the Hebrew org
+  // pattern used to capture the trigger word plus whatever followed, so the
+  // same organisation followed by a different verb read as a different entity
+  // and the draft was rejected against its own source.
+  const headTokens = (name) =>
+    name
+      .toLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((token) => token.length > 1);
+
+  const supportedTokens = new Set(
+    extractSignals(evidence).properNouns.flatMap(headTokens),
   );
   const entities = [
     ...new Set(
       extractSignals(body)
-        .properNouns.filter((e) => !supportedEntities.has(e.toLowerCase()))
-        .map((e) => e.trim()),
+        .properNouns.map((e) => e.trim())
+        .filter((name) => {
+          const tokens = headTokens(name);
+          return tokens.length > 0 && !tokens.every((token) => supportedTokens.has(token));
+        }),
     ),
   ];
 
   const overreach = OVERREACH.filter((re) => re.test(body)).map((re) => re.source);
 
   return {
-    ok: unsupported.length === 0 && entities.length === 0,
+    // Numbers gate; names warn. The number comparison is exact, so blocking on
+    // it is fair. Name detection is heuristic — it flagged "Onboarding" and
+    // "Evidence" as invented organisations and disabled the publish button on
+    // correctly-grounded text. A check that cries wolf on the product's core
+    // action trains the user to ignore the one check that matters.
+    ok: unsupported.length === 0,
     unsupported,
     entities,
     overreach,

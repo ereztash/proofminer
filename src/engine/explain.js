@@ -65,21 +65,34 @@ function comparativeReasons(claim, signals, inventorySignals) {
 
   const countWith = (key) => inventorySignals.filter((s) => s[key]).length;
 
+  /**
+   * Rare *relative to the inventory*, not against a fixed count.
+   *
+   * A flat `n <= 2` meant a CV with four quantified lines lost the insight
+   * entirely — having more evidence removed the observation. Scarcity is a
+   * proportion: a quarter of the inventory or fewer, and never all of it.
+   */
+  const isRare = (n) => n > 0 && n < total && n <= Math.max(2, Math.ceil(total * 0.25));
+
   if (signals.thirdParty) {
     const n = countWith('thirdParty');
-    if (n <= 2) out.push({ id: 'reasons.rareVerification', weight: 100, vars: { n, total } });
+    if (isRare(n)) out.push({ id: 'reasons.rareVerification', weight: 100, vars: { n, total } });
   }
   if (signals.hasPercent || signals.hasCurrency) {
     const n = inventorySignals.filter((s) => s.hasPercent || s.hasCurrency).length;
-    if (n <= 2) out.push({ id: 'reasons.rareNumbers', weight: 98, vars: { n, total } });
+    if (isRare(n)) out.push({ id: 'reasons.rareNumbers', weight: 98, vars: { n, total } });
   }
-  if (signals.failure) {
-    const n = countWith('failure');
-    if (n === 1) out.push({ id: 'reasons.onlyFailure', weight: 96 });
+  if (signals.failure && countWith('failure') === 1) {
+    out.push({ id: 'reasons.onlyFailure', weight: 96 });
   }
-  if (signals.method) {
-    const n = countWith('method');
-    if (n === 1) out.push({ id: 'reasons.onlyMethod', weight: 94 });
+  if (signals.method && countWith('method') === 1) {
+    out.push({ id: 'reasons.onlyMethod', weight: 94 });
+  }
+  if (signals.hasUrl && isRare(countWith('hasUrl'))) {
+    out.push({ id: 'reasons.rareLink', weight: 92, vars: { n: countWith('hasUrl'), total } });
+  }
+  if (signals.contrast && signals.outcome && isRare(countWith('contrast'))) {
+    out.push({ id: 'reasons.rareBeforeAfter', weight: 90 });
   }
   return out;
 }

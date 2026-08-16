@@ -12,18 +12,26 @@ import { describe, expect, it } from 'vitest';
 import { analyzeClaim, mineSources } from '../../src/engine/mine.js';
 import { extractSignals, spelledNumbers } from '../../src/engine/signals.js';
 import { dedupeProofs, decayFactor, scoreBand } from '../../src/engine/score.js';
+import { computeLayers } from '../../src/engine/layers.js';
+import { acquisitionPlays, archetypeCoverage } from '../../src/engine/gaps.js';
+import { scorePositioning } from '../../src/engine/positioning.js';
 import {
   RATE_ANCHOR,
   layerReception,
   receptionScore,
   receptionSignal,
 } from '../../src/engine/layers.js';
-import { computeAuthority, nextMove } from '../../src/engine/authority.js';
+import { LIEBIG_GATE, MOVE_IDS, computeAuthority, nextMove } from '../../src/engine/authority.js';
+import { translator } from '../../src/i18n/index.js';
+import heBundle from '../../src/i18n/he.js';
+import enBundle from '../../src/i18n/en.js';
+import { readFileSync } from 'node:fs';
 import { normalizeState } from '../../src/core/schema.js';
 import { saturate } from '../../src/core/util.js';
+import { parseAnalyticsPaste } from '../../src/engine/analytics.js';
 import { escapeHtml, toString_ } from '../../src/ui/html.js';
 import { button } from '../../src/ui/components.js';
-import { NOW, DAY, artifact, proofFrom, reception, stateWith } from '../helpers.js';
+import { NOW, DAY, artifact, minedSource, proofFrom, reception, stateWith } from '../helpers.js';
 
 describe('determinism', () => {
   // A module-level /g regex probed with .test() advances its own lastIndex, so
@@ -288,8 +296,29 @@ describe('imported data cannot reach markup', () => {
   });
 
   it('drops artifact proof references that are not safe ids', () => {
-    const state = normalizeState({ artifacts: [{ proofIds: [ATTACK, 'proof_ok'] }] });
+    const state = normalizeState({
+      proofs: [{ id: 'proof_ok', claim: 'ניהלתי צוות של שמונה אנשים במשך שנתיים.' }],
+      artifacts: [{ proofIds: [ATTACK, 'proof_ok'] }],
+    });
     expect(state.artifacts[0].proofIds).toEqual(['proof_ok']);
+  });
+
+  it('follows a rewritten id rather than dropping everything that pointed at it', () => {
+    // Minting a safe id for a rejected one used to orphan every reference to
+    // it: the artifact lost its proof and — silently — the reception of that
+    // artifact was discarded whole, taking the L4 layer with it.
+    const state = normalizeState({
+      proofs: [{ id: ATTACK, claim: 'ניהלתי צוות של שמונה אנשים במשך שנתיים.' }],
+      artifacts: [{ id: ATTACK, proofIds: [ATTACK], status: 'published' }],
+      receptions: [{ artifactId: ATTACK, impressions: 900, reactions: 30 }],
+    });
+    const proofId = state.proofs[0].id;
+    const artifactId = state.artifacts[0].id;
+    expect(proofId).not.toContain('<');
+    expect(artifactId).not.toContain('<');
+    expect(state.artifacts[0].proofIds).toEqual([proofId]);
+    expect(state.receptions).toHaveLength(1);
+    expect(state.receptions[0].artifactId).toBe(artifactId);
   });
 
   it('escapes every button attribute, including aria targets', () => {
@@ -384,12 +413,276 @@ describe('contact details are not evidence', () => {
       id: 's1', name: 'cv', demo: false, addedAt: NOW, minedAt: null,
       text: [
         'מנהל תפעול ולוגיסטיקה בכיר | תל אביב | 052-8841203 | ronen.avidan@gmail.com',
-        'linkedin.com/in/ronen-avidan — פרופיל מקצועי מלא עם המלצות',
         'קיצרתי את זמן האספקה הממוצע מ-19 יום ל-7 ימים במהלך 2025.',
       ].join('\n'),
     };
     const proofs = mineSources(stateWith({ sources: [source] }), { now: NOW });
     expect(proofs).toHaveLength(1);
-    expect(proofs[0].claim).not.toMatch(/052|gmail|linkedin\.com/);
+    expect(proofs[0].claim).not.toMatch(/052|gmail/);
+  });
+
+  it('keeps a claim that merely contains a link', () => {
+    // Silently deleting evidence is the wrong default for a product whose job
+    // is to stop the user's evidence going missing.
+    const source = {
+      id: 's2', name: 'notes', demo: false, addedAt: NOW, minedAt: null,
+      text: 'המלצה כתובה מסמנכ״לית התפעול לשעבר יושבת בכתובת linkedin.com/in/yael-b ומאשרת את התוצאה.',
+    };
+    expect(mineSources(stateWith({ sources: [source] }), { now: NOW })).toHaveLength(1);
+  });
+
+  it('keeps a testimonial and its attribution as one unit', () => {
+    const source = {
+      id: 's3', name: 'rec', demo: false, addedAt: NOW, minedAt: null,
+      text: '"רונן היה האדם שסידר לנו את התפעול. אחרי שנה היה לנו דוח יומי שאפשר לסמוך עליו." - יעל ברקוביץ, מנכ"לית תפעול לשעבר',
+    };
+    const proofs = mineSources(stateWith({ sources: [source] }), { now: NOW });
+    expect(proofs).toHaveLength(1);
+    // The attribution is what makes it evidence rather than a nice sentence.
+    expect(proofs[0].claim).toContain('יעל ברקוביץ');
+    expect(proofs[0].archetypes).toContain('VALIDATION');
+  });
+});
+
+describe('positioning cannot stand in for evidence', () => {
+  const thin = () => stateWith({
+    profile: { track: 'independent', locale: 'he', startedAt: NOW },
+    sources: [minedSource({ text: 'ליוויתי לקוחות בתהליכי שיווק.' })],
+    proofs: [proofFrom('ליוויתי לקוחות בתהליכי שיווק.')],
+  });
+
+  const sharp = {
+    audience: 'מנהלי שיווק בחברות B2B בישראל',
+    problem: 'קמפיינים שמביאים לידים שלא נסגרים',
+    method: 'אבחון מסע לקוח ובנייה מחדש של המשפך',
+    proofPoint: 'הכפלתי המרות אצל שלושה לקוחות',
+    updatedAt: NOW,
+  };
+
+  it('does not let a filled positioning form carry the evidence half', () => {
+    // Blending L1 and L2 as peers let four text boxes move the foundation from
+    // 18 to 71 on one weak CV line, switching *off* the Liebig gate — the
+    // mechanism this module exists to enforce.
+    const before = computeAuthority(thin(), NOW);
+    const after = computeAuthority({ ...thin(), positioning: sharp }, NOW);
+    expect(after.foundation).toBeLessThanOrEqual(before.foundation * 1.25 + 1);
+  });
+
+  it('never lowers the headline number for answering its own prompt', () => {
+    // The mirror defect: a half-finished positioning scored low as a peer, so
+    // obeying the product's instruction cost the user points.
+    const before = computeAuthority(thin(), NOW);
+    const half = { ...sharp, method: '', proofPoint: '' };
+    const after = computeAuthority({ ...thin(), positioning: half }, NOW);
+    expect(after.foundation).toBeGreaterThanOrEqual(before.foundation);
+    expect(after.index).toBeGreaterThanOrEqual(before.index);
+  });
+
+  it('keeps the gate closed on a thin foundation however loud the built half', () => {
+    const loud = {
+      ...thin(),
+      positioning: sharp,
+      artifacts: [artifact({ id: 'a1' }), artifact({ id: 'a2' }), artifact({ id: 'a3' })],
+      receptions: [
+        reception({ artifactId: 'a1' }),
+        reception({ artifactId: 'a2' }),
+        reception({ artifactId: 'a3' }),
+      ],
+    };
+    const result = computeAuthority(loud, NOW);
+    expect(result.effectiveBuilt).toBeLessThanOrEqual(result.foundation + LIEBIG_GATE);
+  });
+});
+
+describe('analytics paste', () => {
+  const EXPECTED = { impressions: 1204, reactions: 38, comments: 4 };
+
+  it('reads both stacking directions and inline text alike', () => {
+    const layouts = [
+      'Impressions\n1,204\nReactions\n38\nComments\n4',
+      '1,204\nImpressions\n38\nReactions\n4\nComments',
+      '1,204 impressions · 38 reactions · 4 comments',
+      'חשיפות\n1,204\nתגובות רגש\n38\nתגובות\n4',
+      '1,204\nחשיפות\n38\nתגובות רגש\n4\nתגובות',
+    ];
+    for (const text of layouts) {
+      expect(parseAnalyticsPaste(text).found, text).toEqual(EXPECTED);
+    }
+  });
+
+  it('refuses a paste whose layout is genuinely ambiguous', () => {
+    // Guessing "the line after" on a number-above-label card handed every
+    // label the next metric's number and fed a 32x understated impression
+    // count into the reception denominator, reporting matched: 4 while doing it.
+    expect(parseAnalyticsPaste('1,204\nImpressions\n38').found).toEqual({});
+  });
+
+  it('never lets one number fill two fields', () => {
+    const { found } = parseAnalyticsPaste('Impressions\n1,204\nReactions');
+    const values = Object.values(found);
+    expect(new Set(values).size).toBe(values.length);
+  });
+
+  it('applies magnitude suffixes in both languages', () => {
+    expect(parseAnalyticsPaste('12K impressions').found.impressions).toBe(12_000);
+    expect(parseAnalyticsPaste('חשיפות 12 אלף').found.impressions).toBe(12_000);
+  });
+});
+
+describe('L4 confidence reflects the sample the score actually used', () => {
+  const record = (daysAgo, over = {}) =>
+    reception({
+      id: `r${daysAgo}`,
+      artifactId: `a${daysAgo}`,
+      capturedAt: NOW - daysAgo * DAY,
+      impressions: 1000,
+      reactions: 40,
+      ...over,
+    });
+
+  it('does not claim a settled pattern from one recent post and five stale ones', () => {
+    // The score is a recency-weighted mean, so this is arithmetically close to
+    // a single observation. Counting rows reported confidence 1.0 over it.
+    const stale = stateWith({
+      receptions: [record(1), ...[400, 430, 460, 490, 520].map((d) => record(d))],
+    });
+    const fresh = stateWith({ receptions: [1, 5, 9, 13, 17, 21].map((d) => record(d)) });
+    expect(layerReception(stale, NOW).confidence).toBeLessThan(0.5);
+    expect(layerReception(fresh, NOW).confidence).toBeGreaterThan(0.9);
+  });
+
+  it('gives back the plain count when the records are evenly fresh', () => {
+    const state = stateWith({ receptions: [0, 0.5, 1].map((d, i) => record(i ? d : 0)) });
+    expect(layerReception(state, NOW).inputs.effectiveN).toBeCloseTo(3, 1);
+  });
+});
+
+describe('every next move has something to say', () => {
+  it('resolves each move id in both bundles', () => {
+    for (const id of MOVE_IDS) {
+      for (const locale of ['he', 'en']) {
+        const t = translator(locale);
+        const title = t(['moves', id, 'title']);
+        expect(title, `${locale} ${id}`).not.toContain(id);
+        expect(t(['moves', id, 'why']), `${locale} ${id}`).not.toContain(id);
+      }
+    }
+  });
+
+  it('declares every move id the engine can actually emit', () => {
+    // The dashboard's only primary card rendered "moves.move.attributeConversion.title"
+    // because a move was added to the guidance and to nothing else.
+    const source = readFileSync('src/engine/authority.js', 'utf8');
+    const emitted = new Set([...source.matchAll(/id: '(move\.[A-Za-z]+)'/g)].map((m) => m[1]));
+    expect([...emitted].filter((id) => !MOVE_IDS.includes(id))).toEqual([]);
+  });
+
+  it('carries no move string the engine can never emit', () => {
+    for (const locale of ['he', 'en']) {
+      const bundle = locale === 'he' ? heBundle : enBundle;
+      const declared = Object.keys(bundle.moves).filter((k) => k.startsWith('move.'));
+      expect(declared.filter((id) => !MOVE_IDS.includes(id)), locale).toEqual([]);
+    }
+  });
+});
+
+describe('the positioning screen agrees with the layer it describes', () => {
+  const positioning = {
+    audience: 'מנהלי תפעול בחברות לוגיסטיקה בישראל',
+    transformation: 'מזמן אספקה של שבוע לשני ימים',
+    claim: 'אני בונה מערכי אספקה שאפשר לסמוך עליהם',
+    offer: 'ליווי תפעולי לשישה חודשים',
+    nonGoals: ['ייעוץ אסטרטגי כללי'],
+  };
+  const recognitions = [
+    { id: 'r1', type: 'referral', by: 'יעל ברקוביץ', url: '', at: NOW - 10 * DAY },
+    { id: 'r2', type: 'feature', by: 'כלכליסט', url: 'https://x.co/a', at: NOW - 20 * DAY },
+    { id: 'r3', type: 'invite', by: 'כנס לוגיסטיקה', url: '', at: NOW - 30 * DAY },
+  ];
+
+  it('does not show the unvouched floor to someone who has been vouched for', () => {
+    // The view dropped the recognitions argument, so the meter read 20 while
+    // L2 computed the same component at 88 from the same state.
+    const withRec = scorePositioning(positioning, recognitions);
+    const without = scorePositioning(positioning, []);
+    expect(withRec.components.defensibility).toBeGreaterThan(without.components.defensibility);
+
+    const state = stateWith({ positioning, recognitions });
+    expect(computeLayers(state, NOW).L2.inputs.components.defensibility).toBe(
+      withRec.components.defensibility,
+    );
+  });
+
+  it('has a label for every component it renders', () => {
+    for (const locale of ['he', 'en']) {
+      const t = translator(locale);
+      for (const key of Object.keys(scorePositioning(positioning, recognitions).components)) {
+        expect(t(['position', key]), `${locale} ${key}`).not.toContain(key);
+      }
+    }
+  });
+});
+
+describe('acquisition plays can be satisfied by doing them', () => {
+  // Best-practice evidence, written exactly as each play's copy instructs.
+  // Holding all eight archetypes to BAND_USABLE meant four plays asked for
+  // evidence that could not clear their own bar: a user who obeyed for 24
+  // weeks watched coverage stay flat and the Visibility Gap widen.
+  const POSITIONING = {
+    audience: 'מנהלי תפעול בחברות לוגיסטיקה',
+    transformation: 'זמן אספקה קצר יותר',
+    claim: 'מערכי אספקה שאפשר לסמוך עליהם',
+    offer: 'ליווי תפעולי',
+  };
+  const IDEAL = {
+    OUTCOME: 'ב-2025 קיצרתי אצל חברת אלפא לוגיסטיקה את זמן האספקה מ-19 יום ל-7 ימים, חיסכון של 1.2 מיליון ש"ח בשנה.',
+    VALIDATION: '"רונן סידר לנו את התפעול תוך חצי שנה" — יעל ברקוביץ, מנכ"לית אלפא לוגיסטיקה, מרץ 2025. https://linkedin.com/in/yael',
+    SCALE: 'ניהלתי מערך של 22 עובדים בשלושה אתרים ותקציב שנתי של 12 מיליון ש"ח בשנים 2019-2025.',
+    METHOD: 'ב-2024 כתבתי את השיטה בחמישה שלבים ופרסמתי אותה כמסמך פתוח: מיפוי צווארי בקבוק, תיעדוף לפי עלות, פיילוט באתר אחד, מדידה שבועית, הרחבה. https://example.co.il/method',
+    CREDENTIAL: 'תואר שני במנהל עסקים מאוניברסיטת תל אביב, 2018, בהתמחות לוגיסטיקה. https://tau.ac.il',
+    PEER: 'עמית בתחום, דוד לוי, סמנכ"ל תפעול בבטא תעשיות, אזכר את העבודה שלי בהרצאה בכנס הלוגיסטיקה 2025. https://conf.co.il/2025',
+    FAILURE: 'ב-2023 הרצתי פיילוט אוטומציה במחסן שנכשל: 4 חודשים ו-300 אלף ש"ח בלי שיפור. מאז אני בודק זמינות נתונים לפני כל אוטומציה.',
+    ORIGIN: 'ב-2011 עבדתי במפעל של אלפא תעשיות וראיתי קו ייצור שלם נעצר ל-3 ימים בגלל טעות בספירת מלאי. מאז אני עוסק רק בזה.',
+  };
+
+  const coverageOf = (archetype, claim) => {
+    const proof = proofFrom(claim, { positioning: POSITIONING });
+    const state = stateWith({ positioning: POSITIONING, proofs: [proof] });
+    return archetypeCoverage(state, NOW).find((c) => c.archetype === archetype);
+  };
+
+  it('classifies the evidence each play asks for as that archetype', () => {
+    for (const [archetype, claim] of Object.entries(IDEAL)) {
+      expect(coverageOf(archetype, claim).count, archetype).toBeGreaterThan(0);
+    }
+  });
+
+  it('covers the archetype when the user does exactly what the play says', () => {
+    for (const [archetype, claim] of Object.entries(IDEAL)) {
+      const c = coverageOf(archetype, claim);
+      expect(c.covered, `${archetype}: scored ${c.best}, needs ${c.threshold}`).toBe(true);
+    }
+  });
+
+  it('does not cover an archetype from a throwaway line', () => {
+    const WEAK = {
+      CREDENTIAL: 'יש לי תואר במנהל עסקים.',
+      PEER: 'עמית בתחום המליץ עלי.',
+      OUTCOME: 'שיפרתי תהליכים בחברה.',
+    };
+    for (const [archetype, claim] of Object.entries(WEAK)) {
+      expect(coverageOf(archetype, claim).covered, archetype).toBe(false);
+    }
+  });
+
+  it('tells the guidance how far short the user landed', () => {
+    const state = stateWith({
+      positioning: POSITIONING,
+      proofs: [proofFrom('יש לי תואר במנהל עסקים.', { positioning: POSITIONING })],
+    });
+    const play = acquisitionPlays(state, NOW).find((p) => p.archetype === 'CREDENTIAL');
+    expect(play.shortOfBar).toBe(true);
+    expect(play.currentBest).toBeGreaterThan(0);
+    expect(play.threshold).toBeGreaterThan(play.currentBest);
   });
 });

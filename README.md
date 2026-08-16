@@ -22,6 +22,18 @@ That gap is the user's own conscious pain, measured. Most people who open this
 product open it with a large positive gap, and naming it precisely is the whole
 motivational mechanism.
 
+## Who this is for
+
+Someone who **already knows it hurts**. Applications that go unanswered; work
+that only ever arrives through people who already know you; watching someone
+less experienced get the thing you wanted.
+
+The first screen is a question, not a pitch, and one of its answers is *"none
+of these — I do not feel I have a problem right now."* Choosing it ends the
+flow honestly: who the tool is for, when it would be worth coming back, and
+nothing else. No email capture, no second attempt at persuasion. This product
+measures a problem you brought with you; it does not sell you one.
+
 ## Six measurable layers
 
 | | Layer | Question |
@@ -87,18 +99,31 @@ repeatedly *is* the product.
 Stated as precisely as the code implements them, because a product whose axis
 is anti-hype cannot overstate its own integrity.
 
-- **Drafts cannot acquire a checkable fact you did not supply.**
-  `validateGrounding()` rejects any draft containing a number — digits or
-  spelled out — or a named entity absent from its cited proof, and flags
-  superlatives. Tested across every angle × CTA × locale, and the optional
-  model rewriter passes through the same gate.
+- **Drafts cannot acquire a number you did not supply.**
+  `validateGrounding()` **blocks** publishing on any figure — digits or spelled
+  out — that is absent from the cited proof. That comparison is exact, so
+  blocking on it is fair. Tested across every angle × CTA × locale, and the
+  optional model rewriter passes through the same gate.
+  Named entities and superlatives **warn but do not block**, deliberately: name
+  detection is heuristic, and in Hebrew — which has no capitalisation — it is
+  weaker still. A check that disabled the publish button over the word
+  "Onboarding" trained users to ignore the one check that matters. The studio
+  reports how complete the name check could be on this text rather than
+  printing a clean bill of health it cannot support.
   **What it cannot catch:** a real number attached to the wrong subject, an
   invented job title made of ordinary words, or a claim stitched across two
   separately-true proofs. Those need a reader. The studio says so on screen
   rather than implying the check is a truth gate.
 - **No score without inputs.** A layer with no data reports zero confidence and
-  says what unlocks it — never a red zero. The foundation renormalises over
-  layers that have data, so an unfilled form is not read as an absent claim.
+  says what unlocks it — never a red zero. An unfilled positioning form costs
+  nothing: positioning enters the foundation as a bounded multiplier on the
+  evidence, so leaving it blank simply earns no lift rather than reading as an
+  absent claim.
+- **No arrangement of text raises the evidence half.** The foundation is
+  `L1 × (1 + lift)` with `lift ≤ 0.25`, so a sharp positioning is worth at most
+  a quarter more of the evidence you actually hold — and never enough to switch
+  the gate off. Filling in four text boxes used to move the foundation from 18
+  to 71 and ungate the index entirely.
 - **The product refuses to call you a fraud for under-reporting.** `HOLLOW` is
   only ever returned when the evidence base has actually been measured;
   otherwise the answer is `UNCATALOGUED` — *not written down, not absent*.

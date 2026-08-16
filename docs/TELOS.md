@@ -45,7 +45,18 @@ Three words matter in that sentence:
 
 ## Primary actor
 
-A professional, 28–55, mid-career, Hebrew or English speaking, who:
+**The ICP is defined by awareness before it is defined by anything else: this
+product is for someone who already knows it hurts.**
+
+That is the qualifying condition, and everything below is secondary to it. Not
+someone who *would* benefit. Not someone who *should* care. Someone who has
+already felt the specific loss — the application that went unanswered, the
+work that only ever arrives through people who already know them, the less
+experienced person who got the thing they wanted — and has named it to
+themselves.
+
+The rest of the description, given that condition holds. A professional,
+28–55, mid-career, Hebrew or English speaking, who:
 
 - has 5+ years of real work behind them that produced real outcomes,
 - has never systematically catalogued that work as evidence,
@@ -56,6 +67,37 @@ A professional, 28–55, mid-career, Hebrew or English speaking, who:
 Explicitly **not** the actor: full-time creators optimising reach, agencies
 running client accounts, B2B marketing teams producing customer proof at scale.
 Those are served — well — by Taplio, AuthoredUp, Supergrow, and UserEvidence.
+
+Also explicitly not the actor, and this is the sharper exclusion: **the
+problem-unaware.** The comfortable senior employee, the consultant whose
+pipeline is currently full, the person who is merely curious. They may have the
+identical objective situation as a qualified user. They are still out of scope.
+
+### What follows from an awareness-defined ICP
+
+This is not a positioning nicety. It is a set of build constraints:
+
+1. **The product never sells the problem.** No screen argues that the user has
+   a problem. Persuading someone they are in pain is a different product with
+   different mechanics (fear-based marketing) and it is one we will not build.
+2. **The first screen qualifies, it does not educate.** Its job is recognition:
+   a sentence the right person answers instantly with *yes, that's me*. If the
+   sentences do not land, that is information, not a funnel leak.
+3. **A real exit exists, and it is not a dark pattern.** "None of these
+   describes me" is a first-class option on the first screen. Choosing it
+   produces an honest page that says who the tool is for and when to come back
+   — no waitlist capture, no reframing, no second attempt at persuasion.
+   A product that refuses to say "this is not for you" cannot be believed when
+   it says "this is what your evidence is worth."
+4. **Copy is written for someone mid-pain, not mid-consideration.** No feature
+   tours, no benefit stacking, no proof of category. Someone who already knows
+   it hurts wants the thing to start working; anything before that reads as a
+   delay.
+5. **Urgency is measured in how long it has been hurting**, not in how long the
+   user has been working on it. The onboarding question is "how long has this
+   been bothering you", and it sets the register of every later prompt.
+6. **Retention follows relief, not habit.** No streaks, no re-engagement
+   nudges. When the pain resolves, the honest outcome is that the user leaves.
 
 ## Desired state change
 

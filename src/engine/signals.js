@@ -14,10 +14,45 @@ import { detectLanguage, stripHebrewPrefix, wordCount } from './text.js';
 /** Marker written into demo text so demo material can never be laundered. */
 export const DEMO_MARKER = /\[(?:דמו בלבד|demo only)\]/iu;
 
+/**
+ * Hebrew stem matching with prefix tolerance.
+ *
+ * Bare stems create false positives — `כנס` (conference) sits inside `הכנסות`
+ * (revenues), and matching it there labelled an ordinary revenue line as
+ * third-party validation. Plain `(?<![א-ת])` boundaries stop that, but they
+ * also stop the *legitimate* prefixed forms Hebrew actually writes: `שנכשל`
+ * ("that failed") never matched `נכשל`, so the best-practice failure evidence
+ * the product's own FAILURE play asks for classified as no archetype at all.
+ *
+ * So: one optional prefix letter is allowed, and the guard sits before it.
+ *
+ * `open` stems may be followed by more letters (`הרצא` covers הרצאה/הרצאות);
+ * `closed` stems must end at a word boundary.
+ */
+function heStems({ closed = [], open = [] }) {
+  const parts = [];
+  if (closed.length) parts.push(`(?:${closed.join('|')})(?![א-ת])`);
+  if (open.length) parts.push(`(?:${open.join('|')})`);
+  return new RegExp(`(?<![א-ת])[ובהלמשכ]?(?:${parts.join('|')})`, 'u');
+}
+
 const LEX = {
   he: {
     /** Someone other than the author asserted or hosted this. */
-    thirdParty: /כתבה|כתבו עלי|ראיון|התראיינ|עיתון|מגזין|פודקאסט|צוטט|ציטט|מצטט|פורסם|התפרסם|כנס|וובינר|פאנל|הרצא|הזמינו אותי|המלצ|לקוח סיפר|לקוחה סיפרה|חוות דעת|ביקורת|פרס|זכי|נבחר|דורג/u,
+    thirdParty: heStems({
+      closed: [
+        'כתבה', 'עיתון', 'מגזין', 'פודקאסט', 'כנס', 'וובינר', 'פאנל',
+        'צוטטתי', 'ציטטו אותי', 'פורסם', 'התפרסם', 'פרס', 'זכיתי בפרס',
+      ],
+      open: [
+        'כתבו עלי', 'רואיינתי', 'ראיינו אותי', 'התראיינ', 'ראיון איתי',
+        'הרצא', 'הזמינו אותי', 'המלצ', 'לקוח סיפר', 'לקוחה סיפרה',
+        // `נבחרתי` is dropped deliberately: being picked to run a project
+        // internally is not somebody vouching for you publicly, and it was the
+        // most common false positive in the Hebrew corpus.
+        'חוות דעת', 'דורגתי',
+      ],
+    }),
     /**
      * Something changed in the world.
      *
@@ -29,24 +64,48 @@ const LEX = {
     outcome: /(?<![א-ת])(?:[וש]?)(?:הגדיל|הגדלתי|הגדלנו|הגדלה|גדלו|גדל ב|צמח|צמחו|צמיחה|העלה|העליתי|הכפיל|הכפלתי|שילש|הפחית|הפחתתי|הפחתנו|הוריד|הורדתי|צמצם|צמצמתי|חסך|חסכתי|חסכנו|קיצר|קיצרתי|ייעל|ייעלתי|שיפר|שיפרתי|הציל|הצלתי|נסגר|נסגרו|סגרתי|סגרנו|הביא|הבאתי|יצר|יצרתי|השיק|השקתי|הקים|הקמתי|בנה|בניתי|הוביל|הובלתי|העביר|העברתי|גייס|גייסתי|החזיר|החזרתי|שיקם|שיקמתי|פתר|פתרתי|מנע|מנעתי|פיתח|פיתחתי|פיתחנו|עיצבתי|הטמעתי|הטמיע|יישמתי|ניהלתי|הכשרתי|אוטמט|חיסכון|חסכון|קיצור|צמצום|הפחתה|הגדלה|ייעול)(?![א-ת])/u,
     /** Before/after tension — the raw material of a story. */
     contrast: /לפני|אחרי|במשך|בתוך|תוך|מ-?\s*\d+\s*ל-?\s*\d+|מ\S{2,10}\s+ל\S{2,10}|במקום|לעומת|עד ש|מאז|בעקבות|כתוצאה|בזכות|למרות|אף על פי/u,
-    credential: /(?<![א-ת])(?:תואר|תעודה|הסמכ|הוסמכ|רישיון|בוגר|מוסמך|דוקטור|ד״ר|תזה|ציון|ציונים|קורס מקצועי|התמחות)(?![א-ת])/u,
+    credential: heStems({
+      closed: ['תואר', 'תעודה', 'רישיון', 'בוגר', 'מוסמך', 'דוקטור', 'ד״ר', 'תזה', 'ציון', 'ציונים', 'התמחות'],
+      open: ['הסמכ', 'הוסמכ', 'קורס מקצועי'],
+    }),
     /** Self-描述 personality claims: the most common and least useful thing users write. */
     generic: /יצירתי|סקרן|אסטרטגי|מקצועי מאוד|תותח|מנוסה מאוד|שנים של ניסיון|אוהב אנשים|חושב מחוץ לקופסה|רעב|נחוש|תשוקה|אכפתי|ראש גדול|בעל ניסיון רב|מוביל דעה|מומחה מוביל|מאמינ\S* ב|עבודת צוות|למידה מתמדת|גישה אישית|תשומת לב לפרטים|ראייה מערכתית|חשיבה מחוץ|אוריינטציה|יחסי אנוש|יכולת גבוהה|כישורים בין-?אישיים|מוטיבציה גבוהה|אחריות אישית|נכונות ללמוד|תודעת שירות|דינמי|פרואקטיבי/u,
     hedge: /אולי|נראה לי|אני מאמין ש|בערך|סוג של|כנראה|לפעמים|יכול להיות|בגדול|פחות או יותר/u,
     /** Named third-party context a sceptic could go and check. */
     verifiable: /באתר|בכתבה|בעיתון|בגלובס|בכלכליסט|ב-?TheMarker|בפודקאסט|בכנס|בערוץ|בלינקדאין|קישור|לינק/u,
-    scale: /(?<![א-ת])(?:משתתפים|אנשים|עובדים|לקוחות|מנויים|צפיות|חברות|ארגונים|סניפים|מדינות|צוותים|תלמידים|נרשמו)(?![א-ת])/u,
-    method: /(?<![א-ת])(?:שיטה|מתודולוגיה|תהליך|מודל|פריימוורק|מסגרת עבודה|שלבים|פרוטוקול|גישה|כלי שפיתחתי|מערכת שבניתי)(?![א-ת])/u,
-    failure: /(?<![א-ת])(?:נכשל|כישלון|טעות|טעיתי|לא עבד|למדתי בדרך הקשה|פספסתי|החמצתי|קרסה|נסגר בהפסד|ויתרתי)(?![א-ת])/u,
-    origin: /התחלתי|הגעתי|עברתי|בחרתי|למה אני|הסיפור שלי|לפני שנים|כשהייתי|מה שהוביל אותי/u,
+    scale: heStems({
+      closed: ['משתתפים', 'אנשים', 'עובדים', 'לקוחות', 'מנויים', 'צפיות', 'חברות',
+        'ארגונים', 'סניפים', 'מדינות', 'צוותים', 'תלמידים', 'נרשמו'],
+    }),
+    method: heStems({
+      closed: ['שיטה', 'מתודולוגיה', 'תהליך', 'מודל', 'פריימוורק', 'שלבים', 'פרוטוקול', 'גישה'],
+      open: ['מסגרת עבודה', 'כלי שפיתחתי', 'מערכת שבניתי'],
+    }),
+    failure: heStems({
+      closed: ['נכשל', 'כישלון', 'טעות', 'טעיתי', 'פספסתי', 'החמצתי', 'קרסה', 'ויתרתי'],
+      open: ['לא עבד', 'למדתי בדרך הקשה', 'נסגר בהפסד'],
+    }),
+    origin: heStems({
+      closed: ['התחלתי', 'הגעתי', 'עברתי', 'בחרתי', 'כשהייתי'],
+      open: ['למה אני', 'הסיפור שלי', 'לפני שנים', 'מה שהוביל אותי', 'מאז אני'],
+    }),
     /** Peer-level recognition rather than client-level. */
-    peer: /עמית|קולג|מומחה אחר|בתחום שלי|חבר לתעשייה|מנטור|שותף|ממליץ|המלצה מקצועית/u,
+    peer: heStems({
+      closed: ['עמית', 'עמיתים', 'מנטור', 'שותף'],
+      open: ['קולג', 'מומחה אחר', 'בתחום שלי', 'חבר לתעשייה', 'ממליץ', 'המלצה מקצועית'],
+    }),
     currency: /(?:₪|ש["״']?ח|שקל|שח|אלף|מיליון|מיליארד)/u,
     duration: /(?:שנ(?:ה|תיים|ים)|חוד(?:ש|שיים|שים)|שבוע(?:ות|יים)?|ימים|יום|רבעון|סמסטר)/u,
     relativeTime: /(?:השנה|החודש|לאחרונה|בימים אלה|כרגע|עכשיו|בשנה האחרונה|בחודשים האחרונים)/u,
   },
   en: {
-    thirdParty: /interview(?:ed)?|featured|quoted|cited|article|published (?:in|an|a )|press|magazine|podcast|conference|keynote|panel|webinar|testimonial|review(?:ed)?|award|won|selected|ranked|recommended by/iu,
+    // Only constructions where somebody else acted on the author. The previous
+    // pattern matched ordinary self-authored CV verbs — `interview`, `reviewed`,
+    // `selected`, `won`, `ranked` — so "Ran 40+ customer discovery interviews"
+    // was scored as external validation and printed on the reveal screen as
+    // "someone external vouches for you", over a line the user wrote themselves.
+    thirdParty:
+      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award/iu,
     outcome: /increas|grew|grow|doubl|tripl|reduc|cut|sav(?:ed|ing)|shorten|improv|optimi[sz]|clos(?:ed)|deliver|launch|built|led|raised|recover|solved|prevent|scal(?:ed)|design(?:ed)?|develop(?:ed)?|implement(?:ed)?|automat(?:ed)?|manage(?:d)?|train(?:ed)?/iu,
     contrast: /before|after|within|from\s+\S+\s+to\s+\S+|instead of|compared to|since|as a result|thanks to|despite|used to/iu,
     credential: /degree|bachelor|master|mba|phd|certifi|licens|accredit|graduat|gpa|thesis|diploma/iu,
@@ -165,6 +224,7 @@ const GENERIC_ACRONYMS = new Set([
  * sentence opener is not mistaken for an organisation.
  */
 const CAPITALISED_FUNCTION_WORDS = new Set([
+  // Grammar
   'the', 'this', 'that', 'these', 'those', 'how', 'what', 'when', 'where',
   'why', 'who', 'which', 'and', 'but', 'for', 'from', 'with', 'without',
   'after', 'before', 'during', 'over', 'under', 'about', 'into', 'onto',
@@ -173,6 +233,27 @@ const CAPITALISED_FUNCTION_WORDS = new Set([
   'ten', 'not', 'was', 'were', 'has', 'have', 'had', 'can', 'could', 'would',
   'should', 'will', 'shall', 'may', 'might', 'must', 'did', 'does', 'done',
   'now', 'then', 'also', 'still', 'just', 'only', 'more', 'most', 'less',
+  'every', 'each', 'some', 'many', 'both', 'because', 'while', 'since',
+  'though', 'although', 'however', 'instead', 'within', 'across', 'through',
+  // Ordinary professional vocabulary that routinely starts a sentence.
+  // Without these the check cried wolf on correctly-grounded text — flagging
+  // "Onboarding", "Evidence" and "Revenue" as invented organisations — and a
+  // warning that fires on ordinary nouns is a warning users learn to ignore.
+  'onboarding', 'evidence', 'revenue', 'customers', 'clients', 'growth',
+  'results', 'delivery', 'quality', 'process', 'processes', 'product',
+  'products', 'project', 'projects', 'team', 'teams', 'training', 'support',
+  'sales', 'marketing', 'operations', 'engineering', 'design', 'research',
+  'strategy', 'planning', 'budget', 'costs', 'cost', 'time', 'reporting',
+  'hiring', 'retention', 'churn', 'conversion', 'performance', 'efficiency',
+  'automation', 'migration', 'launch', 'rollout', 'adoption', 'usage',
+  'feedback', 'testing', 'security', 'compliance', 'documentation', 'data',
+  'analysis', 'reviews', 'review', 'meetings', 'workshops', 'workshop',
+  'management', 'leadership', 'experience', 'expertise', 'knowledge',
+  'working', 'building', 'leading', 'running', 'managing', 'creating',
+  'together', 'overall', 'previously', 'currently', 'recently', 'earlier',
+  'later', 'first', 'second', 'third', 'finally', 'today', 'yesterday',
+  'monday', 'friday', 'january', 'december', 'week', 'month', 'quarter',
+  'year', 'years', 'people', 'everyone', 'nobody', 'something', 'nothing',
 ]);
 
 /**
@@ -187,7 +268,12 @@ const CAPITALISED_FUNCTION_WORDS = new Set([
  * shape of the guarantee.
  */
 export function entityCoverage(text) {
-  return detectLanguage(text) === 'he' ? 'partial' : 'full';
+  // Any Hebrew content at all makes the check partial. Keying on the *dominant*
+  // script meant an English-dominant draft containing an invented Hebrew
+  // employer came back `full`, and the studio printed an unqualified "no names
+  // absent from the evidence" over it — the same false assurance this function
+  // exists to prevent, one language mix over.
+  return /[א-ת]/u.test(text || '') ? 'partial' : 'full';
 }
 
 /**
@@ -199,7 +285,7 @@ export function entityCoverage(text) {
  * `entityCoverage()` below.
  */
 const HE_ORG_RE =
-  /(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)\s+(\S+(?:\s+\S+)?)/gu;
+  /(?<![א-ת])(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)(?![א-ת])\s+([א-ת\w'׳"״-]+)/gu;
 
 /**
  * Hebrew-language organisations and publications common enough in Israeli
@@ -229,9 +315,25 @@ const HE_KNOWN_ENTITIES = [
  * reveal, while `Lean` in a skills list was detected as a proper noun.
  */
 const HE_PERSON_RES = [
-  /(?:מנכ["״']?ל(?:ית)?|סמנכ["״']?ל(?:ית)?|מנהל(?:ת)?|יו["״']?ר|ד["״']?ר|פרופ|רו["״']?ח|עו["״']?ד|ראש(?: צוות| אגף| מחלקה)?|שותף|מייסד(?:ת)?)\s+([א-ת]{2,}(?:\s+[א-ת]{2,})?)/gu,
-  /([א-ת]{2,}\s+[א-ת]{2,}["״']?)\s*,\s*(?=מנכ|סמנכ|מנהל|יו["״']?ר|ראש|שותף|מייסד|לשעבר)/gu,
+  // Role word, optionally followed by the department it heads, then the name.
+  // A Hebrew given name never takes the definite article, so tokens starting
+  // with ה or ו are skipped rather than captured — without that, "מנהל הייצור
+  // והמחסן" ("head of production and warehousing") was reported to the user as
+  // a named person absent from their evidence.
+  /(?<![א-ת])(?:מנכ["״']?ל(?:ית)?|סמנכ["״']?ל(?:ית)?|מנהל(?:ת)?|יו["״']?ר|ד["״']?ר|פרופ|רו["״']?ח|עו["״']?ד|ראש(?: צוות| אגף| מחלקה)|שותף|מייסד(?:ת)?)(?![א-ת])(?:\s+ה[א-ת]{2,})*\s+((?![הו])[א-ת]{2,}(?:\s+(?![הו])[א-ת]{2,})?)/gu,
+  /(?<![א-ת])((?![הו])[א-ת]{2,}\s+(?![הו])[א-ת]{2,}["״']?)\s*,\s*(?=מנכ|סמנכ|מנהל|יו["״']?ר|ראש|שותף|מייסד|לשעבר)/gu,
 ];
+
+/**
+ * A quoted passage with someone's name attached to it.
+ *
+ * A written recommendation is the single most valuable thing in a typical CV
+ * and it rarely contains a cue word like "interviewed" or "featured" — it is
+ * just a quotation followed by a name and a title. Without this the strongest
+ * evidence in the document scored 38, rendered no reason, and never reached the
+ * reveal, in both languages.
+ */
+const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
 
 const HE_KNOWN_RE = new RegExp(`(?:^|[^א-ת])(${HE_KNOWN_ENTITIES.map((e) => e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![א-ת])`, 'gu');
 
@@ -327,7 +429,9 @@ export function extractSignals(text) {
     hasUrl: URL_RE.test(raw),
     properNouns,
     hasProperNoun: properNouns.length > 0,
-    thirdParty: any('thirdParty'),
+    // A quotation with a name attached is third-party validation even when the
+    // sentence contains no cue word.
+    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

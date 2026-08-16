@@ -11,7 +11,11 @@ import { button, field, meter, notice, section, textArea, textInput } from '../c
 import { detectDrift, scorePositioning } from '../../engine/positioning.js';
 
 export function positionView(state, t) {
-  const result = scorePositioning(state.positioning);
+  // Recognitions are not optional here. Dropping them left the defensibility
+  // meter pinned at the unvouched floor of 20 while L2 — which passes them —
+  // computed 88 from the same state, so the one component the user cannot
+  // raise by typing was invisible to the person who had actually earned it.
+  const result = scorePositioning(state.positioning, state.recognitions || []);
   const drift = detectDrift(state);
   const p = state.positioning;
 
@@ -61,7 +65,9 @@ export function positionView(state, t) {
       html`
         <div class="meters">
           ${Object.entries(result.components).map(([key, value]) =>
-            meter(t(['position', key]) || key, value),
+            meter(t(['position', key]), value, {
+              help: key === 'defensibility' ? t('position.defensibilityHint') : '',
+            }),
           )}
         </div>
         ${result.issues.length

@@ -7,7 +7,7 @@
  * no view holds a reference to the DOM it produced.
  */
 
-import { createStore } from '../core/store.js';
+import { createStore, stripImportedCredentials } from '../core/store.js';
 import { LEGACY_STORAGE_KEY } from '../core/schema.js';
 import { makeId, now as realNow } from '../core/util.js';
 import { translator } from '../i18n/index.js';
@@ -24,7 +24,7 @@ import { refineDraft } from '../adapters/llm.js';
 import { sortByDesc } from '../core/util.js';
 import { decayedScore } from '../engine/score.js';
 
-import { firstLightView, onboardingView } from './views/onboarding.js';
+import { NOT_ME, firstLightView, onboardingView } from './views/onboarding.js';
 import { dashboardView } from './views/dashboard.js';
 import { mineView } from './views/mine.js';
 import { positionView } from './views/position.js';
@@ -33,6 +33,12 @@ import { gapsView } from './views/gaps.js';
 import { studioView } from './views/studio.js';
 import { measureView } from './views/measure.js';
 import { settingsView } from './views/settings.js';
+
+/** Every field of the reception form, cleared together or not at all. */
+const RECEPTION_FIELDS = [
+  'rc-impressions', 'rc-reactions', 'rc-comments',
+  'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste',
+];
 
 const VIEWS = ['dashboard', 'mine', 'position', 'inventory', 'gaps', 'studio', 'measure', 'settings'];
 
@@ -44,6 +50,16 @@ const VIEWS = ['dashboard', 'mine', 'position', 'inventory', 'gaps', 'studio', '
 const ui = {
   view: 'dashboard',
   screen: 'app', // 'onboarding' | 'firstLight' | 'app'
+  /**
+   * Which situation the visitor recognised on the first screen, including
+   * `NOT_ME`. Held here rather than in the profile because "this is not my
+   * problem" is not a track — it must never be written into the record as one.
+   */
+  situation: null,
+  /** Play the Next Move routed to, so the gaps screen leads with that one. */
+  selectedPlay: null,
+  /** Answer to the awareness-clock question, null until explicitly given. */
+  weeks: null,
   filter: 'all',
   expanded: new Set(),
   /** Text-field values that must survive a re-render. Cleared on submit. */
@@ -197,6 +213,7 @@ export function mountApp(root) {
           draft.playLog[payload.archetype] = realNow();
         });
       }
+      if (payload.play) ui.selectedPlay = payload.play;
       if (VIEWS.includes(payload.view)) ui.view = payload.view;
       if (payload.proof) ui.selectedProofId = payload.proof;
       ui.screen = 'app';
@@ -204,7 +221,16 @@ export function mountApp(root) {
 
     coldStart() {
       const text = val('cold-paste').trim();
-      const track = root.querySelector('input[name="track"]:checked')?.value || 'independent';
+      const situation = root.querySelector('input[name="situation"]:checked')?.value;
+      // The paste box is only rendered once the qualifying question is
+      // answered, so neither branch here is reachable through the UI. They
+      // exist so an unanswered or declined qualification can never be recorded
+      // as a track — the defect was a default that answered it for the user.
+      if (!situation || situation === NOT_ME) {
+        toast(t('onboarding.needSituation'));
+        return;
+      }
+      const track = situation === 'job' ? 'job' : 'independent';
       const weeks = Number.parseInt(
         root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
         10,
@@ -430,9 +456,11 @@ export function mountApp(root) {
           capturedAt: realNow(),
         });
       });
-      for (const key of ['rc-impressions', 'rc-reactions', 'rc-comments', 'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste']) delete ui.formCache[key];
+      for (const key of RECEPTION_FIELDS) delete ui.formCache[key];
       ui.parsedAnalytics = {};
-      toast(t('measure.saved'));
+      // Say plainly when a saved record cannot answer the question the screen
+      // is about, rather than confirming a save that counts for nothing.
+      toast(record.impressions > 0 ? t('measure.saved') : t('measure.savedPartial'));
       // Both feedback integrations run on new reception data.
       recalibrate();
       store.update((draft) => {
@@ -476,7 +504,12 @@ export function mountApp(root) {
           at: realNow(),
         });
       });
-      delete ui.formCache['cv-note'];
+      // Every field of this form, not just the note. `val()` prefers the cache
+      // over the live control, so a stale `cv-artifact` silently attributed the
+      // next conversion to the previously selected post while the select on
+      // screen showed the default — a wrong attribution the user cannot see,
+      // feeding integration I4.
+      for (const key of ['cv-note', 'cv-artifact', 'cv-type']) delete ui.formCache[key];
     },
 
     addRecognition() {
@@ -570,12 +603,16 @@ export function mountApp(root) {
   function body() {
     const nowTs = realNow();
 
-    if (ui.screen === 'onboarding') return onboardingView(state, t);
+    if (ui.screen === 'onboarding') return onboardingView(state, t, ui);
 
     if (ui.screen === 'firstLight') {
       const active = state.proofs.filter((p) => !p.dismissed);
       const ranked = sortByDesc(active, (p) => p.score);
-      return firstLightView(state, t, { proofs: ranked, top3: revealPicks(ranked) });
+      return firstLightView(state, t, {
+        proofs: ranked,
+        top3: revealPicks(ranked),
+        demo: isDemoMode(state),
+      });
     }
 
     switch (ui.view) {
@@ -590,7 +627,7 @@ export function mountApp(root) {
           expanded: ui.expanded,
         });
       case 'gaps':
-        return gapsView(state, t, { now: nowTs });
+        return gapsView(state, t, { now: nowTs, selectedPlay: ui.selectedPlay });
       case 'studio':
         return studioView(state, t, {
           now: nowTs,
@@ -668,6 +705,7 @@ export function mountApp(root) {
     const selectionStart = active?.selectionStart;
 
     renderInto(root, chrome(body()));
+    restoreFormValues();
 
     let restored = null;
     if (activeId) {
@@ -679,15 +717,52 @@ export function mountApp(root) {
     }
     liveRegion.textContent = ui.toast;
 
-    if (restored) {
-      restored.focus();
-      if (typeof selectionStart === 'number' && 'setSelectionRange' in restored) {
+    // Falling through to the document is the failure this block exists to
+    // prevent, and it happened on exactly the actions where it hurts: hiding a
+    // proof or removing a source destroys the focused button, nothing matches,
+    // and a keyboard user is thrown to the top of the page mid-task. When the
+    // element itself is gone, keep the user where they were working.
+    const fallback = () => {
+      if (!activeAct && !activeId) return null;
+      return (
+        root.querySelector(`[data-act="${CSS.escape(activeAct ?? '')}"]`) ??
+        root.querySelector('#main') ??
+        null
+      );
+    };
+    const target = restored ?? fallback();
+
+    if (target) {
+      target.focus();
+      if (target === restored && typeof selectionStart === 'number' && 'setSelectionRange' in target) {
         try {
-          restored.setSelectionRange(selectionStart, selectionStart);
+          target.setSelectionRange(selectionStart, selectionStart);
         } catch {
           // Not all input types support selection ranges.
         }
       }
+    }
+  }
+
+  /**
+   * Put cached field values back into the freshly rendered controls.
+   *
+   * `ui.formCache` existed because a full re-render re-emits every control at
+   * its *default* value, and `val()` read the cache when the live control came
+   * back empty. That kept the data but broke the correspondence between what
+   * the user sees and what gets submitted: the six reception fields blanked on
+   * screen while still holding the previous artifact's numbers, so selecting a
+   * different post and saving wrote impressions the user never typed for it —
+   * into L4, into calibration, and into a compounded traction proof asserting a
+   * reach that had never happened.
+   *
+   * Writing the cache back means the visible form *is* the submitted form.
+   */
+  function restoreFormValues() {
+    for (const [id, value] of Object.entries(ui.formCache)) {
+      if (typeof value !== 'string') continue;
+      const el = root.querySelector(`#${CSS.escape(id)}`);
+      if (el && 'value' in el && el.value === '') el.value = value;
     }
   }
 
@@ -710,7 +785,26 @@ export function mountApp(root) {
   root.addEventListener('change', async (event) => {
     const el = event.target;
     if (el.id && el.type !== 'file' && el.type !== 'checkbox') ui.formCache[el.id] = el.value;
-    if (el.id === 'inv-filter') {
+    if (el.id === 'rc-artifact') {
+      // The metrics belong to the post that was on screen when they were
+      // typed. Carrying them to the next selection is how a number entered for
+      // one artifact ended up stored against another.
+      for (const key of RECEPTION_FIELDS) delete ui.formCache[key];
+      ui.parsedAnalytics = {};
+      render();
+    } else if (el.name === 'situation') {
+      ui.situation = el.value;
+      // Persisted, so the exit is still there after a reload. Held ephemerally
+      // it let a disqualified visitor back into the product on the next visit,
+      // which is the funnel the exit exists to refuse.
+      store.update((draft) => {
+        draft.profile.declined = el.value === NOT_ME;
+      });
+      render();
+    } else if (el.name === 'weeks') {
+      ui.weeks = Number.parseInt(el.value, 10);
+      render();
+    } else if (el.id === 'inv-filter') {
       ui.filter = el.value;
       render();
     } else if (el.id === 'studio-proof') {
@@ -789,7 +883,7 @@ export function mountApp(root) {
     if (!file) return;
     try {
       const parsed = JSON.parse(await file.text());
-      store.replace(parsed);
+      store.replace(stripImportedCredentials(parsed));
       resetEphemeral();
       ui.screen = store.get().profile.onboarded ? 'app' : 'onboarding';
       render();

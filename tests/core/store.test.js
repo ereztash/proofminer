@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LEGACY_STORAGE_KEY, STORAGE_KEY, migrateLegacy, normalizeState } from '../../src/core/schema.js';
-import { createStore, loadState } from '../../src/core/store.js';
+import { createStore, loadState, stripImportedCredentials } from '../../src/core/store.js';
 
 /** In-memory localStorage stand-in. */
 function memoryStorage(initial = {}) {
@@ -170,5 +170,38 @@ describe('createStore', () => {
     const snap = store.snapshot();
     snap.positioning.audience = 'שונה';
     expect(store.get().positioning.audience).toBe('');
+  });
+});
+
+describe('importing a file someone else made', () => {
+  it('never carries a credential in, and never switches the outbound path on', () => {
+    // exportSnapshot strips the key; without the mirror on the way in, opening
+    // a shared backup came up with the rewriter enabled under somebody else's
+    // key, and one click sent the user's draft and its evidence to that account.
+    const hostile = {
+      version: 2,
+      settings: { llm: { enabled: true, provider: 'anthropic', model: 'x', apiKey: 'sk-ant-ATTACKER' } },
+    };
+    const clean = stripImportedCredentials(hostile);
+    expect(clean.settings.llm.enabled).toBe(false);
+    expect(clean.settings.llm.apiKey).toBe('');
+    // The rest of the file is the user's data and must survive untouched.
+    expect(clean.settings.llm.provider).toBe('anthropic');
+  });
+
+  it('survives a file with no settings at all', () => {
+    expect(() => stripImportedCredentials({ version: 2 })).not.toThrow();
+    expect(stripImportedCredentials(null)).toBe(null);
+    expect(stripImportedCredentials('nonsense')).toBe('nonsense');
+  });
+
+  it('leaves the user their own key on an ordinary state update', () => {
+    // The strip belongs to the import path only: normalizeState also runs on
+    // the user's own storage, where their key is theirs to keep.
+    const state = normalizeState({
+      settings: { llm: { enabled: true, provider: 'anthropic', model: 'x', apiKey: 'sk-ant-MINE' } },
+    });
+    expect(state.settings.llm.apiKey).toBe('sk-ant-MINE');
+    expect(state.settings.llm.enabled).toBe(true);
   });
 });

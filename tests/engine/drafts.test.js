@@ -21,7 +21,7 @@ describe('grounding validator', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('catches an invented named entity, not only an invented number', () => {
+  it('flags an invented named entity, not only an invented number', () => {
     // The fabrication this audience would actually reach for is a bigger
     // employer or a publication that did not run the piece — neither of which
     // contains a digit.
@@ -30,8 +30,35 @@ describe('grounding validator', () => {
       'At Deloitte I reduced onboarding time by 40% in 2024.',
       [proof],
     );
-    expect(result.ok).toBe(false);
     expect(result.entities).toContain('Deloitte');
+  });
+
+  it('warns on names rather than blocking, because the detection is heuristic', () => {
+    // Numbers gate: the comparison is exact. Names warn: the detector flagged
+    // ordinary sentence-initial nouns as invented organisations and disabled
+    // publishing on correctly-grounded text, which trains users to ignore the
+    // one check that matters.
+    const proof = proofFrom('I reduced onboarding time by 40% for a client in 2024.');
+    expect(validateGrounding('At Deloitte I reduced it by 40% in 2024.', [proof]).ok).toBe(true);
+    expect(validateGrounding('I reduced it by 55% in 2024.', [proof]).ok).toBe(false);
+  });
+
+  it('does not flag ordinary words that merely begin a sentence', () => {
+    const proof = proofFrom('I reduced onboarding time by 40% in 2023.');
+    for (const body of [
+      'Onboarding time went from 8 weeks to 3 weeks in 2023.',
+      'Evidence beats opinion. I reduced onboarding time by 40% in 2023.',
+      'Revenue was not the point here.',
+    ]) {
+      expect(validateGrounding(body, [proof]).entities, body).toEqual([]);
+    }
+  });
+
+  it('quotes the user own wording back when a magnitude is unsupported', () => {
+    const proof = proofFrom('הכנסות הלקוח גדלו בעקבות השינוי');
+    const result = validateGrounding('ההכנסות גדלו במיליון שקל', [proof]);
+    expect(result.unsupported).toContain('במיליון');
+    expect(result.unsupported).not.toContain('1000000');
   });
 
   it('catches a spelled-out magnitude the evidence does not contain', () => {

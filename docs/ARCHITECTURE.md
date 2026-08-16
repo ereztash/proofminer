@@ -23,7 +23,7 @@ construction, and directly testable without a renderer. Adding React would put
 a build-time dependency and a component lifecycle between the tests and the
 thing being tested, in exchange for conveniences this UI does not need. The
 whole runtime is zero-dependency; the only production asset is one JS bundle
-under 40 kB gzipped.
+of roughly 52 kB gzipped.
 
 The cost is honest: the view layer is a hand-rolled `innerHTML` renderer with
 focus restoration. That is acceptable at this size and would not be at ten
@@ -62,7 +62,12 @@ the header of `src/adapters/llm.js`.
 
 ### Versioned, self-healing state
 `normalizeState()` coerces arbitrary parsed JSON into a valid state field by
-field and never throws. A truncated or hand-edited `localStorage` entry
+field and never throws. It also enforces referential integrity in dependency
+order: any id it has to replace — because the imported one could reach markup —
+is replaced everywhere that referenced it, rather than leaving orphans behind.
+The distinction it draws is deliberate. A citation naming a proof unit that no
+longer exists is breakage and is dropped; a reception whose artifact was deleted
+is a measurement the user typed in, and is kept. A truncated or hand-edited `localStorage` entry
 degrades to defaults rather than wiping an evidence base that took the user
 hours to build. The pre-rewrite MVP's state is migrated: sources and
 positioning carry forward, old scores do not, because they were produced by a
@@ -94,8 +99,12 @@ than its surface:
   banned-vocabulary check from `docs/UX.md`
 - **regression** — one test per defect found by adversarial review: engine
   determinism, spelled-out magnitudes, decay-clock preservation, curation
-  surviving truncation, dedupe cost, the L4 monotonicity and lock properties,
-  numeric safety, and the stored-XSS entry point through imported ids
+  surviving truncation, dedupe cost, the L4 monotonicity, lock and
+  effective-sample properties, numeric safety, the stored-XSS entry point
+  through imported ids and the reference rewrite that follows it, band
+  calibration, contact details excluded from evidence, the analytics parser's
+  two stacking directions and its refusal to guess an ambiguous one, and the
+  property that no arrangement of text raises the evidence half
 
 CI runs lint, tests and a production build on every pull request and push to
 `main`.

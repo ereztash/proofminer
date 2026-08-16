@@ -79,22 +79,60 @@ export function parseAnalyticsPaste(text) {
     return m ? parseMagnitude(m[1], m[2]) : null;
   };
 
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const key = LABELS.find(([, patterns]) => patterns.some((re) => re.test(line)))?.[0];
-    if (!key || found[key] !== undefined) continue;
+  const labelAt = (line) =>
+    LABELS.find(([, patterns]) => patterns.some((re) => re.test(line)))?.[0] ?? null;
 
-    // Same line first, then the line after, then the line before. LinkedIn's
-    // web panel stacks the label above its number, which is the ordinary thing
-    // a user copies — requiring them on one line made the parser return nothing
-    // on the common layout, which was the entire point of the feature.
-    const inline = line.match(NUMBER);
-    const value =
-      (inline ? parseMagnitude(inline[1], inline[2]) : null) ??
-      bareNumber(lines[i + 1]) ??
-      bareNumber(lines[i - 1]);
+  const labelled = lines
+    .map((line, i) => ({ i, line, key: labelAt(line), inline: line.match(NUMBER) }))
+    .filter((entry) => entry.key);
 
-    if (value !== null && value !== undefined) found[key] = value;
+  // Determine the layout once, from the whole paste, instead of guessing per
+  // line. LinkedIn stacks the label above its number on some surfaces and below
+  // it on others; preferring "the line after" unconditionally meant the
+  // number-above-label card parsed with every value shifted one row, reported
+  // `matched: 4`, and fed a 32x understated impression count straight into the
+  // reception denominator. Confidently wrong is worse here than empty.
+  const stackedAfter = labelled.filter((e) => !e.inline && bareNumber(lines[e.i + 1]) !== null).length;
+  const stackedBefore = labelled.filter((e) => !e.inline && bareNumber(lines[e.i - 1]) !== null).length;
+
+  // A tie is a paste we cannot read, and reading it anyway is the failure mode
+  // this whole function is written against: on a number-above-label card,
+  // guessing "after" hands every label the *next* metric's number. When the
+  // layout is ambiguous we take only the values printed on the label's own
+  // line and leave the rest for the user to type.
+  const ambiguous = stackedBefore === stackedAfter && stackedBefore > 0;
+  const preferBefore = stackedBefore > stackedAfter;
+
+  // One number line cannot fill two fields. Without this a paste that mixes
+  // layouts could read the same figure as both impressions and reactions.
+  const consumed = new Set();
+  const take = (index) => {
+    if (index < 0 || index >= lines.length || consumed.has(index)) return null;
+    const value = bareNumber(lines[index]);
+    if (value === null) return null;
+    consumed.add(index);
+    return value;
+  };
+
+  for (const entry of labelled) {
+    if (found[entry.key] !== undefined) continue;
+    if (entry.inline) {
+      found[entry.key] = parseMagnitude(entry.inline[1], entry.inline[2]);
+      continue;
+    }
+    if (ambiguous) continue;
+    const order = preferBefore ? [entry.i - 1, entry.i + 1] : [entry.i + 1, entry.i - 1];
+    for (const index of order) {
+      const value = take(index);
+      if (value !== null) {
+        found[entry.key] = value;
+        break;
+      }
+    }
+  }
+
+  for (const key of Object.keys(found)) {
+    if (found[key] === null) delete found[key];
   }
 
   return { found, matched: Object.keys(found).length };

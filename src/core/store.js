@@ -100,6 +100,7 @@ export function createStore(initial = loadState(), storage = safeStorage()) {
       return copy;
     },
 
+
     /** Last persistence failure, surfaced in Settings so storage loss is visible. */
     persistError: () => lastPersistError,
 
@@ -111,7 +112,14 @@ export function createStore(initial = loadState(), storage = safeStorage()) {
     update(recipe) {
       const draft = deepClone(state);
       const result = recipe(draft);
-      state = normalizeState(result === undefined ? draft : result);
+      // Only an object counts as a replacement. Accepting any non-undefined
+      // return meant `store.update((d) => d.sources.push(x))` — a perfectly
+      // ordinary expression body — returned a number, which `normalizeState`
+      // turned into an empty state, silently wiping the one thing in this
+      // product that is expensive to rebuild.
+      const next =
+        result !== null && typeof result === 'object' && !Array.isArray(result) ? result : draft;
+      state = normalizeState(next);
       schedulePersist();
       emit();
       return state;
@@ -140,4 +148,27 @@ export function createStore(initial = loadState(), storage = safeStorage()) {
       persist();
     },
   };
+}
+
+/**
+ * Strip credentials out of a file the user is importing.
+ *
+ * The mirror of `exportSnapshot`'s redaction, and it has to exist separately
+ * because that redaction is not symmetric on its own: an imported file could
+ * carry `enabled: true` and somebody else's `apiKey`, and the app would come up
+ * with the outbound rewriter switched on. One click in the studio then sent the
+ * user's draft *and the verbatim evidence it cites* to that key's owner, under
+ * a confirm dialog reading "the provider you configured" — which they had not.
+ *
+ * Deliberately not part of `normalizeState`: that also runs on the user's own
+ * storage and on every update, where their own key is theirs to keep.
+ *
+ * @param {unknown} parsed freshly parsed JSON, mutated in place when relevant
+ * @returns {unknown} the same value, for call-site convenience
+ */
+export function stripImportedCredentials(parsed) {
+  if (parsed && typeof parsed === 'object' && parsed.settings?.llm) {
+    parsed.settings.llm = { ...parsed.settings.llm, enabled: false, apiKey: '' };
+  }
+  return parsed;
 }

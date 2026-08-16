@@ -101,14 +101,21 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
   // and the product's single instruction became a button that did nothing.
   for (const source of state.sources || []) source.minedAt = now;
 
+  // Publishing from a unit is a decision about it, exactly like pinning one.
+  // Without this, mining a large new CV could drop the unit a published post
+  // was written from, and the post's citation — the thing that makes it
+  // grounded — pointed at nothing.
+  const cited = new Set((state.artifacts || []).flatMap((a) => a.proofIds || []));
+  const curatedBy = (p) => p.pinned || p.dismissed || cited.has(p.id);
+
   const ranked = sortByDesc(candidates, (p) => p.score);
-  const deduped = dedupeProofs(ranked);
+  const deduped = dedupeProofs(ranked, { protect: cited });
 
   // Truncation must never destroy a decision the user made. A pinned unit that
   // happened to score low was being dropped by the score-sorted cut, taking the
   // pin with it and leaving any artifact citing it with a dangling reference.
-  const curated = deduped.filter((p) => p.pinned || p.dismissed);
-  const rest = deduped.filter((p) => !p.pinned && !p.dismissed);
+  const curated = deduped.filter(curatedBy);
+  const rest = deduped.filter((p) => !curatedBy(p));
   const kept = [...curated, ...rest.slice(0, Math.max(0, MAX_PROOFS - curated.length))];
 
   return sortByDesc([...preserved, ...kept], (p) => p.score);

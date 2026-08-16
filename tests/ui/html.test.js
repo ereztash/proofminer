@@ -3,6 +3,8 @@ import { bidi, cx, escapeHtml, html, raw, toString_ } from '../../src/ui/html.js
 import { translator } from '../../src/i18n/index.js';
 import heBundle from '../../src/i18n/he.js';
 import enBundle from '../../src/i18n/en.js';
+import { NOT_ME, firstLightView, onboardingView } from '../../src/ui/views/onboarding.js';
+import { emptyState } from '../../src/core/schema.js';
 
 describe('escaping', () => {
   it('escapes every dangerous character', () => {
@@ -106,5 +108,96 @@ describe('i18n', () => {
         }
       }
     }
+  });
+});
+
+describe('the first screen qualifies rather than educates', () => {
+  // The ICP is an awareness segment: someone who already knows it hurts. A
+  // product that cannot say "this is not for you" has no standing to tell a
+  // user their visibility exceeds their evidence.
+  const t = translator('he');
+  const state = { ...emptyState(), profile: { ...emptyState().profile, track: 'independent' } };
+
+  it('offers a real way out, at the same weight as the two situations', () => {
+    const markup = toString_(onboardingView(state, t, {}));
+    expect(markup).toContain(`value="${NOT_ME}"`);
+    expect(markup).toContain(t('onboarding.notMe'));
+  });
+
+  it('arrives unanswered — no situation is pre-selected', () => {
+    // Seeding from profile.track pre-checked the first pain statement, so the
+    // screen asserted something about the visitor and asked them to un-check
+    // it, and anyone who ignored the question was recorded as qualified.
+    const markup = toString_(onboardingView(state, t, {}));
+    expect(markup).not.toContain('checked');
+    expect(markup).not.toContain('is-on');
+  });
+
+  it('does not show the paste box until the question is answered', () => {
+    expect(toString_(onboardingView(state, t, {}))).not.toContain('id="cold-paste"');
+    expect(toString_(onboardingView(state, t, { situation: 'job' }))).toContain('id="cold-paste"');
+  });
+
+  it('puts no action at all on the exit page', () => {
+    // It used to end with "show me on a sample", which onboarded the visitor
+    // permanently and landed on "now add something of your own".
+    const markup = toString_(onboardingView(state, t, { situation: NOT_ME }));
+    expect(markup).not.toContain('data-act=');
+  });
+
+  it('remembers a declined visitor across a reload', () => {
+    const declined = { ...state, profile: { ...state.profile, declined: true } };
+    expect(toString_(onboardingView(declined, t, {}))).toContain(t('notForYou.title'));
+  });
+
+  it('replaces the paste box with an honest exit when the visitor says it is not them', () => {
+    const markup = toString_(onboardingView(state, t, { situation: NOT_ME }));
+    expect(markup).toContain(t('notForYou.title'));
+    // No paste box, no analyse button: we are not going to try again.
+    expect(markup).not.toContain('id="cold-paste"');
+    expect(markup).not.toContain('data-act="coldStart"');
+  });
+
+  it('does not empty the paste box when the visitor answers the question above it', () => {
+    const ui = { situation: 'job', formCache: { 'cold-paste': 'ניהלתי צוות של שמונה אנשים' } };
+    expect(toString_(onboardingView(state, t, ui))).toContain('ניהלתי צוות של שמונה אנשים');
+  });
+
+  it('asks how long it has been hurting, not how long they have been working at it', () => {
+    for (const locale of ['he', 'en']) {
+      const q = translator(locale)('onboarding.weeksQuestion');
+      expect(q).toMatch(/מציק|bothering/);
+    }
+  });
+});
+
+describe('First Light on the sample', () => {
+  const t = translator('he');
+  const demoProof = {
+    id: 'p1', claim: 'קיצרתי את זמן האספקה מ-19 יום ל-7 ימים.', score: 61,
+    breakdown: { falsifiability: 60 }, demo: true, dismissed: false,
+  };
+
+  it('does not tell the visitor that bundled fixtures are theirs', () => {
+    // chrome() only wraps the 'app' screen, so this was the one screen with no
+    // demo bar — and it is the screen the product calls its entire hook.
+    const state = { ...emptyState(), proofs: [demoProof] };
+    const markup = toString_(
+      firstLightView(state, t, { proofs: [demoProof], top3: [demoProof], demo: true }),
+    );
+    expect(markup).toContain('demobar');
+    expect(markup).not.toContain('במה שהדבקת');
+    expect(markup).toContain(t('firstLight.demoSubtitle'));
+  });
+
+  it('still speaks in the second person about real evidence', () => {
+    const real = { ...demoProof, demo: false };
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs: [real] }, t, {
+        proofs: [real], top3: [real], demo: false,
+      }),
+    );
+    expect(markup).not.toContain('demobar');
+    expect(markup).toContain('במה שהדבקת');
   });
 });

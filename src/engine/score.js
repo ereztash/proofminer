@@ -88,8 +88,12 @@ export function daysUntilStale(proof, at, threshold = 0.6) {
  * inside a longer one is a duplicate even though symmetric similarity would
  * score it low. Input is assumed sorted best-first, so the survivor of a
  * duplicate pair is always the higher-scoring one.
+ *
+ * @param {object[]} proofs sorted best-first
+ * @param {{threshold?: number, protect?: Set<string>}} [options] `protect`
+ *   holds ids that must survive regardless of overlap.
  */
-export function dedupeProofs(proofs, threshold = 0.8) {
+export function dedupeProofs(proofs, { threshold = 0.8, protect = null } = {}) {
   // Token sets are built once per claim rather than twice per comparison. The
   // pairwise loop is still quadratic, but the constant was the problem: 800
   // mined sentences took 6.2 seconds on the main thread with no spinner,
@@ -105,6 +109,14 @@ export function dedupeProofs(proofs, threshold = 0.8) {
 
   const kept = [];
   for (const entry of entries) {
+    // A unit the user pinned, dismissed, or published from carries a decision,
+    // and a decision is not a duplicate of anything. Dropping it here also
+    // stranded any artifact citing it, because this runs before the caller's
+    // pin-aware truncation and so that guard never saw the unit at all.
+    if (entry.proof.pinned || entry.proof.dismissed || protect?.has(entry.proof.id)) {
+      kept.push(entry);
+      continue;
+    }
     const duplicate = kept.some(
       (k) =>
         overlap(entry.tokens, k.tokens) >= threshold ||

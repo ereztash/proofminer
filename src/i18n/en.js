@@ -25,20 +25,27 @@ export default {
     painTitle: 'You know you are good. Nobody else does.',
     painBody:
       'This is not a confidence problem and it is not a content problem. You have years of work nobody ever collected as evidence, so it does not count.',
-    pledgeTitle: 'Before you paste anything personal:',
+    pledgeLead:
+      'Everything stays on your machine — no server, no account. This tool will not invent achievements.',
+    pledgeTitle: 'What else to know before you paste',
     pledge: [
       'Everything stays on your machine. No server, no account, nobody reading it but you.',
       'This tool will not invent achievements. It works only with what you wrote.',
       'It will not let your visibility run ahead of your evidence, and it will tell you when that happens. What you type here it takes as given — it cannot verify that for you.',
     ],
-    twoMore: 'Two short questions, so the ranking fits you.',
-    trackQuestion: 'Where are you right now?',
-    trackJob: 'Looking for a role',
-    trackJobHint: 'You want to be recognised, get replies, get invited to talk',
-    trackIndependent: 'Building an independent practice',
-    trackIndependentHint: 'You want clients to come to you instead of chasing them',
-    weeksQuestion: 'How long have you been at this?',
-    weeksNotYet: 'Not started yet',
+    needSituation: 'Pick what is true for you first.',
+    situationQuestion: 'Which of these is true for you right now?',
+    situationNote:
+      'This tool is built for someone who already feels it. If none of these describes you, say so — it saves us both the time.',
+    trackJob: 'I keep sending applications, and the silence is getting to me',
+    trackJobHint: 'You know you fit these roles. It just never reaches anyone.',
+    trackIndependent: 'My clients are happy, and I have no idea where the next ones come from',
+    trackIndependentHint:
+      'Every new engagement arrives through someone who already knows you, and you can feel the ceiling.',
+    notMe: 'None of these. I do not feel I have a problem right now.',
+    notMeHint: 'A completely fair answer. Pick it and see what it means.',
+    weeksQuestion: 'How long has this been bothering you?',
+    weeksNotYet: 'Started recently',
     weeksMonths: 'A few months',
     weeksLong: 'Too long',
     start: 'Show me what I already have',
@@ -50,10 +57,30 @@ export default {
     orSample: 'I have nothing ready — show me on a sample',
   },
 
+  notForYou: {
+    title: 'Then this is probably not your tool. Not right now, anyway.',
+    body:
+      'We are not going to argue you into a problem. If work reaches you, and nothing you have done feels like it went missing on the way, there is nothing here that improves your situation and we are not going to pretend otherwise.',
+    forWhom:
+      'This is built for someone who already knows it hurts: applications that go unanswered, or work that only ever arrives through someone who already knows you. It does not teach you that you have a problem — it measures one you already feel.',
+    comeBackTitle: 'When it is worth coming back',
+    comeBack: [
+      'When someone less experienced than you gets the thing you wanted.',
+      'When you have to explain why you are the right choice and have nothing to point at but your own word.',
+      'When the stream of work that came through people who know you starts drying up.',
+      'When you are about to leave a role and find that everything you did exists only inside the organisation you are leaving.',
+    ],
+    changedMind: 'If you have changed your mind, the question above is still open.',
+  },
+
   firstLight: {
     title: (n) => `We found ${n} pieces of evidence in what you pasted.`,
     subtitle:
       'These are not content ideas. These are things that already happened, that you hold and nobody sees.',
+    demoTitle: (n) => `Our sample holds ${n} pieces of evidence.`,
+    demoSubtitle:
+      'This is a sample we brought, not anything of yours. It is here only to show how the ' +
+      'ranking works — the moment you paste your own material it drops out of the calculation.',
     threeTitle: 'Three you would never have published yourself',
     why: 'Why this one',
     continue: 'Got it — show me the full picture',
@@ -177,6 +204,12 @@ export default {
       v.n === 1
         ? `This is the only one of your ${v.total} pieces containing a checkable number.`
         : `Only two of your ${v.total} pieces contain a checkable number. This is one of them.`,
+    rareLink: (v) =>
+      v.n === 1
+        ? `This is the only one of your ${v.total} pieces containing a link. It can be opened, not just believed.`
+        : `Few of your pieces contain a link. This is one of them — it can be opened, not just believed.`,
+    rareBeforeAfter:
+      'This is one of the few of yours with both a before and an after. That is what turns a job description into something checkable.',
     onlyFailure:
       'This is your only piece where you analyse something that did not work. Professional judgement shows there more than in any success.',
     onlyMethod:
@@ -214,36 +247,44 @@ export default {
 
   plays: {
     'play.outcome': {
-      title: 'Get one measurable outcome out of a client or project',
+      title: 'Pull one measurable result out of a client or project',
       body: 'Pick one finished project. Write three lines: what it was before, what you did, what it was after. If you have no number, ask someone who was there.',
+      needs: 'To count: a before number and an after number, the year, and the client or place.',
     },
     'play.validation': {
       title: 'Ask for written confirmation from someone who was there',
-      body: 'One message: "We worked together on X. I am collecting what actually happened — could you write two lines on what changed for you?" Most people reply.',
+      body: 'One message: "We worked together on X. I am collecting what actually happened — could you write me two lines on what changed for you?" Most people answer.',
+      needs: 'To count: the quote in quotation marks, the name and role of whoever wrote it, and a link if there is one.',
     },
     'play.scale': {
-      title: 'Count. Just count.',
-      body: 'How many clients, participants, years, projects. The number exists in your head and was never written down.',
+      title: 'Count how many. Just count.',
+      body: 'How many clients, participants, years, projects. The number is already in your head and was never written down.',
+      needs: 'To count: the number itself with a unit — clients, employees, sites — and a period.',
     },
     'play.method': {
-      title: 'Write your method in five steps',
-      body: 'You do it the same way every time. Write the steps. A written method is evidence nobody can copy off you.',
+      title: 'Write your method out in steps',
+      body: 'You do it the same way every time. Write the steps down. A written method is evidence nobody can copy off you.',
+      needs: 'To count: the steps themselves, when you wrote it, and the link if you published it anywhere.',
     },
     'play.credential': {
       title: 'List your credentials',
-      body: 'Degree, course, licence, certificate. Five minutes. Low weight, but it closes a gap.',
+      body: 'Degree, course, licence, certificate. Five minutes.',
+      needs: 'To count: the institution, the year, and a link if there is one. "I have a degree" on its own does not reach the bar.',
     },
     'play.peer': {
       title: 'Get a mention from a peer, not a client',
-      body: 'A happy client is expected. A peer saying you are good is different. Ask someone in your field to confirm something specific.',
+      body: 'A happy client is expected. A peer saying you are good is something else. Ask someone in your field to confirm something specific.',
+      needs: 'To count: the peer\'s name and role, what exactly they said, and where.',
     },
     'play.failure': {
       title: 'Write about something that did not work',
-      body: 'Not to sound humble. A failure you analyse precisely proves professional judgement better than any success.',
+      body: 'Not to sound modest. A failure you analyse precisely proves professional judgement better than any success.',
+      needs: 'To count: what you tried, when, what it cost — time or money — and what you have done differently since.',
     },
     'play.origin': {
-      title: 'Write why it is you doing this',
-      body: 'Not a life story. The specific move that gave you an angle others do not have.',
+      title: 'Write why this, and why you',
+      body: 'Not a life story. The specific turn that gave you an angle others do not have.',
+      needs: 'To count: the year, the place, and the particular thing you saw. This is a weaker kind of evidence, and its bar is lower to match.',
     },
   },
 
@@ -280,7 +321,14 @@ export default {
       title: 'Who mentioned you from outside?',
       why: 'External recognition is the one layer you cannot move alone. A small mention counts.',
     },
-    'move.strengthenLayer': { title: 'Strengthen the weakest layer', why: 'The rest of the system is healthy. This is what limits you now.' },
+    'move.deepenEvidence': {
+      title: 'Strengthen evidence you already hold',
+      why: 'You have something of every type, but none of it is strong enough to carry the weight. A date, a name, a number or a link on an existing piece is worth more than a new one.',
+    },
+    'move.attributeConversion': {
+      title: 'Mark where the inbound came from',
+      why: 'You logged inbound without tying it to the post that produced it. Without that link nobody can tell you which of the things you published actually moves people.',
+    },
     do: 'Do it',
     minutes: (n) => `~${n} min`,
   },
@@ -315,6 +363,10 @@ export default {
     nonGoalsHint: 'Saying what you do not do is differentiation. One per line.',
     offerCoupling: 'Coupling to the offer',
     nonGenericity: 'How non-generic it is',
+    defensibility: 'How far others back this',
+    defensibilityHint:
+      'The one part of positioning you cannot raise by editing text. It rises when ' +
+      'somebody else repeats your claim — a mention, a recommendation, a referral, an invitation.',
     rescore: 'Re-rank against this positioning',
     issues: 'Not sharp yet',
     issue: {
@@ -354,6 +406,12 @@ export default {
   },
 
   gaps: {
+    otherPlays: (n) => `${n} more gaps, if you want to see them all`,
+    collect: 'I have it — let me add it',
+    bestOf: (best, need) => `Your strongest: ${best} · needs ${need}`,
+    shortOfBar: (best, need) =>
+      `You already hold evidence of this type, but it reaches ${best} and needs ${need}. Strengthening that one beats fetching another.`,
+
     title: 'What is missing',
     subtitle: 'A complete evidence case covers eight types. These are the ones you do not cover yet.',
     covered: 'Covered',
@@ -366,7 +424,9 @@ export default {
 
   studio: {
     title: 'Draft',
-    subtitle: 'The evidence stays attached to the text. You cannot publish a claim from here that has no source.',
+    subtitle:
+      'The evidence stays attached to the text. The check blocks numbers that are not in ' +
+      'the evidence; it does not verify that the text itself is true.',
     pick: 'Pick evidence',
     angle: 'Angle',
     angles: {
@@ -392,13 +452,15 @@ export default {
     fold: 'Visible before "see more"',
     tooShort: 'Too short to carry evidence.',
     tooLong: 'Very long. Consider splitting.',
-    grounded: 'No numbers or names in the text are absent from the evidence.',
+    grounded: 'Every number in the text appears in the evidence, as does every name we detected.',
     groundedPartial:
       'No numbers in the text are absent from the evidence. Names we cannot fully check here — read the text yourself and confirm every name in it appears in the evidence.',
     groundedCaveat:
-      'This check compares numbers and names. It cannot tell whether a correct number was attached to the wrong claim — only you can check that.',
+      'The check compares numbers and names — it does not read the claim. A sentence with ' +
+      'no number and no name passes it even if you invented the whole thing, and so does a ' +
+      'correct number attached to the wrong claim. Only you can check that.',
     ungroundedEntities: (list) =>
-      `The text names things absent from the evidence: ${list}. If it is true, add it to the source. If not, remove it.`,
+      `Names we did not find in the evidence: ${list}. If they are correct, add them to the source. If not, remove them. This detection is approximate, so an ordinary word may be flagged.`,
     overreach:
       'There is inflated wording here. That is exactly what makes people stop believing a post. Take it out.',
     ungrounded: (list) =>
@@ -413,7 +475,7 @@ export default {
   measure: {
     title: 'Measure',
     subtitle: 'These numbers are what turn this from a ranker into something that learns. Without them it guesses, like everything else.',
-    pending: (n) => `${n} publications with no data`,
+    pending: (n) => (n === 1 ? 'One publication with no data' : `${n} publications with no data`),
     artifact: 'Publication',
     impressions: 'Impressions',
     reactions: 'Reactions',
@@ -423,6 +485,7 @@ export default {
     saves: 'Saves',
     savesHint: 'LinkedIn does not always show this. If it is missing, skip it.',
     minimum: 'The minimum that works: impressions + reactions. The rest sharpens the picture, it does not gate it.',
+    savedPartial: 'Saved. Without impressions this will not count toward reception.',
     shares: 'Shares',
     save: 'Save measurement',
     saved: 'Saved',
@@ -433,7 +496,7 @@ export default {
     pasteHint: 'Select the stats block on the post page, copy, and paste. We will pull the numbers out.',
     pasteAction: 'Extract numbers',
     pasteFailed: 'No numbers found in that text.',
-    optional: 'Optional — without impressions we compare absolute engagement',
+    optional: 'Without impressions we cannot score how the post landed — the record counts toward cadence only.',
     conversions: 'What moved because of it',
     addConversion: 'Add inbound',
     fromNothing: 'Not from a specific post',
@@ -480,13 +543,16 @@ export default {
     storageError: 'The browser cannot save. Storage may be full — export to a file.',
     llm: 'Model rewriting (optional)',
     llmBody:
-      'You can connect an API key to rewrite drafts. Two warnings, both important: (1) enabling this sends the draft **and the evidence it is based on** to the external provider — that is text from the sources you pasted. It is the only time your material leaves this device. (2) This app has no server, so the key is stored in this browser and sent directly from it. That is not the security level of a server-side key — use a dedicated key with a low limit you can revoke.',
+      'You can connect an API key to rewrite drafts. Two warnings, both important: (1) enabling this sends the draft — and the evidence it is based on — to the external provider — that is text from the sources you pasted. It is the only time your material leaves this device. (2) This app has no server, so the key is stored in this browser and sent directly from it. That is not the security level of a server-side key — use a dedicated key with a low limit you can revoke.',
     refineDisclosure:
       'Rewriting sends the draft and its underlying evidence to the external provider you configured. Continue?',
     llmEnable: 'Enable rewriting',
     llmKey: 'API key',
     llmModel: 'Model',
-    llmNever: 'The model never scores anything and never adds facts. Every output passes the same grounding check.',
+    llmNever: 'The model never scores anything. Its output passes the same check: a number ' +
+      'absent from the evidence is blocked, a name absent from it is only flagged — and in ' +
+      'Hebrew the name detection is weakest. The model can add an employer, a client or a ' +
+      'publication that was never there. Read what comes back.',
     reduceMotion: 'Reduce motion',
   },
 

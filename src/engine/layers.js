@@ -11,7 +11,7 @@
  * evidence about a layer is not evidence of a bad layer.
  */
 
-import { DAY_MS, clamp100, mean, saturate, sortByDesc } from '../core/util.js';
+import { DAY_MS, clamp100, mean, round, saturate, sortByDesc } from '../core/util.js';
 import { decayedScore } from './score.js';
 import { realProofs } from './mine.js';
 import { coverageScore } from './gaps.js';
@@ -219,16 +219,25 @@ export function layerReception(state, now = Date.now()) {
     ? scores.reduce((sum, e) => sum + e.score * e.weight, 0) / totalWeight
     : mean(scores.map((e) => e.score));
 
+  // Kish's effective sample size, not the raw count. The score is a weighted
+  // mean, so six records of which one is recent and five are two years old is
+  // arithmetically close to a single observation — and reporting confidence
+  // 1.0 over it claimed a settled pattern where there was one post. Equal
+  // weights give back the plain count, so nothing changes for fresh data.
+  const sumSquares = scores.reduce((sum, e) => sum + e.weight * e.weight, 0);
+  const effectiveN = sumSquares > 0 ? (totalWeight * totalWeight) / sumSquares : 0;
+
   return {
     score: clamp100(weighted),
     // Counted over the records the score was actually computed from, not over
     // every record on file.
-    confidence: Math.min(1, scorable.length / 6),
+    confidence: Math.min(1, effectiveN / 6),
     locked: false,
     inputs: {
       records: (state.receptions || []).length,
       scorable: scorable.length,
       unscorable: (state.receptions || []).length - scorable.length,
+      effectiveN: round(effectiveN, 2),
     },
   };
 }

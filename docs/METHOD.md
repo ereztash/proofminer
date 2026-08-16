@@ -14,11 +14,18 @@ product shows a user must be derivable from what is written here.
 3. **No claim the user did not supply.** Draft generation may reframe, order,
    and connect the user's own proof text. It may never introduce a fact,
    number, client, or outcome that is not present in a cited proof unit.
-   **Mechanically enforced for:** magnitudes (digits and words) and named
-   entities, plus a warning on superlatives. **Not mechanically enforceable:**
-   a correct number attached to the wrong subject, an invented title made of
-   ordinary words, a claim stitched across two separately-true proofs. The UI
-   states this limit rather than implying the check verifies truth.
+   **Blocks publishing:** magnitudes only — digits and number words — because
+   that comparison is exact and blocking on it is fair.
+   **Warns but does not block:** named entities and superlatives. Name
+   detection is heuristic, and in Hebrew, which has no capitalisation, it is
+   weaker still; a check that disabled the primary action over the word
+   "Onboarding" trained users to ignore the one check that matters. The UI
+   reports how complete the name check could be on the given text.
+   **Not mechanically detectable at all:** a correct number attached to the
+   wrong subject, an invented title made of ordinary words, a claim stitched
+   across two separately-true proofs — and, the widest case, a sentence
+   containing no number and no name, which is invented freely and passes.
+   The UI states these limits rather than implying the check verifies truth.
 4. **Provenance is not optional.** Every generated artifact carries the IDs of
    the proof units it is grounded in.
 5. **Priors are labelled as priors.** This applies to *every* constant in the
@@ -149,6 +156,17 @@ and publishing a genuine hit *lowered* the score.
 Relative-to-your-own-norm comparison still happens, in compounding and
 calibration, where that is the question actually being asked.
 
+Records are **recency-weighted** with a 90-day half-life rather than swapped in
+and out of a hard window, which used to step the layer 23–38 points in a single
+day at unchanged confidence purely because a record crossed the boundary.
+
+Because the score is a weighted mean, confidence is reported over the
+**effective sample size** — Kish's `(Σw)² / Σw²` — not over the row count. Six
+records of which one is recent and five are eighteen months old are
+arithmetically close to a single observation, and counting rows claimed a
+settled pattern from one post. Evenly fresh records give back the plain count,
+so nothing changes for a user who is actually publishing.
+
 **Impressions are required for this layer and optional everywhere else.** A
 record without them still counts for cadence and for conversion attribution,
 but it is not scored for reception and is excluded from the baseline. Giving it
@@ -175,7 +193,10 @@ authority from output volume, and the one no personal-branding tool tracks.
 ## The Authority Index
 
 ```
-foundation     = 0.55·L1 + 0.45·L2
+# Positioning multiplies the evidence; it never substitutes for it.
+lift           = 0.25 · (L2.score/100) · L2.confidence      # 0 .. 0.25
+foundation     = L1.score · (1 + lift)
+
 built          = 0.30·L3 + 0.25·L4 + 0.25·L5 + 0.20·L6
 
 # Liebig gate — a law-of-the-minimum constraint
@@ -188,6 +209,24 @@ The gate is the mechanism that implements the anti-goal in `TELOS.md`.
 Built standing cannot exceed the evidence foundation by more than 25 points.
 Publishing harder on a thin base does not raise the index — it triggers a
 diagnosis.
+
+**Why the foundation is a product and not a blend.** Weighting L1 and L2 as
+peers made the gate defeasible by typing. On a single weak CV line, completing
+the four positioning fields moved the foundation from 18 to 71 and the index
+from 32 to 67, and `gated` went from true to false: four text boxes switched
+off the mechanism this method exists to enforce. Weighting them as peers also
+failed in the opposite direction — a half-finished positioning scores low, so
+answering the form at all lowered the headline number, punishing the user for
+obeying the product's own instruction.
+
+A multiplier bounded to `[1, 1.25]` resolves both. Sharpening your claim makes
+the same evidence worth up to a quarter more. Leaving the form blank, or filling
+it with category filler, simply earns no lift and costs nothing. **There is no
+arrangement of text that raises the evidence half on its own** — which is the
+property the anti-goal actually requires.
+
+Foundation confidence is L1's confidence: the foundation is a statement about
+evidence, and how sure we are of it is how much evidence we have seen.
 
 ### The Visibility Gap — the headline number
 
@@ -241,11 +280,8 @@ foundation was buying off the hedge on a built half computed entirely from
 layers with no observations. Below `LOW_CONFIDENCE` (0.55) the UI presents the
 index as an *estimate* and the product's language changes accordingly.
 
-Foundation layers are additionally weighted by the square of their own
-confidence, so a quarter-answered positioning form contributes a sixteenth of
-its weight. Without that, typing one character into the form dropped the
-headline number by 20 points — punishing the user for obeying the product's own
-instruction.
+Positioning enters the foundation through a confidence-scaled multiplier rather
+than as a weighted peer, for the reasons set out under the index above.
 
 ## Cross-layer integrations
 
@@ -259,7 +295,7 @@ output is its own input, and no tool in this category models that.
 
 ### I2. L4 → L1 · Calibration (learn the user's own leverage model)
 For each published, grounded artifact we hold the *dimension breakdown* of its
-source proof and the *reception score* it earned. With ≥5 such observations the
+source proof and the *reception score* it earned. With ≥8 such observations the
 engine regresses reception on dimensions and shrinks toward the priors:
 
 ```
