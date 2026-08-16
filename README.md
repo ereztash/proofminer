@@ -45,7 +45,8 @@ measures a problem you brought with you; it does not sell you one.
 | L5 | CONVERSION | Who moved? |
 | L6 | RECOGNITION | Who vouches for you? |
 
-L1–L2 are the **foundation**. L3–L6 are **built** standing.
+L1 is the **foundation**. L3–L6 are **built** standing. L2 is diagnostic — it
+reaches the index only by re-ranking the evidence in L1.
 
 ## The Liebig gate — what it does and does not prevent
 
@@ -117,13 +118,18 @@ is anti-hype cannot overstate its own integrity.
 - **No score without inputs.** A layer with no data reports zero confidence and
   says what unlocks it — never a red zero. An unfilled positioning form costs
   nothing: positioning enters the foundation as a bounded multiplier on the
-  evidence, so leaving it blank simply earns no lift rather than reading as an
-  absent claim.
-- **No arrangement of text raises the evidence half.** The foundation is
-  `L1 × (1 + lift)` with `lift ≤ 0.25`, so a sharp positioning is worth at most
-  a quarter more of the evidence you actually hold — and never enough to switch
-  the gate off. Filling in four text boxes used to move the foundation from 18
-  to 71 and ungate the index entirely.
+  evidence, so leaving it blank costs nothing rather than reading as an absent
+  claim.
+- **Text cannot carry the evidence half.** The foundation is L1 — the evidence
+  layer, and nothing else. Positioning reaches it only by re-ranking the
+  evidence, through the `icpFit` and `commercialProximity` dimensions on each
+  proof unit. Filling in four text boxes used to move the foundation from 18 to
+  71 and ungate the index entirely.
+  **The residue, measured:** that route is not zero. `icpFit` rewards containment
+  of your positioning in your claim, so pasting your own evidence's words into
+  the audience and offer fields moves the foundation about 6 points on a
+  one-unit inventory — enough to flip the gate at the boundary. About a tenth of
+  the original defect, and stated here rather than rounded to "cannot".
 - **The product refuses to call you a fraud for under-reporting.** `HOLLOW` is
   only ever returned when the evidence base has actually been measured;
   otherwise the answer is `UNCATALOGUED` — *not written down, not absent*.

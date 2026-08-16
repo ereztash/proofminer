@@ -284,22 +284,33 @@ export function layerConversion(state, now = Date.now()) {
   const weightOf = (c) =>
     (CONVERSION_WEIGHT[c.type] || 1) *
     0.5 ** (Math.max(0, (now - c.at) / DAY_MS) / CONVERSION_HALF_LIFE);
-  const recent = conversions.filter((c) => c.at >= now - 90 * DAY_MS);
   const weight = conversions.reduce((sum, c) => sum + weightOf(c), 0);
   const score = saturate(weight, 18);
 
-  const best = recent.reduce(
+  // Confidence on the same recency weighting as the score. Counting a hard
+  // trailing 90 days here left half the original cliff standing: four calls
+  // logged on one day gave confidence 1.000 on day 90 and 0.000 on day 91,
+  // with the score correctly unmoved — so the headline reframed itself from a
+  // measurement to an estimate overnight on unchanged data.
+  const recentEquivalent = conversions.reduce(
+    (sum, c) => sum + 0.5 ** (Math.max(0, (now - c.at) / DAY_MS) / CONVERSION_HALF_LIFE),
+    0,
+  );
+
+  const recentWindow = conversions.filter((c) => c.at >= now - 90 * DAY_MS);
+  const best = recentWindow.reduce(
     (max, c) => Math.max(max, CONVERSION_WEIGHT[c.type] || 1),
     0,
   );
 
   return {
     score: clamp100(score),
-    confidence: Math.min(1, recent.length / 4),
+    confidence: Math.min(1, recentEquivalent / 4),
     locked: false,
     inputs: {
       total: conversions.length,
-      recent: recent.length,
+      recent: recentWindow.length,
+      recentEquivalent: round(recentEquivalent, 2),
       weight,
       deepest: best,
     },

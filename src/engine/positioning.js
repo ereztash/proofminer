@@ -198,9 +198,15 @@ function positioningIssues({ audience, transformation, claim, offer, components,
  * Returns null when there is not enough conversion data to say anything, which
  * is the honest answer for most users most of the time.
  */
-export function detectDrift(state, { minConversions = 3 } = {}) {
+export function detectDrift(state, { minArtifacts = 3 } = {}) {
   const converting = (state.conversions || []).filter((c) => c.artifactId);
-  if (converting.length < minConversions) return null;
+  // Distinct *artifacts*, not conversions — the same discipline `feedback.js`
+  // applies to calibration and for the same reason. Counting conversions meant
+  // three replies to one post declared "the market is buying something other
+  // than what you say you sell", and `convertingShare` is 1.0 by construction
+  // whenever every converting artifact shares an archetype, which one artifact
+  // guarantees.
+  if (new Set(converting.map((c) => c.artifactId)).size < minArtifacts) return null;
 
   const proofById = new Map((state.proofs || []).map((p) => [p.id, p]));
   const artifactById = new Map((state.artifacts || []).map((a) => [a.id, a]));

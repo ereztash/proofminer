@@ -53,7 +53,9 @@ confidence 0–1.
 | L5 | **CONVERSION** — המרה | Who moved? | DMs, calls, interviews, offers, deals |
 | L6 | **RECOGNITION** — הכרה | Who vouches for you? | citations, invitations, referrals, features |
 
-L1–L2 are the **foundation**. L3–L6 are **built** standing.
+L1 is the **foundation**. L3–L6 are **built** standing. L2 is diagnostic: it
+reaches the index only by re-ranking the evidence in L1, through the `icpFit`
+and `commercialProximity` dimensions.
 
 ## L1 — proof unit scoring
 
@@ -124,15 +126,15 @@ material.
 
 ## L2 — positioning scoring
 
-The positioning statement is scored on five components: audience specificity,
+The positioning statement is scored on six components: audience specificity,
 transformation clarity, claim specificity, offer coupling, and non-genericity
 (penalising the "I help X do Y" template and the consultant-noun soup:
 *strategic, holistic, innovative, passionate, results-driven*).
 
 ## L3 — artifact scoring
 
-- **Cadence**: publishing events over a trailing 8-week window, saturating —
-  the model rewards consistency, not volume, and stops rewarding above ~3/week.
+- **Cadence**: publishing events, recency-weighted at a 40-day half-life, saturating —
+  the model rewards consistency, not volume, and saturating at 0.75/week — 80 at 3/week, 94 at 12/week.
 - **Groundedness ratio**: fraction of published artifacts carrying at least one
   proof unit ID. This is the product's most opinionated metric: publishing that
   is not grounded in evidence does not raise standing here.
@@ -160,12 +162,14 @@ Records are **recency-weighted** with a 90-day half-life rather than swapped in
 and out of a hard window, which used to step the layer 23–38 points in a single
 day at unchanged confidence purely because a record crossed the boundary.
 
-Because the score is a weighted mean, confidence is reported over the
-**effective sample size** — Kish's `(Σw)² / Σw²` — not over the row count. Six
-records of which one is recent and five are eighteen months old are
-arithmetically close to a single observation, and counting rows claimed a
-settled pattern from one post. Evenly fresh records give back the plain count,
-so nothing changes for a user who is actually publishing.
+Confidence is the **sum of those recency weights**, not the row count and not
+Kish's effective sample size. The row count reported a settled pattern from six
+records that were all five years old. Kish's ESS fixed that and broke the
+mirror: it corrects weight *imbalance*, so adding one fresh measurement beside
+five stale ones made the sample less balanced and dropped confidence more than
+fourfold — the product punishing obedience to its own instruction. Summing the
+weights answers the question actually being asked: how much recent evidence
+stands behind this number.
 
 **Impressions are required for this layer and optional everywhere else.** A
 record without them still counts for cadence and for conversion attribution,
@@ -182,7 +186,7 @@ layer.
 ## L5 — conversion scoring
 
 Funnel events weighted by commitment: `dm` 1 → `call` 3 → `interview` 5 →
-`proposal` 6 → `offer` 9 → `deal` 10. Scored on trailing 90 days, saturating.
+`proposal` 6 → `offer` 9 → `deal` 10. Recency-weighted at a 60-day half-life, saturating.
 
 ## L6 — recognition scoring
 
@@ -193,10 +197,7 @@ authority from output volume, and the one no personal-branding tool tracks.
 ## The Authority Index
 
 ```
-# Positioning multiplies the evidence; it never substitutes for it.
-lift           = 0.25 · (L2.score/100) · L2.confidence      # 0 .. 0.25
-foundation     = L1.score · (1 + lift)
-
+foundation     = L1.score          # the evidence layer, and nothing else
 built          = 0.30·L3 + 0.25·L4 + 0.25·L5 + 0.20·L6
 
 # Liebig gate — a law-of-the-minimum constraint
@@ -210,20 +211,32 @@ Built standing cannot exceed the evidence foundation by more than 25 points.
 Publishing harder on a thin base does not raise the index — it triggers a
 diagnosis.
 
-**Why the foundation is a product and not a blend.** Weighting L1 and L2 as
-peers made the gate defeasible by typing. On a single weak CV line, completing
-the four positioning fields moved the foundation from 18 to 71 and the index
-from 32 to 67, and `gated` went from true to false: four text boxes switched
-off the mechanism this method exists to enforce. Weighting them as peers also
-failed in the opposite direction — a half-finished positioning scores low, so
-answering the form at all lowered the headline number, punishing the user for
-obeying the product's own instruction.
+**Why the foundation is L1 alone.** Two earlier shapes were tried and both were
+wrong, in ways worth recording because both are tempting.
 
-A multiplier bounded to `[1, 1.25]` resolves both. Sharpening your claim makes
-the same evidence worth up to a quarter more. Leaving the form blank, or filling
-it with category filler, simply earns no lift and costs nothing. **There is no
-arrangement of text that raises the evidence half on its own** — which is the
-property the anti-goal actually requires.
+Weighting L1 and L2 as peers made the gate defeasible by typing: on a single
+weak CV line, completing the four positioning fields moved the foundation from
+18 to 71 and the index from 32 to 67, and `gated` went from true to false.
+
+Replacing the blend with a bounded multiplier — at most a quarter more — shrank
+that without removing it: with no new evidence, filling the form still moved a
+user from `HOLLOW` to `COMPOUNDING` and, in another state, flipped `gated` off.
+It was also **double counting**. Positioning already reaches the evidence score
+through the route this method actually names: `icpFit` (prior 16) and
+`commercialProximity` (prior 8) score every proof unit against the declared
+audience and offer, so a sharp positioning raises L1 by re-ranking the evidence
+it aims. The multiplier paid for that work twice, and it was the second payment
+that bought the gate.
+
+So the foundation is L1, and L2 reaches the index only through those two
+dimensions, per proof unit, where the effect can be explained.
+
+**The measured bound, stated honestly.** That route is not zero. `icpFit` uses
+60% containment of the positioning in the claim, so a user who pastes their own
+evidence's words into the audience and offer fields drives it to its ceiling: on
+a single-unit inventory the foundation moves about 6 points, which is enough to
+flip `gated` at the boundary. It is roughly a tenth of the original defect and
+it is not nothing. Text cannot carry the evidence half; it can still nudge it.
 
 Foundation confidence is L1's confidence: the foundation is a statement about
 evidence, and how sure we are of it is how much evidence we have seen.
@@ -280,8 +293,8 @@ foundation was buying off the hedge on a built half computed entirely from
 layers with no observations. Below `LOW_CONFIDENCE` (0.55) the UI presents the
 index as an *estimate* and the product's language changes accordingly.
 
-Positioning enters the foundation through a confidence-scaled multiplier rather
-than as a weighted peer, for the reasons set out under the index above.
+Positioning does not enter the foundation directly at all — see "Why the
+foundation is L1 alone" above.
 
 ## Cross-layer integrations
 
@@ -380,7 +393,7 @@ measurement, it is a prior — see honesty rule 5.
 | L2 POSITION | `0.21·audience + 0.19·transformation + 0.21·claim + 0.10·offerCoupling + 0.16·nonGenericity + 0.13·defensibility` | `min(filled/4, 2·mean(substantive)/100)` | defensibility is I6's channel and is the only component the user cannot raise by typing |
 | L3 ARTIFACT | `0.4·cadence + 0.45·groundedness + 0.15·mix` | `published / 6` | cadence recency-weighted, 40-day half-life, saturating at 0.75/week; mix saturates at 2 formats |
 | L4 RECEPTION | rate against `RATE_ANCHOR = 0.05` | `Σ recency weights / 6` | engagement weights: substantive comment 6, saves 4, shares 3, comment 2, reaction 1; denominator floored at `MIN_AUDIENCE = 50`; 90-day half-life; locked below 3 records |
-| L5 CONVERSION | `saturate(Σ weighted, 18)` | `count / 4` | weights: deal 10, offer 9, proposal 6, interview 5, call 3, dm 1, reply 1; 60-day half-life |
+| L5 CONVERSION | `saturate(Σ weighted, 18)` | `Σ recency weights / 4` | weights: deal 10, offer 9, proposal 6, interview 5, call 3, dm 1, reply 1; 60-day half-life |
 | L6 RECOGNITION | `saturate(Σ weighted, 8)` | `count / 3` | weights: feature 4, invite 4, referral 3, citation 2, endorsement 1; decay `0.4 + 0.6·0.5^(age/540)` |
 
 | Constant | Value | Where |

@@ -730,14 +730,30 @@ describe('self-report cannot buy the evidence half', () => {
     for (const unit of created) expect(unit.score).toBeLessThan(BAND_USABLE);
   });
 
-  it('does not mint one unit per post from the same sentence', () => {
-    // Compounded units bypassed dedupe, so N posts minted N near-identical
-    // traction claims, each counting toward volume, quality and confidence.
+  it('does not let the interface language decide how much evidence you have', () => {
+    // Compounded claims share a sentence template, so prose dedupe compared
+    // them against each other at a knife edge: two genuinely distinct posts
+    // produced Hebrew claims overlapping at exactly 0.800 — the threshold — and
+    // one was destroyed, while the English claims for the same two posts
+    // overlapped at 0.75 and both survived. Same user, same posts, same numbers.
+    const counts = ['he', 'en'].map((locale) => {
+      const state = { ...build(), locale };
+      const created = compound(state, { now: NOW_ });
+      const mined = mineSources({ ...state, proofs: [...state.proofs, ...created] }, { now: NOW_ });
+      return mined.filter((p) => p.origin === 'compounded').length;
+    });
+    expect(counts[0]).toBe(counts[1]);
+    expect(counts[0]).toBeGreaterThan(0);
+  });
+
+  it('mints at most one unit per artifact, however often it is measured', () => {
     const state = build();
+    // The same artifact measured twice is one piece of traction, not two.
+    state.receptions.push({ ...state.receptions[8], id: 'r-again' });
     const created = compound(state, { now: NOW_ });
-    const mined = mineSources({ ...state, proofs: [...state.proofs, ...created] }, { now: NOW_ });
-    expect(created.length).toBeGreaterThan(2);
-    expect(mined.filter((p) => p.origin === 'compounded').length).toBeLessThan(created.length);
+    const artifacts = created.map((p) => p.sourceName);
+    expect(created.length).toBe(new Set(created.map((p) => p.sourceId)).size);
+    expect(artifacts.length).toBeGreaterThan(0);
   });
 
   it('barely moves the ceiling the gate is measured against', () => {
@@ -791,10 +807,17 @@ describe('integrations that were alive and unreachable', () => {
       const artifacts = published.map((a, i) =>
         artifact({ id: `a${i}`, proofIds: [a === 'VALIDATION' ? 'pV' : 'pM'] }),
       );
-      const conversions = converting.map((a, i) => ({
-        id: `c${i}`, type: 'call', note: '', at: NOW - 5 * DAY,
-        artifactId: artifacts.find((x) => x.proofIds[0] === (a === 'VALIDATION' ? 'pV' : 'pM'))?.id ?? null,
-      }));
+      // Spread across *distinct* artifacts: drift needs three converting posts,
+      // not three replies to one post.
+      const byArchetype = { VALIDATION: [], METHOD: [] };
+      artifacts.forEach((x) => byArchetype[x.proofIds[0] === 'pV' ? 'VALIDATION' : 'METHOD'].push(x.id));
+      const used = { VALIDATION: 0, METHOD: 0 };
+      const conversions = converting.map((a, i) => {
+        const pool = byArchetype[a];
+        const id = pool[used[a] % pool.length] ?? null;
+        used[a] += 1;
+        return { id: `c${i}`, type: 'call', note: '', at: NOW - 5 * DAY, artifactId: id };
+      });
       return stateWith({
         positioning: { audience: 'a', transformation: 'b', claim: 'מערכי אספקה שאפשר לסמוך עליהם', offer: 'c', nonGoals: [] },
         proofs, artifacts, conversions,
@@ -804,7 +827,9 @@ describe('integrations that were alive and unreachable', () => {
     expect(detectDrift(build([M, M, M, M], [M, M, M, M])).drifting).toBe(false);
     expect(detectDrift(build([V, V, M, M], [V, V, M, M])).drifting).toBe(false);
     // And still fires when the mismatch is real and countable.
-    expect(detectDrift(build([V, V, V, V], [V, M, M, M, M, M, M, M])).drifting).toBe(true);
+    expect(detectDrift(build([V, V, V, V], [V, V, V, M, M, M, M, M, M, M, M, M])).drifting).toBe(true);
+    // But never from a single post, however many replies it drew.
+    expect(detectDrift(build([V, V, V], [V, M, M, M]))).toBe(null);
   });
 
   it('stops asking who got in touch once the user says nobody did', () => {
@@ -818,8 +843,18 @@ describe('integrations that were alive and unreachable', () => {
     // Three weeks of publishing with reception and no inbound: the product
     // stops asking an unanswerable question and names the actual problem.
     expect(nextMove(base, NOW).id).not.toBe('move.logConversion');
-    const acknowledged = { ...base, profile: { ...base.profile, noInboundAt: NOW - 2 * DAY } };
-    expect(nextMove(acknowledged, NOW).id).toBe('move.logConversion');
+
+    // And saying "nobody has been in touch" must *stop* the question, not pin
+    // it for three weeks — which is what the gate did inverted. Inside the
+    // first three weeks the question is still fair, so it is asked...
+    const fresh = {
+      ...base,
+      artifacts: [0, 1, 2].map((i) => artifact({ id: `a${i}`, publishedAt: NOW - (5 - i) * DAY })),
+    };
+    expect(nextMove(fresh, NOW).id).toBe('move.logConversion');
+    // ...until the user answers it.
+    const acknowledged = { ...fresh, profile: { ...fresh.profile, noInboundAt: NOW - 2 * DAY } };
+    expect(nextMove(acknowledged, NOW).id).not.toBe('move.logConversion');
   });
 });
 

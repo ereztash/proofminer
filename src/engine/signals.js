@@ -117,7 +117,11 @@ const LEX = {
     failure: /fail(?:ed|ure)|mistake|got it wrong|didn'?t work|learned the hard way|missed|shut down|lost/iu,
     origin: /i started|i came from|i switched|i chose|why i|my story|years ago|when i was|what led me/iu,
     peer: /peer|colleague|fellow|in my field|industry friend|mentor|partner|professional recommendation/iu,
-    currency: /(?:\$|€|£|usd|eur|ils|k\b|m\b|million|billion|thousand)/iu,
+    // `k\b` and `m\b` matched the last letter of framework, network, team,
+    // system, program and problem, so `hasCurrency` was true on almost every
+    // ordinary CV line — and the reveal printed "there is a money figure here"
+    // over a sentence about a framework. A magnitude suffix needs its digits.
+    currency: /(?:\$|€|£|\busd\b|\beur\b|\bils\b|\d\s*[km]\b|million|billion|thousand)/iu,
     duration: /(?:years?|months?|weeks?|days?|quarters?|semesters?)/iu,
     relativeTime: /(?:this year|this month|recently|currently|right now|over the past year|in recent months)/iu,
   },
@@ -341,17 +345,21 @@ const HE_PERSON_RES = [
 const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
 
 /**
- * A claim signed off by a named person with a role.
+ * Why there is no unquoted-attribution signal here.
  *
- * The same evidence as an attributed quotation, minus the quotation marks —
- * which is exactly how a client thank-you email arrives, and the onboarding
- * copy invites that file by name. `attachSignature` in `text.js` folds the
- * signature block onto the claim it vouches for; this is the signal that reads
- * it, so the strongest sentence in the email stops scoring as the user's own
- * unsupported assertion.
+ * `attachSignature` in `text.js` folds a letter's trailing signature onto the
+ * claim above it, and it was tempting to read the result — a sentence, an em
+ * dash, a name and a role — as third-party validation. It cannot be read that
+ * way, because **the tool made the join**, and the tool cannot tell whose
+ * signature it is. A client's thank-you email and the user's own cover letter
+ * have the identical shape; on the second, treating the signature as external
+ * validation credits the user with vouching for themselves.
+ *
+ * So attribution creates `thirdParty` only where the *document* marks the words
+ * as somebody else's: `ATTRIBUTED_QUOTE`, a quotation with a name attached. The
+ * join still happens — keeping the signature with the claim is right for the
+ * draft and for the user reading their own inventory — it simply earns nothing.
  */
-const ATTRIBUTED_SOURCE =
-  /[-–—]\s*[^\n]{2,60}?(?:מנכ"?ל|סמנכ"?ל|מנהל(?:ת)?|יו"?ר|מייסד(?:ת)?|שותף|דירקטור|CEO|CTO|COO|CFO|VP|Head of|Director|Founder|Partner)/iu;
 
 const HE_KNOWN_RE = new RegExp(`(?:^|[^א-ת])(${HE_KNOWN_ENTITIES.map((e) => e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![א-ת])`, 'gu');
 
@@ -447,9 +455,9 @@ export function extractSignals(text) {
     hasUrl: URL_RE.test(raw),
     properNouns,
     hasProperNoun: properNouns.length > 0,
-    // A quotation with a name attached — or a claim signed by a named person
-    // with a role — is third-party validation even with no cue word in it.
-    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw) || ATTRIBUTED_SOURCE.test(raw),
+    // A quotation with a name attached is third-party validation even when the
+    // sentence carries no cue word. An unquoted signature is not — see above.
+    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

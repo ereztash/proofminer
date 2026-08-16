@@ -197,28 +197,62 @@ const HEADER_LINE = /^\s*(?:קורות חיים|resume|curriculum vitae|cv)\s*[-
  * screen that exists to tell the user their work is worth something opened by
  * offering them "שפות: עברית - שפת אם" as a piece of evidence.
  */
-const ROLE_HEADING =
-  /^\s*[^,\n]{2,60},\s*[^,\n(]{2,60}\s*[(（]\s*\d{4}\s*[-–—]\s*(?:\d{4}|היום|כיום|present|now)\s*[)）]\s*$/iu;
-
-/** Greetings and sign-offs: structure, not claims. */
-const SALUTATION =
-  // `\b` is ASCII-only even under `/u`, so it never fires next to a Hebrew
-  // letter — the same trap that made the document-title filter dead code.
-  /^\s*(?:היי|הי|שלום|לכבוד|תודה|בברכה|בהצלחה|כל טוב|hi|hello|dear|thanks|thank you|regards|best)(?![\p{L}])[^.!?]{0,30}[,.]?\s*$/iu;
+const ROLE_HEADING_SHAPE =
+  /^\s*([^,\n]{2,60}),\s*[^,\n(]{2,60}\s*[(（]\s*\d{4}\s*[-–—]\s*(?:\d{4}|היום|כיום|present|now)\s*[)）]\s*$/iu;
 
 /**
- * The name and role at the foot of a recommendation or client email.
+ * `Role, Employer (2019-2025)` — the heading above a block of bullets.
  *
- * This is the single highest-value signal the product looks for — an
- * attribution is what turns a nice sentence into third-party validation — and
- * it was being discarded by the sentence-length floor, because a signature is
- * three words long. Attaching it to the claim above keeps them one unit.
+ * The part before the comma has to read as a job title: a few words, no digits,
+ * no verb of achievement. Without that guard "Doubled the team, rebuilt the
+ * pipeline (2019 - 2022)" was deleted as furniture, which is a real claim and
+ * exactly the kind this product exists to find.
  */
-const ROLE_WORD =
-  /(?:מנכ"?ל|סמנכ"?ל|מנהל|מנהלת|סגן|ראש\s|מייסד|שותף|יו"?ר|דירקטור|CEO|CTO|COO|CFO|VP|Head of|Director|Founder|Partner|Manager)/iu;
+const ROLE_HEADING = (line) => {
+  const match = ROLE_HEADING_SHAPE.exec(line);
+  if (!match) return false;
+  const title = match[1];
+  return wordCount(title) <= 5 && !/\d/u.test(title) && !OUTCOME_VERB.test(title);
+};
 
-const LABELLED_LIST =
-  /^\s*(?:שפות|כישורים|מיומנויות|תחומי עניין|תחביבים|השכלה|קורסים|המלצות|skills|languages|education|courses|interests|hobbies|references)\s*[:：]/iu;
+/** Achievement verbs, in the two languages, used only to protect real claims. */
+const OUTCOME_VERB =
+  /(?:הגדל|הכפל|הורד|צמצמ|קיצר|בנית|הקמת|הובלת|שיפר|חסכ|יצרת|השקת|doubl|trebl|tripl|grew|grow|increas|reduc|cut|built|launch|led|sav|shorten|improv|rebuilt|scal)/iu;
+
+/** Greetings and sign-offs: structure, not claims. */
+// `\b` is ASCII-only even under `/u`, so it never fires next to a Hebrew
+// letter — the same trap that made the document-title filter dead code.
+const GREETING_WORD =
+  /^\s*(?:היי|הי|שלום|לכבוד|תודה|בברכה|בהצלחה|כל טוב|hi|hello|dear|thanks|thank you|regards|best)(?![\p{L}])/iu;
+
+/**
+ * A greeting or sign-off: the word, a name, and nothing else.
+ *
+ * The word alone is not enough. Matching any line that *opened* with `תודה`
+ * deleted "תודה שהורדת לנו את העלויות ב-20%" — the client stating the outcome,
+ * in the exact document the onboarding copy asks the user to paste — while the
+ * pleasantry two lines down survived and was presented as their best evidence.
+ * Worse, with the sentence carrying the figure gone, `validateGrounding` then
+ * blocked the user from typing that true number into their own draft: the
+ * product deleted the fact and then refused to let them state it.
+ */
+const SALUTATION = (line) =>
+  GREETING_WORD.test(line) && wordCount(line) <= 4 && !/\d/u.test(line);
+
+const LABELLED_LIST_SHAPE =
+  /^\s*(?:שפות|כישורים|מיומנויות|תחומי עניין|תחביבים|השכלה|קורסים|המלצות|skills|languages|education|courses|interests|hobbies|references)\s*[:：](.*)$/iu;
+
+/**
+ * `Skills: …` — a label followed by a list, not by a sentence. The remainder
+ * has to look like a list: no digits, no achievement verb. "המלצות: שלושה
+ * לקוחות כתבו לי המלצות בכתב במהלך 2024" is a claim, not a heading.
+ */
+const LABELLED_LIST = (line) => {
+  const match = LABELLED_LIST_SHAPE.exec(line);
+  if (!match) return false;
+  const rest = match[1] ?? '';
+  return !/\d/u.test(rest) && !OUTCOME_VERB.test(rest);
+};
 
 /**
  * True when a line is contact details or document furniture rather than a claim.
@@ -234,8 +268,8 @@ const LABELLED_LIST =
  * the English one dropped ordinary sentences beginning "CV coaching…".
  */
 export function isContactOrFurniture(line) {
-  if (HEADER_LINE.test(line) || ROLE_HEADING.test(line) || LABELLED_LIST.test(line)) return true;
-  if (SALUTATION.test(line)) return true;
+  if (HEADER_LINE.test(line) || ROLE_HEADING(line) || LABELLED_LIST(line)) return true;
+  if (SALUTATION(line)) return true;
   if (!CONTACT_MARKERS.some((re) => re.test(line))) return false;
 
   // Mostly-contact heuristic: heavy separator use, or short with little prose.
@@ -266,21 +300,35 @@ export function isContactOrFurniture(line) {
  */
 const WRAP_MIN_LENGTH = 40;
 
-/** A short trailing line naming who is speaking. */
-const isAttribution = (line) => {
-  const trimmed = line.trim();
-  if (!trimmed || trimmed.length > 60) return false;
-  // A role word is required. Treating any dash-led short line as an attribution
-  // swallowed the second item of a two-bullet list, because a bullet marker and
-  // an attribution dash are the same character.
-  return ROLE_WORD.test(trimmed) && wordCount(trimmed) <= 8;
-};
+/** How close to the document's own right margin a line must sit to read as wrapped. */
+const WRAP_MARGIN_TOLERANCE = 8;
+/** How many near-margin lines it takes before we believe the document wraps at all. */
+const WRAP_EVIDENCE = 3;
 
-const lastSubstantive = (lines) => {
-  let i = lines.length - 1;
-  while (i >= 0 && isContactOrFurniture(lines[i])) i -= 1;
-  return i;
-};
+/**
+ * The width this document appears to wrap at, or null when it does not wrap.
+ *
+ * Merging on "long line, no full stop" alone was too eager: two hand-written CV
+ * bullets, each a complete claim and each over forty characters, became one
+ * run-on unit — so a document with two achievements reported one, and the
+ * merged unit inherited numbers and scale units across claims the user had
+ * deliberately kept apart.
+ *
+ * A wrapped block has a right margin: several lines ending within a few
+ * characters of the same width. A bullet list does not. Requiring that evidence
+ * before merging anything is what separates the two.
+ */
+function wrapWidth(lines) {
+  // Furniture is excluded from the margin estimate: a contact header is
+  // usually the longest line in a CV and sets a margin no body line reaches,
+  // which suppressed unwrapping on exactly the documents that need it.
+  const body = lines.filter((line) => !isContactOrFurniture(line));
+  if (!body.length) return null;
+  const widest = Math.max(...body.map((line) => line.length));
+  if (widest < WRAP_MIN_LENGTH) return null;
+  const nearMargin = body.filter((line) => line.length >= widest - WRAP_MARGIN_TOLERANCE).length;
+  return nearMargin >= WRAP_EVIDENCE ? widest : null;
+}
 
 /**
  * Fold a trailing signature block onto the claim it vouches for.
@@ -303,14 +351,29 @@ function attachSignature(lines, minLength) {
   }
   if (start === lines.length || start === 0) return lines;
 
-  const head = lines.slice(0, start);
-  const target = lastSubstantive(head);
-  if (target < 0) return lines;
+  // **A sign-off is required.** This is the guard that keeps the join honest,
+  // and without it the tool fabricated testimonials: a CV ending in a
+  // `המלצות:` block had the referee's name and title glued onto the user's own
+  // achievement bullet, and the result — the user's sentence, an em dash, a
+  // real person's name — is exactly the shape the signal engine reads as
+  // third-party validation. A named person was presented as endorsing a
+  // sentence they never wrote, ranked first, explained as "a sceptic can go and
+  // check this", and offered for publishing verbatim.
+  //
+  // A letter closes with `תודה,` or `בברכה,` before the signature. A CV
+  // references block does not. That difference is the whole licence for
+  // treating what follows as somebody else's speech.
+  const block = lines.slice(start);
+  if (!block.some((line) => SALUTATION(line))) return lines;
 
-  const signature = lines
-    .slice(start)
-    .filter((line) => !isContactOrFurniture(line))
-    .join(', ');
+  const head = lines.slice(0, start);
+  // The claim immediately above the sign-off, not whatever the walk-back
+  // finds. Crossing section labels to reach a target is how the join above
+  // spanned two unrelated parts of a document.
+  const target = head.length - 1;
+  if (target < 0 || isContactOrFurniture(head[target])) return lines;
+
+  const signature = block.filter((line) => !isContactOrFurniture(line)).join(', ');
   if (!signature) return head;
 
   // The terminator goes, or the sentence splitter immediately separates the
@@ -320,25 +383,15 @@ function attachSignature(lines, minLength) {
 }
 
 function unwrap(lines) {
+  const width = wrapWidth(lines);
   const out = [];
   for (const line of lines) {
     const previous = out[out.length - 1];
 
-    // Signature blocks run over two lines as often as one — a name, then a role
-    // and company — and they sit under a sign-off, not under the claim. Walk
-    // back past the furniture so the attribution lands on the sentence it is
-    // actually vouching for.
-    if (isAttribution(line)) {
-      const target = lastSubstantive(out);
-      if (target >= 0) {
-        out[target] = `${out[target].replace(/[.!?׃…]\s*$/u, '')} — ${line.trim()}`;
-        continue;
-      }
-    }
-
     const continues =
+      width !== null &&
       previous !== undefined &&
-      previous.length >= WRAP_MIN_LENGTH &&
+      previous.length >= width - WRAP_MARGIN_TOLERANCE &&
       !/[.!?׃…:)\]]$/u.test(previous) &&
       !isContactOrFurniture(previous) &&
       !/^\s*[-–—*+•·▪]/u.test(line) &&
@@ -365,7 +418,13 @@ export function splitSentences(text, minLength = 30) {
         : line.split(/(?<=[.!?׃…])\s+/u),
     )
     .flatMap((chunk) => chunk.split(/\s*[•·▪]\s*/u))
-    .map((s) => s.replace(/^\s*[-–—*+\d]+[.)\]]?\s*/u, '').trim())
+    // Enumerators only. The digit class used to be unanchored, so a leading
+    // magnitude was stripped off the front of the user's own sentence:
+    // "40 לקוחות חתמו איתי" lost its 40, and — the one that matters —
+    // "3.2 מיליון ש\"ח נחסכו" was silently rewritten to "2 מיליון". A product
+    // whose first screen promises it works only with what you wrote must not
+    // edit a money figure on the way in.
+    .map((s) => s.replace(/^\s*(?:[-–—*+]+\s*|\d+[.)\]]\s+)/u, '').trim())
     .filter((s) => s.length >= minLength)
     .filter((s) => !isContactOrFurniture(s));
 }

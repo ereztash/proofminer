@@ -301,9 +301,19 @@ describe('Hebrew writes numbers as words', () => {
     }
   });
 
-  it('reads a claim signed by a named person with a role as third-party', () => {
+  it('does not invent third-party validation out of a signature the tool attached', () => {
+    // `attachSignature` folds a letter's signature onto the claim above it, and
+    // the result looks exactly like an attributed testimonial. It must not
+    // count as one: the tool made that join, and it cannot tell whose signature
+    // it is. A client's thank-you email and the user's own cover letter have
+    // the identical shape, and on the second this would credit the user with
+    // vouching for themselves.
     const signed = 'היום אנחנו סוגרים הזמנה ביומיים והצוות מרוצה — יוסי כהן, מנכ"ל, חברת גמא לוגיסטיקה';
-    expect(extractSignals(signed).thirdParty).toBe(true);
+    expect(extractSignals(signed).thirdParty).toBe(false);
+    // A quotation with a name attached still counts: the document itself marks
+    // the words as somebody else's.
+    const quoted = '"רונן סידר לנו את כל מערך התפעול תוך חצי שנה" — יעל ברקוביץ, מנכ"לית';
+    expect(extractSignals(quoted).thirdParty).toBe(true);
   });
 
   it('does not read the user describing their own role as third-party', () => {
@@ -314,5 +324,26 @@ describe('Hebrew writes numbers as words', () => {
     ]) {
       expect(extractSignals(text).thirdParty, text).toBe(false);
     }
+  });
+});
+
+describe('a magnitude suffix needs its digits', () => {
+  it('does not read a money figure out of ordinary English words', () => {
+    // `k\b` matched framework, network, week, risk and task; `m\b` matched
+    // program, team, system and platform. Combined with a year counting as a
+    // number, the reveal printed "there is a money figure here" over a sentence
+    // about a framework.
+    for (const text of [
+      'Built the onboarding framework in 2021.',
+      'Led the platform team through the 2022 migration.',
+      'Reduced risk across the network in 2023.',
+    ]) {
+      expect(extractSignals(text).hasCurrency, text).toBe(false);
+    }
+  });
+
+  it('still reads a real magnitude suffix', () => {
+    expect(extractSignals('Saved the client 200k in 2024.').hasCurrency).toBe(true);
+    expect(extractSignals('חסכנו 3.2 מיליון ש"ח בשנה').hasCurrency).toBe(true);
   });
 });

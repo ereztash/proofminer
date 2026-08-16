@@ -164,7 +164,15 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
   // signs here to say anything definite". Promising a reveal and delivering
   // that inverts the one screen the whole product hangs on. Quality decides,
   // not count.
-  const thin = !demo && !proofs.some((p) => p.score >= BAND_USABLE);
+  // Card-wise, not inventory-wise. Gating only on "does anything clear the
+  // band" left one 45-scoring unit switching the honest state off for the whole
+  // screen, and `revealPicks` backfills to three unconditionally — so the
+  // headline promised "three you would never have published yourself" over a
+  // pleasantry and a list of languages spoken, each annotated "not enough signs
+  // here to say anything definite". Show what actually clears the bar.
+  const strong = top3.filter((p) => p.score >= BAND_USABLE);
+  const shown = demo ? top3 : strong;
+  const thin = !demo && strong.length === 0;
   if (!proofs.length) {
     return html`<div class="cold">
       <div class="cold__inner">
@@ -190,7 +198,7 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       </h2>
       ${thin ? html`<p class="cold__body">${t('firstLight.thinBody')}</p>` : ''}
       <ol class="reveal">
-        ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
+        ${shown.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
 
       <div class="cold__actions">

@@ -90,10 +90,12 @@ export function daysUntilStale(proof, at, threshold = 0.6) {
  * duplicate pair is always the higher-scoring one.
  *
  * @param {object[]} proofs sorted best-first
- * @param {{threshold?: number, protect?: Set<string>}} [options] `protect`
- *   holds ids that must survive regardless of overlap.
+ * @param {{threshold?: number, protect?: Set<string>, skip?: (proof: object) => boolean}}
+ *   [options] `protect` holds ids that must survive regardless of overlap;
+ *   `skip` exempts whole classes of unit whose text is generated rather than
+ *   written, and so cannot be compared as prose.
  */
-export function dedupeProofs(proofs, { threshold = 0.8, protect = null } = {}) {
+export function dedupeProofs(proofs, { threshold = 0.8, protect = null, skip = null } = {}) {
   // Token sets are built once per claim rather than twice per comparison. The
   // pairwise loop is still quadratic, but the constant was the problem: 800
   // mined sentences took 6.2 seconds on the main thread with no spinner,
@@ -113,7 +115,12 @@ export function dedupeProofs(proofs, { threshold = 0.8, protect = null } = {}) {
     // and a decision is not a duplicate of anything. Dropping it here also
     // stranded any artifact citing it, because this runs before the caller's
     // pin-aware truncation and so that guard never saw the unit at all.
-    if (entry.proof.pinned || entry.proof.dismissed || protect?.has(entry.proof.id)) {
+    if (
+      entry.proof.pinned ||
+      entry.proof.dismissed ||
+      protect?.has(entry.proof.id) ||
+      skip?.(entry.proof)
+    ) {
       kept.push(entry);
       continue;
     }

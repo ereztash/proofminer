@@ -53,7 +53,11 @@ function gapCard(gap, foundation, built, index, lowConfidence, t) {
     </div>
     <div class="hero__side">
       <div class="hero__stat">
-        <span>${t('layers.L1.name')} + ${t('layers.L2.name')}</span>
+        <!-- L1 alone. This stat used to read "Evidence + Positioning" over a
+             number containing no positioning at all, so a user who completed
+             the form on the product's own instruction watched the figure it was
+             labelled under stay frozen. -->
+        <span>${t('layers.L1.name')}</span>
         <b>${bidi(f)}</b>
       </div>
       <div class="hero__stat">
