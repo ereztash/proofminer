@@ -89,84 +89,105 @@ function coldStartBody(t, weeks, ui, situation) {
   const modeRead = t(['onboarding', 'modeRead', situation]);
 
   return html`<div class="cold__step-block">
-    <p class="pledge__lead">${modeRead}</p>
+    <div class="wizard" aria-label="${t('onboarding.wizardLabel')}">
+      <section class="wizard__step wizard__step--claim">
+        <div class="wizard__head">
+          <span class="wizard__num">1</span>
+          <h2 class="wizard__title">${t('onboarding.stepClaim')}</h2>
+        </div>
+        <p class="wizard__lead">${modeRead}</p>
 
-    <fieldset class="choice">
-      <legend>${t('onboarding.fitQuestion')}</legend>
-      <p class="choice__note">${t('onboarding.fitNote')}</p>
-      <input
-        class="input input--range"
-        id="fit-confidence"
-        name="fit-confidence"
-        type="range"
-        min="1"
-        max="10"
-        step="1"
-        value="${confidence}"
-        aria-describedby="fit-confidence-scale"
-      />
-      <div class="range-scale" id="fit-confidence-scale">
-        <span>${t('onboarding.fitLow')}</span>
-        <b>${confidence}</b>
-        <span>${t('onboarding.fitHigh')}</span>
-      </div>
-    </fieldset>
+        <fieldset class="choice">
+          <legend>${t('onboarding.fitQuestion')}</legend>
+          <p class="choice__note">${t('onboarding.fitNote')}</p>
+          <input
+            class="input input--range"
+            id="fit-confidence"
+            name="fit-confidence"
+            type="range"
+            min="1"
+            max="10"
+            step="1"
+            value="${confidence}"
+            aria-describedby="fit-confidence-scale"
+          />
+          <div class="range-scale" id="fit-confidence-scale">
+            <span>${t('onboarding.fitLow')}</span>
+            <b>${confidence}</b>
+            <span>${t('onboarding.fitHigh')}</span>
+          </div>
+        </fieldset>
 
-    ${field(
-      'fit-claim',
-      t('onboarding.claimQuestion'),
-      textArea('fit-claim', ui.formCache?.['fit-claim'] ?? '', {
-        placeholder: t('onboarding.claimPlaceholder'),
-        rows: 3,
-      }),
-      t('onboarding.claimHint'),
-    )}
+        ${field(
+          'fit-claim',
+          t('onboarding.claimQuestion'),
+          textArea('fit-claim', ui.formCache?.['fit-claim'] ?? '', {
+            placeholder: t('onboarding.claimPlaceholder'),
+            rows: 3,
+          }),
+          t('onboarding.claimHint'),
+        )}
+      </section>
 
-    ${field(
-      'fit-evidence',
-      t('onboarding.evidenceQuestion'),
-      textArea('fit-evidence', ui.formCache?.['fit-evidence'] ?? '', {
-        placeholder: t('onboarding.evidencePlaceholder'),
-        rows: 3,
-      }),
-      t('onboarding.evidenceHint'),
-    )}
+      <section class="wizard__step wizard__step--evidence">
+        <div class="wizard__head">
+          <span class="wizard__num">2</span>
+          <h2 class="wizard__title">${t('onboarding.stepEvidence')}</h2>
+        </div>
 
-    <fieldset class="choice">
-      <legend>${t('onboarding.weeksQuestion')}</legend>
-      <div class="choice__row choice__row--tight">
-        ${weeksOption(0, weeks, t('onboarding.weeksNotYet'))}
-        ${weeksOption(12, weeks, t('onboarding.weeksMonths'))}
-        ${weeksOption(40, weeks, t('onboarding.weeksLong'))}
-      </div>
-    </fieldset>
+        ${field(
+          'fit-evidence',
+          t('onboarding.evidenceQuestion'),
+          textArea('fit-evidence', ui.formCache?.['fit-evidence'] ?? '', {
+            placeholder: t('onboarding.evidencePlaceholder'),
+            rows: 3,
+          }),
+          t('onboarding.evidenceHint'),
+        )}
+      </section>
 
-    <p class="pledge__lead">${t('onboarding.pledgeLead')}</p>
+      <section class="wizard__step wizard__step--material">
+        <div class="wizard__head">
+          <span class="wizard__num">3</span>
+          <h2 class="wizard__title">${t('onboarding.stepMaterial')}</h2>
+        </div>
 
-    <h2 class="cold__step">${t('onboarding.firstStepTitle')}</h2>
-    <p class="cold__body">${t('onboarding.firstStepBody')}</p>
+        <fieldset class="choice choice--compact">
+          <legend>${t('onboarding.weeksQuestion')}</legend>
+          <div class="choice__row choice__row--tight">
+            ${weeksOption(0, weeks, t('onboarding.weeksNotYet'))}
+            ${weeksOption(12, weeks, t('onboarding.weeksMonths'))}
+            ${weeksOption(40, weeks, t('onboarding.weeksLong'))}
+          </div>
+        </fieldset>
 
-    ${field(
-      'cold-paste',
-      t('onboarding.firstStepTitle'),
-      // Rendered from the cache, not blank: answering the situation question
-      // re-renders this screen, and a paste box that empties itself when the
-      // user answers a question above it is the cruellest possible bug here.
-      textArea('cold-paste', ui.formCache?.['cold-paste'] ?? '', {
-        placeholder: t('onboarding.placeholder'),
-        rows: 9,
-      }),
-      '',
-      { hideLabel: true },
-    )}
+        <h3 class="cold__step">${t('onboarding.firstStepTitle')}</h3>
+        <p class="cold__body">${t('onboarding.firstStepBody')}</p>
 
-    <div class="cold__actions">
-      ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
-      ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
+        ${field(
+          'cold-paste',
+          t('onboarding.firstStepTitle'),
+          // Rendered from the cache, not blank: answering the situation question
+          // re-renders this screen, and a paste box that empties itself when the
+          // user answers a question above it is the cruellest possible bug here.
+          textArea('cold-paste', ui.formCache?.['cold-paste'] ?? '', {
+            placeholder: t('onboarding.placeholder'),
+            rows: 8,
+          }),
+          '',
+          { hideLabel: true },
+        )}
+
+        <div class="cold__actions">
+          ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
+          ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
+        </div>
+      </section>
     </div>
 
     <details class="pledge">
       <summary class="pledge__title">${t('onboarding.pledgeTitle')}</summary>
+      <p class="pledge__lead">${t('onboarding.pledgeLead')}</p>
       <ul class="pledge__list">
         ${t('onboarding.pledge').map((line) => html`<li>${line}</li>`)}
       </ul>
