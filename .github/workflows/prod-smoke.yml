@@ -1,0 +1,46 @@
+name: Production Smoke
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Vercel preview or production URL to verify
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prod-smoke-${{ github.event.deployment_status.deployment.id || github.event.inputs.base_url }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Browser smoke against deployed app
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    if: github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
+
+    env:
+      PROOFMINER_BASE_URL: ${{ github.event.inputs.base_url || github.event.deployment_status.environment_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install browser
+        run: npx -p @playwright/test@1.54.2 playwright install --with-deps chromium
+
+      - name: Verify deployed product flow
+        run: npm run smoke:prod
