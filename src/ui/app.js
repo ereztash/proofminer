@@ -368,6 +368,9 @@ export function mountApp(root) {
     },
 
     draft(payload) {
+      store.update((draftState) => {
+        draftState.profile.sawFirstLight = true;
+      });
       ui.selectedProofId = payload.id;
       ui.draftBody = null;
       ui.artifactId = null;
