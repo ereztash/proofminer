@@ -195,10 +195,6 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       <ol class="reveal">
         ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
-
-      <div class="cold__actions">
-        ${button('firstLightDone', t('firstLight.continue'), { variant: 'primary' })}
-      </div>
     </div>
   </div>`;
 }
