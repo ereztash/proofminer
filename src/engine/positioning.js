@@ -6,7 +6,7 @@
  * grammatical sentence that describes half the market.
  */
 
-import { clamp100, mean } from '../core/util.js';
+import { clamp100, mean, round } from '../core/util.js';
 import { tokenize, wordCount } from './text.js';
 
 /**
@@ -101,9 +101,22 @@ export function scorePositioning(positioning, recognitions = []) {
   let score = 0;
   for (const [key, w] of Object.entries(weights)) score += components[key] * w;
 
+  // Confidence over *substance*, not over how many boxes are non-empty.
+  // `filled / 4` reported 1.00 — full certainty — for four single words whose
+  // four substantive components all scored 0. Confidence is the claim "we have
+  // seen enough to say this", and four words are not enough to say anything.
+  // Each field counts for how specific it actually is.
+  const substance =
+    mean([
+      components.audience,
+      components.transformation,
+      components.claim,
+      components.offerCoupling,
+    ]) / 100;
+
   return {
     score: clamp100(score),
-    confidence: filled / 4,
+    confidence: round(Math.min(filled / 4, substance * 2), 3),
     components,
     issues: positioningIssues({ audience, transformation, claim, offer, components, p }),
   };
@@ -164,10 +177,23 @@ function positioningIssues({ audience, transformation, claim, offer, components,
 /**
  * Integration I4 — claim validation via conversion.
  *
- * Compares what actually converted against the claim the user says they own.
- * When the artifacts that produced conversions are grounded in proof units
- * that do not resemble the declared claim, the market is buying something
- * other than what is being sold.
+ * The question is real: is the market buying what you say you sell? The first
+ * implementation answered it by counting shared words between the declared
+ * claim and the proof units behind converting artifacts, and that measure
+ * cannot answer it. Measured on realistic pairs, a proof plainly on topic but
+ * worded differently — claim "מערכי אספקה שאפשר לסמוך עליהם", evidence
+ * "קיצרתי את זמן האספקה מ-19 יום ל-7 ימים" — scores **0.000**, exactly the
+ * same as evidence about an unrelated subject. Only near-literal restatement
+ * scored above the threshold, so a perfectly coherent user was told their
+ * positioning does not match what works. Bridging that gap needs embeddings,
+ * which this product deliberately does not carry.
+ *
+ * So the comparison is made on ground the engine can actually stand on:
+ * **archetypes**. Which kind of evidence produced inbound is countable, and it
+ * is classified by the same signal engine that scores everything else. Drift is
+ * now the statement "the kind of evidence that converts for you is not the kind
+ * you are publishing" — observable on both sides, and a more useful sentence
+ * than a similarity score in any case.
  *
  * Returns null when there is not enough conversion data to say anything, which
  * is the honest answer for most users most of the time.
@@ -199,27 +225,38 @@ export function detectDrift(state, { minConversions = 3 } = {}) {
 
   if (!ranked.length) return null;
 
-  const claimTokens = new Set(tokenize(state.positioning?.claim || ''));
-  const convertingProofs = converting
-    .map((c) => artifactById.get(c.artifactId))
-    .filter(Boolean)
-    .flatMap((a) => a.proofIds.map((id) => proofById.get(id)))
-    .filter(Boolean);
+  // What the user actually publishes, by archetype, over everything published —
+  // the other side of the comparison.
+  const publishedCounts = {};
+  for (const artifact of state.artifacts || []) {
+    if (artifact.status !== 'published') continue;
+    for (const proofId of artifact.proofIds) {
+      const proof = proofById.get(proofId);
+      if (!proof) continue;
+      for (const archetype of proof.archetypes) {
+        publishedCounts[archetype] = (publishedCounts[archetype] || 0) + 1;
+      }
+    }
+  }
+  const publishedTotal = Object.values(publishedCounts).reduce((a, b) => a + b, 0);
 
-  const overlapScores = convertingProofs.map((proof) => {
-    const tokens = new Set(tokenize(proof.claim));
-    if (!claimTokens.size || !tokens.size) return 0;
-    let shared = 0;
-    for (const t of claimTokens) if (tokens.has(t)) shared += 1;
-    return shared / claimTokens.size;
-  });
+  const topArchetype = ranked[0].archetype;
+  const convertingShare = ranked[0].count / ranked.reduce((a, r) => a + r.count, 0);
+  const publishedShare = publishedTotal
+    ? (publishedCounts[topArchetype] || 0) / publishedTotal
+    : 0;
 
-  const alignment = mean(overlapScores);
   return {
-    topArchetype: ranked[0].archetype,
+    topArchetype,
     ranked,
-    alignment: Number(alignment.toFixed(3)),
-    drifting: claimTokens.size > 0 && alignment < 0.15,
+    convertingShare: round(convertingShare, 3),
+    publishedShare: round(publishedShare, 3),
+    /**
+     * Drifting when one kind of evidence clearly dominates what converts while
+     * being under-represented in what the user publishes. Both sides are
+     * counts, so the claim is checkable by the user against their own records.
+     */
+    drifting: publishedTotal > 0 && convertingShare >= 0.5 && publishedShare < convertingShare - 0.2,
     observations: converting.length,
   };
 }

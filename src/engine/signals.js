@@ -138,6 +138,11 @@ export const NUMBER_WORDS = {
     שמונה: 8, תשע: 9, תשעה: 9, עשר: 10, עשרה: 10, עשרים: 20, שלושים: 30,
     ארבעים: 40, חמישים: 50, שישים: 60, שבעים: 70, שמונים: 80, תשעים: 90,
     מאה: 100, מאות: 100, אלף: 1000, אלפים: 1000, מיליון: 1000000,
+    // Hebrew's dual. `יומיים` *is* the number two — it is how a Hebrew speaker
+    // writes "two days" — and without these the same fact scored 49 written in
+    // digits and 38 written in words. A client email saying "היום אנחנו סוגרים
+    // הזמנה ביומיים" registered numberCount 0 and ranked last.
+    יומיים: 2, שנתיים: 2, שבועיים: 2, חודשיים: 2, פעמיים: 2,
   },
   en: {
     one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8,
@@ -335,6 +340,19 @@ const HE_PERSON_RES = [
  */
 const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
 
+/**
+ * A claim signed off by a named person with a role.
+ *
+ * The same evidence as an attributed quotation, minus the quotation marks —
+ * which is exactly how a client thank-you email arrives, and the onboarding
+ * copy invites that file by name. `attachSignature` in `text.js` folds the
+ * signature block onto the claim it vouches for; this is the signal that reads
+ * it, so the strongest sentence in the email stops scoring as the user's own
+ * unsupported assertion.
+ */
+const ATTRIBUTED_SOURCE =
+  /[-–—]\s*[^\n]{2,60}?(?:מנכ"?ל|סמנכ"?ל|מנהל(?:ת)?|יו"?ר|מייסד(?:ת)?|שותף|דירקטור|CEO|CTO|COO|CFO|VP|Head of|Director|Founder|Partner)/iu;
+
 const HE_KNOWN_RE = new RegExp(`(?:^|[^א-ת])(${HE_KNOWN_ENTITIES.map((e) => e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![א-ת])`, 'gu');
 
 /**
@@ -429,9 +447,9 @@ export function extractSignals(text) {
     hasUrl: URL_RE.test(raw),
     properNouns,
     hasProperNoun: properNouns.length > 0,
-    // A quotation with a name attached is third-party validation even when the
-    // sentence contains no cue word.
-    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw),
+    // A quotation with a name attached — or a claim signed by a named person
+    // with a role — is third-party validation even with no cue word in it.
+    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw) || ATTRIBUTED_SOURCE.test(raw),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

@@ -69,6 +69,8 @@ const ui = {
   selectedProofId: null,
   angle: 'bare',
   cta: 'none',
+  /** Surface the current draft is destined for. Feeds L3's format mix. */
+  channel: 'post',
   draftBody: null,
   /** Artifact this studio session is editing, so save+publish is one record. */
   artifactId: null,
@@ -177,6 +179,7 @@ export function mountApp(root) {
         existing.body = body;
         existing.proofIds = [proofId];
         existing.angle = ui.angle;
+        existing.channel = ui.channel;
         // Publishing is one-way. `Save draft` on an already-published artifact
         // used to demote it: L3 collapsed to locked, the record vanished from
         // the measurement screen, and its reception was orphaned.
@@ -190,7 +193,7 @@ export function mountApp(root) {
       const created = {
         id: makeId('art'),
         proofIds: [proofId],
-        channel: 'post',
+        channel: ui.channel,
         angle: ui.angle,
         body,
         status,
@@ -512,6 +515,21 @@ export function mountApp(root) {
       for (const key of ['cv-note', 'cv-artifact', 'cv-type']) delete ui.formCache[key];
     },
 
+    /**
+     * Record that nothing has come in yet.
+     *
+     * A null result is a result. Without somewhere to put it, the single Next
+     * Move stayed "who got in touch because of this?" every visit, for the rest
+     * of time, with the gap frozen — asking the person whose named pain is *I
+     * post and nothing happens* to type in that nothing happened.
+     */
+    noInbound() {
+      store.update((draft) => {
+        draft.profile.noInboundAt = realNow();
+      });
+      toast(t('measure.noInboundSaved'));
+    },
+
     addRecognition() {
       const by = val('rg-by').trim();
       const url = val('rg-url').trim();
@@ -636,6 +654,8 @@ export function mountApp(root) {
           cta: ui.cta,
           body: ui.draftBody,
           refining: ui.refining,
+          channel: ui.channel,
+          formCache: ui.formCache,
         });
       case 'measure':
         return measureView(state, t, { parsed: ui.parsedAnalytics });
@@ -811,6 +831,9 @@ export function mountApp(root) {
       ui.selectedProofId = el.value;
       ui.draftBody = null;
       ui.artifactId = null;
+      render();
+    } else if (el.id === 'studio-channel') {
+      ui.channel = el.value;
       render();
     } else if (el.id === 'studio-cta') {
       ui.cta = el.value;

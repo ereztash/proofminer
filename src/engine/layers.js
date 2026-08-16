@@ -12,7 +12,7 @@
  */
 
 import { DAY_MS, clamp100, mean, round, saturate, sortByDesc } from '../core/util.js';
-import { decayedScore } from './score.js';
+import { BAND_USABLE, decayedScore } from './score.js';
 import { realProofs } from './mine.js';
 import { coverageScore } from './gaps.js';
 import { scorePositioning } from './positioning.js';
@@ -47,10 +47,18 @@ export function layerProof(state, now = Date.now()) {
   const volume = saturate(proofs.length, 12);
   const coverage = coverageScore(state, now);
 
+  // Confidence counts *evidence*, not sentences. A raw row count meant two
+  // lines of lexically-distinct gibberish crossed MEASURED_FOUNDATION and
+  // flipped the verdict to HOLLOW — "you appear larger than your evidence
+  // supports" — on input containing no evidence at all, while L1's own score
+  // went down. Each unit counts for what it is worth against the usable band,
+  // so material below that band cannot buy the accusation.
+  const weightedCount = scores.reduce((sum, v) => sum + Math.min(1, v / BAND_USABLE), 0);
+
   const score = clamp100(0.5 * quality + 0.2 * volume + 0.3 * coverage);
   return {
     score,
-    confidence: Math.min(1, proofs.length / 8),
+    confidence: Math.min(1, weightedCount / 8),
     locked: false,
     inputs: {
       count: proofs.length,
@@ -58,6 +66,7 @@ export function layerProof(state, now = Date.now()) {
       volume: Math.round(volume),
       coverage: Math.round(coverage),
       strongCount: scores.filter((s) => s >= 75).length,
+      weightedCount: round(weightedCount, 2),
     },
   };
 }
@@ -94,9 +103,16 @@ export function layerArtifact(state, now = Date.now()) {
   );
   if (!published.length) return locked('nothing-published');
 
-  const windowStart = now - 56 * DAY_MS; // trailing 8 weeks
-  const recent = published.filter((a) => a.publishedAt >= windowStart);
-  const perWeek = recent.length / 8;
+  // Recency-weighted, not a hard 8-week window. A hard edge stepped this layer
+  // 27 points overnight for no reason other than a post crossing the boundary,
+  // which is the exact defect the L4 window was rebuilt to remove.
+  const CADENCE_HALF_LIFE = 40;
+  const recentWeight = published.reduce(
+    (sum, a) => sum + 0.5 ** (Math.max(0, (now - a.publishedAt) / DAY_MS) / CADENCE_HALF_LIFE),
+    0,
+  );
+  const recent = published.filter((a) => a.publishedAt >= now - 56 * DAY_MS);
+  const perWeek = recentWeight / 8;
   // Saturating at ~3/week: this product is not trying to turn a consultant
   // into a daily poster, and rewarding volume past that point would be
   // rewarding the behaviour the telos rejects.
@@ -153,9 +169,20 @@ export function engagementWeight(r) {
  * The record still counts for cadence, for conversion attribution, and as a
  * published artifact. It simply cannot answer "how did it land".
  */
+/**
+ * Smallest audience the rate is divided by.
+ *
+ * Without a floor the metric maximum is a post nobody saw: one impression with
+ * one reaction scored 95, and three such rows put L4 at 95 — its practical
+ * ceiling — carrying a quarter of built standing. A rate normalises for
+ * audience size, which is the point, but below roughly this many impressions
+ * it stops being a rate and becomes an artefact of the denominator.
+ */
+export const MIN_AUDIENCE = 50;
+
 export function receptionSignal(r) {
   if (!(r.impressions > 0)) return null;
-  return { mode: 'rate', value: engagementWeight(r) / r.impressions };
+  return { mode: 'rate', value: engagementWeight(r) / Math.max(r.impressions, MIN_AUDIENCE) };
 }
 
 /**
@@ -219,25 +246,27 @@ export function layerReception(state, now = Date.now()) {
     ? scores.reduce((sum, e) => sum + e.score * e.weight, 0) / totalWeight
     : mean(scores.map((e) => e.score));
 
-  // Kish's effective sample size, not the raw count. The score is a weighted
-  // mean, so six records of which one is recent and five are two years old is
-  // arithmetically close to a single observation — and reporting confidence
-  // 1.0 over it claimed a settled pattern where there was one post. Equal
-  // weights give back the plain count, so nothing changes for fresh data.
-  const sumSquares = scores.reduce((sum, e) => sum + e.weight * e.weight, 0);
-  const effectiveN = sumSquares > 0 ? (totalWeight * totalWeight) / sumSquares : 0;
+  // Confidence is the **sum** of the recency weights, not Kish's effective
+  // sample size. ESS corrects weight *imbalance* and is scale-invariant, so it
+  // reported confidence 1.0 over six records that were all five years old, and
+  // — worse — logging one fresh measurement alongside five stale ones dropped
+  // confidence 4.3x, because adding an unequal weight makes a sample *less*
+  // balanced. The product punished obedience to its own `move.logReception`.
+  // Summing the weights answers the question actually being asked: how much
+  // recent evidence stands behind this number.
+  const recentEquivalent = totalWeight;
 
   return {
     score: clamp100(weighted),
     // Counted over the records the score was actually computed from, not over
     // every record on file.
-    confidence: Math.min(1, effectiveN / 6),
+    confidence: Math.min(1, recentEquivalent / 6),
     locked: false,
     inputs: {
       records: (state.receptions || []).length,
       scorable: scorable.length,
       unscorable: (state.receptions || []).length - scorable.length,
-      effectiveN: round(effectiveN, 2),
+      recentEquivalent: round(recentEquivalent, 2),
     },
   };
 }
@@ -247,9 +276,16 @@ export function layerConversion(state, now = Date.now()) {
   const conversions = state.conversions || [];
   if (!conversions.length) return locked('no-conversions');
 
-  const windowStart = now - 90 * DAY_MS;
-  const recent = conversions.filter((c) => c.at >= windowStart);
-  const weight = recent.reduce((sum, c) => sum + (CONVERSION_WEIGHT[c.type] || 1), 0);
+  // Recency-weighted, not a hard 90-day window. Six deals scored 77 on day 89
+  // and 0 on day 91 — a 77-point step, with confidence dropping to zero on the
+  // same day. Conversions do not stop having happened overnight; they stop
+  // being current, which is what a half-life expresses.
+  const CONVERSION_HALF_LIFE = 60;
+  const weightOf = (c) =>
+    (CONVERSION_WEIGHT[c.type] || 1) *
+    0.5 ** (Math.max(0, (now - c.at) / DAY_MS) / CONVERSION_HALF_LIFE);
+  const recent = conversions.filter((c) => c.at >= now - 90 * DAY_MS);
+  const weight = conversions.reduce((sum, c) => sum + weightOf(c), 0);
   const score = saturate(weight, 18);
 
   const best = recent.reduce(

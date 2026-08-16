@@ -17,10 +17,11 @@ import {
   validateGrounding,
 } from '../../engine/drafts.js';
 import { activeProofs } from '../../engine/mine.js';
+import { CHANNELS } from '../../core/schema.js';
 import { decayedScore } from '../../engine/score.js';
 import { isConfigured } from '../../adapters/llm.js';
 
-export function studioView(state, t, { now, selectedProofId, angle, cta, body, refining }) {
+export function studioView(state, t, { now, selectedProofId, angle, cta, body, refining, channel = 'post', formCache = {} }) {
   const proofs = activeProofs(state).sort((a, b) => decayedScore(b, now) - decayedScore(a, now));
   const selected = proofs.find((p) => p.id === selectedProofId) || proofs[0] || null;
 
@@ -143,7 +144,17 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
       t('studio.markPublished'),
       '',
       html`
-        ${field('studio-url', t('studio.urlLabel'), textInput('studio-url', ''))}
+        ${field(
+          'studio-channel',
+          t('studio.channelLabel'),
+          select(
+            'studio-channel',
+            channel,
+            CHANNELS.map((c) => ({ value: c, label: t(['channels', c]) })),
+          ),
+          t('studio.channelHint'),
+        )}
+        ${field('studio-url', t('studio.urlLabel'), textInput('studio-url', formCache['studio-url'] ?? ''))}
         <div class="row row--end">
           ${button('markPublished', t('studio.markPublished'), {
             variant: 'primary',
@@ -164,7 +175,9 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
               .slice(0, 8)
               .map(
                 (a) => html`<li class="drafts__item">
-                  <span class="tag">${a.status === 'published' ? '●' : '○'} ${a.channel}</span>
+                  <span class="tag">
+                    ${a.status === 'published' ? '●' : '○'} ${t(['channels', a.channel])}
+                  </span>
                   <p>${a.body.slice(0, 120)}</p>
                   <span class="hint">${bidi(a.proofIds.length)} · ${a.angle}</span>
                 </li>`,

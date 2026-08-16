@@ -135,6 +135,10 @@ export function measureView(state, t, { parsed = {} } = {}) {
           ${button('addConversion', t('measure.addConversion'), { variant: 'secondary' })}
         </div>
         <p class="hint">${t('measure.attributionHint')}</p>
+        <div class="row row--end">
+          ${button('noInbound', t('measure.noInbound'), { variant: 'ghost' })}
+        </div>
+        <p class="hint">${t('measure.noInboundHint')}</p>
         ${state.conversions.length
           ? html`<ul class="events">
               ${state.conversions

@@ -108,7 +108,11 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
   const cited = new Set((state.artifacts || []).flatMap((a) => a.proofIds || []));
   const curatedBy = (p) => p.pinned || p.dismissed || cited.has(p.id);
 
-  const ranked = sortByDesc(candidates, (p) => p.score);
+  // Compounded and manual units join the dedupe pass rather than bypassing it.
+  // Routing them straight to `preserved` meant N published posts minted N
+  // traction units differing only in their URL, each one counting separately
+  // toward volume, quality and confidence — and so toward the gate ceiling.
+  const ranked = sortByDesc([...preserved, ...candidates], (p) => p.score);
   const deduped = dedupeProofs(ranked, { protect: cited });
 
   // Truncation must never destroy a decision the user made. A pinned unit that
@@ -118,7 +122,7 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
   const rest = deduped.filter((p) => !curatedBy(p));
   const kept = [...curated, ...rest.slice(0, Math.max(0, MAX_PROOFS - curated.length))];
 
-  return sortByDesc([...preserved, ...kept], (p) => p.score);
+  return sortByDesc(kept, (p) => p.score);
 }
 
 /**

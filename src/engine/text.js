@@ -189,6 +189,38 @@ const CONTACT_MARKERS = [
 const HEADER_LINE = /^\s*(?:קורות חיים|resume|curriculum vitae|cv)\s*[-–—:|]?\s*$/iu;
 
 /**
+ * A CV's structural furniture: the role/employer heading above a block of
+ * bullets, and the labelled lists at the bottom.
+ *
+ * These were being mined as proof units and counted in the headline "we found
+ * N pieces of evidence" — roughly 38% of the count on a real CV — so the one
+ * screen that exists to tell the user their work is worth something opened by
+ * offering them "שפות: עברית - שפת אם" as a piece of evidence.
+ */
+const ROLE_HEADING =
+  /^\s*[^,\n]{2,60},\s*[^,\n(]{2,60}\s*[(（]\s*\d{4}\s*[-–—]\s*(?:\d{4}|היום|כיום|present|now)\s*[)）]\s*$/iu;
+
+/** Greetings and sign-offs: structure, not claims. */
+const SALUTATION =
+  // `\b` is ASCII-only even under `/u`, so it never fires next to a Hebrew
+  // letter — the same trap that made the document-title filter dead code.
+  /^\s*(?:היי|הי|שלום|לכבוד|תודה|בברכה|בהצלחה|כל טוב|hi|hello|dear|thanks|thank you|regards|best)(?![\p{L}])[^.!?]{0,30}[,.]?\s*$/iu;
+
+/**
+ * The name and role at the foot of a recommendation or client email.
+ *
+ * This is the single highest-value signal the product looks for — an
+ * attribution is what turns a nice sentence into third-party validation — and
+ * it was being discarded by the sentence-length floor, because a signature is
+ * three words long. Attaching it to the claim above keeps them one unit.
+ */
+const ROLE_WORD =
+  /(?:מנכ"?ל|סמנכ"?ל|מנהל|מנהלת|סגן|ראש\s|מייסד|שותף|יו"?ר|דירקטור|CEO|CTO|COO|CFO|VP|Head of|Director|Founder|Partner|Manager)/iu;
+
+const LABELLED_LIST =
+  /^\s*(?:שפות|כישורים|מיומנויות|תחומי עניין|תחביבים|השכלה|קורסים|המלצות|skills|languages|education|courses|interests|hobbies|references)\s*[:：]/iu;
+
+/**
  * True when a line is contact details or document furniture rather than a claim.
  *
  * Two rules, both deliberately narrow. A contact marker only disqualifies a
@@ -202,7 +234,8 @@ const HEADER_LINE = /^\s*(?:קורות חיים|resume|curriculum vitae|cv)\s*[-
  * the English one dropped ordinary sentences beginning "CV coaching…".
  */
 export function isContactOrFurniture(line) {
-  if (HEADER_LINE.test(line)) return true;
+  if (HEADER_LINE.test(line) || ROLE_HEADING.test(line) || LABELLED_LIST.test(line)) return true;
+  if (SALUTATION.test(line)) return true;
   if (!CONTACT_MARKERS.some((re) => re.test(line))) return false;
 
   // Mostly-contact heuristic: heavy separator use, or short with little prose.
@@ -218,10 +251,110 @@ export function isContactOrFurniture(line) {
  * Fragments shorter than `minLength` graphemes are dropped — they are almost
  * always headers, dates or list markers rather than claims.
  */
+/**
+ * Rejoin lines that a PDF or Word copy broke mid-sentence.
+ *
+ * This is the dominant real clipboard path, and without it the product's one
+ * hook screen showed the user their own CV chopped in half: cards ending on
+ * `על` and `זמן`, with the orphan remainders listed underneath as separate
+ * pieces of evidence and a confident "why this one" printed under a fragment.
+ *
+ * Joined only when the break really looks like a wrap — the line carries no
+ * terminator, is long enough to have hit a margin, and the next line continues
+ * rather than opening a new block. A short bullet without a full stop is left
+ * alone, because that is a deliberate line, not a wrapped one.
+ */
+const WRAP_MIN_LENGTH = 40;
+
+/** A short trailing line naming who is speaking. */
+const isAttribution = (line) => {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.length > 60) return false;
+  // A role word is required. Treating any dash-led short line as an attribution
+  // swallowed the second item of a two-bullet list, because a bullet marker and
+  // an attribution dash are the same character.
+  return ROLE_WORD.test(trimmed) && wordCount(trimmed) <= 8;
+};
+
+const lastSubstantive = (lines) => {
+  let i = lines.length - 1;
+  while (i >= 0 && isContactOrFurniture(lines[i])) i -= 1;
+  return i;
+};
+
+/**
+ * Fold a trailing signature block onto the claim it vouches for.
+ *
+ * `isAttribution` catches the role line, but a signature is usually two lines —
+ * a bare name, then the role and company — and a bare name is unidentifiable in
+ * isolation. What *is* identifiable is its position: the short, unterminated
+ * lines at the very end of a letter, after the sign-off. Those are the
+ * signature, and without them a client's testimonial loses the one thing that
+ * makes it evidence rather than a nice sentence.
+ */
+function attachSignature(lines, minLength) {
+  let start = lines.length;
+  while (
+    start > 0 &&
+    lines[start - 1].length < minLength &&
+    !/[.!?׃…]$/u.test(lines[start - 1])
+  ) {
+    start -= 1;
+  }
+  if (start === lines.length || start === 0) return lines;
+
+  const head = lines.slice(0, start);
+  const target = lastSubstantive(head);
+  if (target < 0) return lines;
+
+  const signature = lines
+    .slice(start)
+    .filter((line) => !isContactOrFurniture(line))
+    .join(', ');
+  if (!signature) return head;
+
+  // The terminator goes, or the sentence splitter immediately separates the
+  // attribution again at the very full stop we just wrote past.
+  head[target] = `${head[target].replace(/[.!?׃…]\s*$/u, '')} — ${signature}`;
+  return head;
+}
+
+function unwrap(lines) {
+  const out = [];
+  for (const line of lines) {
+    const previous = out[out.length - 1];
+
+    // Signature blocks run over two lines as often as one — a name, then a role
+    // and company — and they sit under a sign-off, not under the claim. Walk
+    // back past the furniture so the attribution lands on the sentence it is
+    // actually vouching for.
+    if (isAttribution(line)) {
+      const target = lastSubstantive(out);
+      if (target >= 0) {
+        out[target] = `${out[target].replace(/[.!?׃…]\s*$/u, '')} — ${line.trim()}`;
+        continue;
+      }
+    }
+
+    const continues =
+      previous !== undefined &&
+      previous.length >= WRAP_MIN_LENGTH &&
+      !/[.!?׃…:)\]]$/u.test(previous) &&
+      !isContactOrFurniture(previous) &&
+      !/^\s*[-–—*+•·▪]/u.test(line) &&
+      !isContactOrFurniture(line);
+    if (continues) out[out.length - 1] = `${previous} ${line.trim()}`;
+    else out.push(line.trim());
+  }
+  return out;
+}
+
 export function splitSentences(text, minLength = 30) {
   if (!text) return [];
-  return text
-    .split(/\r?\n+/)
+  // Signature first, on the raw lines: `unwrap` would otherwise glue the role
+  // line onto the bare name, producing a line too long for the trailing scan to
+  // recognise as a signature at all.
+  return unwrap(attachSignature(text.split(/\r?\n/).filter((line) => line.trim()), minLength))
     // A line carrying a quotation stays whole. Splitting on the full stops
     // inside a testimonial separated the quotation from the name attached to
     // it, and the attribution — the part that makes it evidence — became a
