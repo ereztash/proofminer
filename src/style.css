@@ -1248,3 +1248,34 @@ p {
   animation-duration: 0.001ms !important;
   transition-duration: 0.001ms !important;
 }
+
+/* The gaps screen leads with one play; the rest fold away. */
+.play--primary {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.play__needs {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin-block-start: 0.5rem;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px solid var(--line);
+}
+
+.plays-more {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem var(--step);
+  background: var(--surface);
+}
+
+.plays-more__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.plays-more .stack {
+  margin-block-start: var(--step);
+}

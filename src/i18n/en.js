@@ -247,36 +247,44 @@ export default {
 
   plays: {
     'play.outcome': {
-      title: 'Get one measurable outcome out of a client or project',
+      title: 'Pull one measurable result out of a client or project',
       body: 'Pick one finished project. Write three lines: what it was before, what you did, what it was after. If you have no number, ask someone who was there.',
+      needs: 'To count: a before number and an after number, the year, and the client or place.',
     },
     'play.validation': {
       title: 'Ask for written confirmation from someone who was there',
-      body: 'One message: "We worked together on X. I am collecting what actually happened — could you write two lines on what changed for you?" Most people reply.',
+      body: 'One message: "We worked together on X. I am collecting what actually happened — could you write me two lines on what changed for you?" Most people answer.',
+      needs: 'To count: the quote in quotation marks, the name and role of whoever wrote it, and a link if there is one.',
     },
     'play.scale': {
-      title: 'Count. Just count.',
-      body: 'How many clients, participants, years, projects. The number exists in your head and was never written down.',
+      title: 'Count how many. Just count.',
+      body: 'How many clients, participants, years, projects. The number is already in your head and was never written down.',
+      needs: 'To count: the number itself with a unit — clients, employees, sites — and a period.',
     },
     'play.method': {
-      title: 'Write your method in five steps',
-      body: 'You do it the same way every time. Write the steps. A written method is evidence nobody can copy off you.',
+      title: 'Write your method out in steps',
+      body: 'You do it the same way every time. Write the steps down. A written method is evidence nobody can copy off you.',
+      needs: 'To count: the steps themselves, when you wrote it, and the link if you published it anywhere.',
     },
     'play.credential': {
       title: 'List your credentials',
-      body: 'Degree, course, licence, certificate. Five minutes. Low weight, but it closes a gap.',
+      body: 'Degree, course, licence, certificate. Five minutes.',
+      needs: 'To count: the institution, the year, and a link if there is one. "I have a degree" on its own does not reach the bar.',
     },
     'play.peer': {
       title: 'Get a mention from a peer, not a client',
-      body: 'A happy client is expected. A peer saying you are good is different. Ask someone in your field to confirm something specific.',
+      body: 'A happy client is expected. A peer saying you are good is something else. Ask someone in your field to confirm something specific.',
+      needs: 'To count: the peer\'s name and role, what exactly they said, and where.',
     },
     'play.failure': {
       title: 'Write about something that did not work',
-      body: 'Not to sound humble. A failure you analyse precisely proves professional judgement better than any success.',
+      body: 'Not to sound modest. A failure you analyse precisely proves professional judgement better than any success.',
+      needs: 'To count: what you tried, when, what it cost — time or money — and what you have done differently since.',
     },
     'play.origin': {
-      title: 'Write why it is you doing this',
-      body: 'Not a life story. The specific move that gave you an angle others do not have.',
+      title: 'Write why this, and why you',
+      body: 'Not a life story. The specific turn that gave you an angle others do not have.',
+      needs: 'To count: the year, the place, and the particular thing you saw. This is a weaker kind of evidence, and its bar is lower to match.',
     },
   },
 
@@ -355,6 +363,10 @@ export default {
     nonGoalsHint: 'Saying what you do not do is differentiation. One per line.',
     offerCoupling: 'Coupling to the offer',
     nonGenericity: 'How non-generic it is',
+    defensibility: 'How far others back this',
+    defensibilityHint:
+      'The one part of positioning you cannot raise by editing text. It rises when ' +
+      'somebody else repeats your claim — a mention, a recommendation, a referral, an invitation.',
     rescore: 'Re-rank against this positioning',
     issues: 'Not sharp yet',
     issue: {
@@ -394,6 +406,12 @@ export default {
   },
 
   gaps: {
+    otherPlays: (n) => `${n} more gaps, if you want to see them all`,
+    collect: 'I have it — let me add it',
+    bestOf: (best, need) => `Your strongest: ${best} · needs ${need}`,
+    shortOfBar: (best, need) =>
+      `You already hold evidence of this type, but it reaches ${best} and needs ${need}. Strengthening that one beats fetching another.`,
+
     title: 'What is missing',
     subtitle: 'A complete evidence case covers eight types. These are the ones you do not cover yet.',
     covered: 'Covered',

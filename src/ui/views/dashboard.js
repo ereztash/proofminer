@@ -91,6 +91,9 @@ function moveCard(move, t) {
           proof: move.payload?.proofId || '',
           artifact: move.payload?.artifactId || '',
           archetype: move.payload?.play?.archetype || '',
+          // So the gaps screen leads with the play the dashboard chose rather
+          // than re-deciding and showing a menu of seven.
+          play: move.payload?.play?.id || '',
         },
       })}
       <span class="move__meta">

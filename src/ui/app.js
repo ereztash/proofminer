@@ -7,7 +7,7 @@
  * no view holds a reference to the DOM it produced.
  */
 
-import { createStore } from '../core/store.js';
+import { createStore, stripImportedCredentials } from '../core/store.js';
 import { LEGACY_STORAGE_KEY } from '../core/schema.js';
 import { makeId, now as realNow } from '../core/util.js';
 import { translator } from '../i18n/index.js';
@@ -34,6 +34,12 @@ import { studioView } from './views/studio.js';
 import { measureView } from './views/measure.js';
 import { settingsView } from './views/settings.js';
 
+/** Every field of the reception form, cleared together or not at all. */
+const RECEPTION_FIELDS = [
+  'rc-impressions', 'rc-reactions', 'rc-comments',
+  'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste',
+];
+
 const VIEWS = ['dashboard', 'mine', 'position', 'inventory', 'gaps', 'studio', 'measure', 'settings'];
 
 /**
@@ -50,6 +56,8 @@ const ui = {
    * problem" is not a track — it must never be written into the record as one.
    */
   situation: null,
+  /** Play the Next Move routed to, so the gaps screen leads with that one. */
+  selectedPlay: null,
   /** Answer to the awareness-clock question, null until explicitly given. */
   weeks: null,
   filter: 'all',
@@ -205,6 +213,7 @@ export function mountApp(root) {
           draft.playLog[payload.archetype] = realNow();
         });
       }
+      if (payload.play) ui.selectedPlay = payload.play;
       if (VIEWS.includes(payload.view)) ui.view = payload.view;
       if (payload.proof) ui.selectedProofId = payload.proof;
       ui.screen = 'app';
@@ -447,7 +456,7 @@ export function mountApp(root) {
           capturedAt: realNow(),
         });
       });
-      for (const key of ['rc-impressions', 'rc-reactions', 'rc-comments', 'rc-substantive', 'rc-saves', 'rc-shares', 'rc-paste']) delete ui.formCache[key];
+      for (const key of RECEPTION_FIELDS) delete ui.formCache[key];
       ui.parsedAnalytics = {};
       // Say plainly when a saved record cannot answer the question the screen
       // is about, rather than confirming a save that counts for nothing.
@@ -618,7 +627,7 @@ export function mountApp(root) {
           expanded: ui.expanded,
         });
       case 'gaps':
-        return gapsView(state, t, { now: nowTs });
+        return gapsView(state, t, { now: nowTs, selectedPlay: ui.selectedPlay });
       case 'studio':
         return studioView(state, t, {
           now: nowTs,
@@ -696,6 +705,7 @@ export function mountApp(root) {
     const selectionStart = active?.selectionStart;
 
     renderInto(root, chrome(body()));
+    restoreFormValues();
 
     let restored = null;
     if (activeId) {
@@ -707,15 +717,52 @@ export function mountApp(root) {
     }
     liveRegion.textContent = ui.toast;
 
-    if (restored) {
-      restored.focus();
-      if (typeof selectionStart === 'number' && 'setSelectionRange' in restored) {
+    // Falling through to the document is the failure this block exists to
+    // prevent, and it happened on exactly the actions where it hurts: hiding a
+    // proof or removing a source destroys the focused button, nothing matches,
+    // and a keyboard user is thrown to the top of the page mid-task. When the
+    // element itself is gone, keep the user where they were working.
+    const fallback = () => {
+      if (!activeAct && !activeId) return null;
+      return (
+        root.querySelector(`[data-act="${CSS.escape(activeAct ?? '')}"]`) ??
+        root.querySelector('#main') ??
+        null
+      );
+    };
+    const target = restored ?? fallback();
+
+    if (target) {
+      target.focus();
+      if (target === restored && typeof selectionStart === 'number' && 'setSelectionRange' in target) {
         try {
-          restored.setSelectionRange(selectionStart, selectionStart);
+          target.setSelectionRange(selectionStart, selectionStart);
         } catch {
           // Not all input types support selection ranges.
         }
       }
+    }
+  }
+
+  /**
+   * Put cached field values back into the freshly rendered controls.
+   *
+   * `ui.formCache` existed because a full re-render re-emits every control at
+   * its *default* value, and `val()` read the cache when the live control came
+   * back empty. That kept the data but broke the correspondence between what
+   * the user sees and what gets submitted: the six reception fields blanked on
+   * screen while still holding the previous artifact's numbers, so selecting a
+   * different post and saving wrote impressions the user never typed for it —
+   * into L4, into calibration, and into a compounded traction proof asserting a
+   * reach that had never happened.
+   *
+   * Writing the cache back means the visible form *is* the submitted form.
+   */
+  function restoreFormValues() {
+    for (const [id, value] of Object.entries(ui.formCache)) {
+      if (typeof value !== 'string') continue;
+      const el = root.querySelector(`#${CSS.escape(id)}`);
+      if (el && 'value' in el && el.value === '') el.value = value;
     }
   }
 
@@ -738,7 +785,14 @@ export function mountApp(root) {
   root.addEventListener('change', async (event) => {
     const el = event.target;
     if (el.id && el.type !== 'file' && el.type !== 'checkbox') ui.formCache[el.id] = el.value;
-    if (el.name === 'situation') {
+    if (el.id === 'rc-artifact') {
+      // The metrics belong to the post that was on screen when they were
+      // typed. Carrying them to the next selection is how a number entered for
+      // one artifact ended up stored against another.
+      for (const key of RECEPTION_FIELDS) delete ui.formCache[key];
+      ui.parsedAnalytics = {};
+      render();
+    } else if (el.name === 'situation') {
       ui.situation = el.value;
       // Persisted, so the exit is still there after a reload. Held ephemerally
       // it let a disqualified visitor back into the product on the next visit,
@@ -829,7 +883,7 @@ export function mountApp(root) {
     if (!file) return;
     try {
       const parsed = JSON.parse(await file.text());
-      store.replace(parsed);
+      store.replace(stripImportedCredentials(parsed));
       resetEphemeral();
       ui.screen = store.get().profile.onboarded ? 'app' : 'onboarding';
       render();

@@ -37,8 +37,47 @@ describe('signal extraction', () => {
   });
 
   it('detects mixed-language markers', () => {
-    const s = extractSignals('הרצתי POC מול 3 clients ו-published an article על זה');
+    // "published an article" is the user publishing — self-authored, not
+    // somebody else vouching. The marker has to be an external act.
+    const s = extractSignals('הרצתי POC מול 3 clients ואז featured in a trade magazine על זה');
     expect(s.thirdParty).toBe(true);
+  });
+
+  it('does not read ordinary self-authored work as external validation', () => {
+    // The thirdParty lexicon was the only one without word boundaries, so it
+    // matched inside words — `press` in "compressed", `פרס` in "פרסום" — and
+    // scored a line the user wrote about themselves as somebody else's word.
+    const selfAuthored = [
+      'I worked under pressure to close the quarter in six days.',
+      'We compressed the onboarding cycle from three weeks to six days.',
+      'I reviewed the budget spreadsheet every Monday for two years.',
+      'Ran 40+ customer discovery interviews per year.',
+      'Selected and onboarded the new billing vendor.',
+      'Won the internal hackathon.',
+      'ניהלתי את תקציב הפרסום הדיגיטלי של החברה במשך שלוש שנים.',
+      'ניהלתי את מחלקת הביקורת הפנימית מול רשות המסים.',
+      'זכיתי לעבוד עם צוות מצוין במשך ארבע שנים באגף התפעול.',
+      'נבחרתי לרכז את פרויקט המעבר למערכת החדשה.',
+      'הגדלתי את ההכנסות של המחלקה ב-30% בשנתיים.',
+      'עברתי ראיון אצל מנהל הפיתוח של החברה.',
+    ];
+    for (const text of selfAuthored) {
+      expect(extractSignals(text).thirdParty, text).toBe(false);
+    }
+  });
+
+  it('still reads a genuine external act as validation', () => {
+    const external = [
+      'I was featured in Forbes last year.',
+      'My client was quoted in a trade article about the rollout.',
+      'Interviewed by the Marketing Week podcast in 2025.',
+      'התראיינתי לפודקאסט מקצועי על לוגיסטיקה.',
+      'הרצאתי בכנס הלוגיסטיקה 2025 מול 300 משתתפים.',
+      'לקוח סיפר בכתבה שההכנסות שלו גדלו בעקבות העבודה איתי.',
+    ];
+    for (const text of external) {
+      expect(extractSignals(text).thirdParty, text).toBe(true);
+    }
   });
 
   it('marks demo text from the text itself', () => {

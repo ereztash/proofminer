@@ -12,6 +12,9 @@ import { describe, expect, it } from 'vitest';
 import { analyzeClaim, mineSources } from '../../src/engine/mine.js';
 import { extractSignals, spelledNumbers } from '../../src/engine/signals.js';
 import { dedupeProofs, decayFactor, scoreBand } from '../../src/engine/score.js';
+import { computeLayers } from '../../src/engine/layers.js';
+import { acquisitionPlays, archetypeCoverage } from '../../src/engine/gaps.js';
+import { scorePositioning } from '../../src/engine/positioning.js';
 import {
   RATE_ANCHOR,
   layerReception,
@@ -580,5 +583,106 @@ describe('every next move has something to say', () => {
       const declared = Object.keys(bundle.moves).filter((k) => k.startsWith('move.'));
       expect(declared.filter((id) => !MOVE_IDS.includes(id)), locale).toEqual([]);
     }
+  });
+});
+
+describe('the positioning screen agrees with the layer it describes', () => {
+  const positioning = {
+    audience: 'מנהלי תפעול בחברות לוגיסטיקה בישראל',
+    transformation: 'מזמן אספקה של שבוע לשני ימים',
+    claim: 'אני בונה מערכי אספקה שאפשר לסמוך עליהם',
+    offer: 'ליווי תפעולי לשישה חודשים',
+    nonGoals: ['ייעוץ אסטרטגי כללי'],
+  };
+  const recognitions = [
+    { id: 'r1', type: 'referral', by: 'יעל ברקוביץ', url: '', at: NOW - 10 * DAY },
+    { id: 'r2', type: 'feature', by: 'כלכליסט', url: 'https://x.co/a', at: NOW - 20 * DAY },
+    { id: 'r3', type: 'invite', by: 'כנס לוגיסטיקה', url: '', at: NOW - 30 * DAY },
+  ];
+
+  it('does not show the unvouched floor to someone who has been vouched for', () => {
+    // The view dropped the recognitions argument, so the meter read 20 while
+    // L2 computed the same component at 88 from the same state.
+    const withRec = scorePositioning(positioning, recognitions);
+    const without = scorePositioning(positioning, []);
+    expect(withRec.components.defensibility).toBeGreaterThan(without.components.defensibility);
+
+    const state = stateWith({ positioning, recognitions });
+    expect(computeLayers(state, NOW).L2.inputs.components.defensibility).toBe(
+      withRec.components.defensibility,
+    );
+  });
+
+  it('has a label for every component it renders', () => {
+    for (const locale of ['he', 'en']) {
+      const t = translator(locale);
+      for (const key of Object.keys(scorePositioning(positioning, recognitions).components)) {
+        expect(t(['position', key]), `${locale} ${key}`).not.toContain(key);
+      }
+    }
+  });
+});
+
+describe('acquisition plays can be satisfied by doing them', () => {
+  // Best-practice evidence, written exactly as each play's copy instructs.
+  // Holding all eight archetypes to BAND_USABLE meant four plays asked for
+  // evidence that could not clear their own bar: a user who obeyed for 24
+  // weeks watched coverage stay flat and the Visibility Gap widen.
+  const POSITIONING = {
+    audience: 'מנהלי תפעול בחברות לוגיסטיקה',
+    transformation: 'זמן אספקה קצר יותר',
+    claim: 'מערכי אספקה שאפשר לסמוך עליהם',
+    offer: 'ליווי תפעולי',
+  };
+  const IDEAL = {
+    OUTCOME: 'ב-2025 קיצרתי אצל חברת אלפא לוגיסטיקה את זמן האספקה מ-19 יום ל-7 ימים, חיסכון של 1.2 מיליון ש"ח בשנה.',
+    VALIDATION: '"רונן סידר לנו את התפעול תוך חצי שנה" — יעל ברקוביץ, מנכ"לית אלפא לוגיסטיקה, מרץ 2025. https://linkedin.com/in/yael',
+    SCALE: 'ניהלתי מערך של 22 עובדים בשלושה אתרים ותקציב שנתי של 12 מיליון ש"ח בשנים 2019-2025.',
+    METHOD: 'ב-2024 כתבתי את השיטה בחמישה שלבים ופרסמתי אותה כמסמך פתוח: מיפוי צווארי בקבוק, תיעדוף לפי עלות, פיילוט באתר אחד, מדידה שבועית, הרחבה. https://example.co.il/method',
+    CREDENTIAL: 'תואר שני במנהל עסקים מאוניברסיטת תל אביב, 2018, בהתמחות לוגיסטיקה. https://tau.ac.il',
+    PEER: 'עמית בתחום, דוד לוי, סמנכ"ל תפעול בבטא תעשיות, אזכר את העבודה שלי בהרצאה בכנס הלוגיסטיקה 2025. https://conf.co.il/2025',
+    FAILURE: 'ב-2023 הרצתי פיילוט אוטומציה במחסן שנכשל: 4 חודשים ו-300 אלף ש"ח בלי שיפור. מאז אני בודק זמינות נתונים לפני כל אוטומציה.',
+    ORIGIN: 'ב-2011 עבדתי במפעל של אלפא תעשיות וראיתי קו ייצור שלם נעצר ל-3 ימים בגלל טעות בספירת מלאי. מאז אני עוסק רק בזה.',
+  };
+
+  const coverageOf = (archetype, claim) => {
+    const proof = proofFrom(claim, { positioning: POSITIONING });
+    const state = stateWith({ positioning: POSITIONING, proofs: [proof] });
+    return archetypeCoverage(state, NOW).find((c) => c.archetype === archetype);
+  };
+
+  it('classifies the evidence each play asks for as that archetype', () => {
+    for (const [archetype, claim] of Object.entries(IDEAL)) {
+      expect(coverageOf(archetype, claim).count, archetype).toBeGreaterThan(0);
+    }
+  });
+
+  it('covers the archetype when the user does exactly what the play says', () => {
+    for (const [archetype, claim] of Object.entries(IDEAL)) {
+      const c = coverageOf(archetype, claim);
+      expect(c.covered, `${archetype}: scored ${c.best}, needs ${c.threshold}`).toBe(true);
+    }
+  });
+
+  it('does not cover an archetype from a throwaway line', () => {
+    const WEAK = {
+      CREDENTIAL: 'יש לי תואר במנהל עסקים.',
+      PEER: 'עמית בתחום המליץ עלי.',
+      OUTCOME: 'שיפרתי תהליכים בחברה.',
+    };
+    for (const [archetype, claim] of Object.entries(WEAK)) {
+      expect(coverageOf(archetype, claim).covered, archetype).toBe(false);
+    }
+  });
+
+  it('tells the guidance how far short the user landed', () => {
+    const state = stateWith({
+      positioning: POSITIONING,
+      proofs: [proofFrom('יש לי תואר במנהל עסקים.', { positioning: POSITIONING })],
+    });
+    const play = acquisitionPlays(state, NOW).find((p) => p.archetype === 'CREDENTIAL');
+    expect(play.shortOfBar).toBe(true);
+    expect(play.currentBest).toBeGreaterThan(0);
+    expect(play.threshold).toBeGreaterThan(play.currentBest);
   });
 });
