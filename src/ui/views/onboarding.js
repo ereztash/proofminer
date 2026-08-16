@@ -165,6 +165,7 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
   // that inverts the one screen the whole product hangs on. Quality decides,
   // not count.
   const thin = !demo && !proofs.some((p) => p.score >= BAND_USABLE);
+  const primary = top3[0] || proofs[0];
   if (!proofs.length) {
     return html`<div class="cold">
       <div class="cold__inner">
@@ -189,6 +190,8 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
         ${thin ? t('firstLight.thinTitle') : t('firstLight.threeTitle')}
       </h2>
       ${thin ? html`<p class="cold__body">${t('firstLight.thinBody')}</p>` : ''}
+      ${primary ? proofLoopCard(primary, t, proofs, signalCache, state) : ''}
+
       <ol class="reveal">
         ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
@@ -198,6 +201,63 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       </div>
     </div>
   </div>`;
+}
+
+function proofLoopCard(proof, t, inventory, signalCache, state) {
+  const reason = reasonFor(proof, inventory, signalCache);
+  const archetype = proof.archetypes?.[0] || 'OUTCOME';
+  const dimension = strongestDimension(proof.breakdown || {});
+  const limit = transferLimit(proof);
+
+  return html`<section class="proof-card" aria-labelledby="proof-card-title">
+    <p class="proof-card__eyebrow">${t('proofCard.eyebrow')}</p>
+    <h3 class="proof-card__title" id="proof-card-title">${t('proofCard.title')}</h3>
+
+    <dl class="proof-card__grid">
+      <div class="proof-card__cell proof-card__cell--wide">
+        <dt>${t('proofCard.traceLabel')}</dt>
+        <dd class="proof-card__claim">${proof.claim}</dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.mechanismLabel')}</dt>
+        <dd>${reason ? t(reason.id.split('.'), reason.vars) : t(['proofCard', 'mechanisms', archetype])}</dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.supportLabel')}</dt>
+        <dd>
+          ${state.positioning?.claim?.trim()
+            ? t('proofCard.supportsSpecific', state.positioning.claim)
+            : t(['proofCard', 'supports', archetype])}
+        </dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.confidenceLabel')}</dt>
+        <dd>${t(['bands', proof.score >= 70 ? 'strong' : proof.score >= BAND_USABLE ? 'usable' : 'weak'])} · ${t(['dimensions', dimension])}</dd>
+      </div>
+      <div class="proof-card__cell">
+        <dt>${t('proofCard.limitLabel')}</dt>
+        <dd>${t(['proofCard', 'limits', limit])}</dd>
+      </div>
+    </dl>
+
+    <div class="proof-card__actions">
+      ${button('draft', t('proofCard.draft'), { variant: 'primary', payload: { id: proof.id } })}
+      ${button('firstLightDone', t('proofCard.fullPicture'), { variant: 'ghost' })}
+    </div>
+  </section>`;
+}
+
+function strongestDimension(breakdown) {
+  return Object.entries(breakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || 'specificity';
+}
+
+function transferLimit(proof) {
+  const breakdown = proof.breakdown || {};
+  if ((breakdown.falsifiability ?? 0) < 45) return 'falsifiability';
+  if ((breakdown.verification ?? 0) < 45) return 'verification';
+  if ((breakdown.outcome ?? 0) < 45) return 'outcome';
+  if (proof.kind === 'experience') return 'domain';
+  return 'scope';
 }
 
 function revealCard(proof, rank, t, inventory, signalCache) {
