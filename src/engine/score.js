@@ -4,7 +4,7 @@
 
 import { clamp100, sumValues, ageDays } from '../core/util.js';
 import { DIMENSION_KEYS, PRIOR_WEIGHTS } from './dimensions.js';
-import { containment } from './text.js';
+import { tokenSet } from './text.js';
 
 /**
  * Half-life in days per proof kind (docs/METHOD.md).
@@ -90,22 +90,53 @@ export function daysUntilStale(proof, at, threshold = 0.6) {
  * duplicate pair is always the higher-scoring one.
  */
 export function dedupeProofs(proofs, threshold = 0.8) {
+  // Token sets are built once per claim rather than twice per comparison. The
+  // pairwise loop is still quadratic, but the constant was the problem: 800
+  // mined sentences took 6.2 seconds on the main thread with no spinner,
+  // because `containment` re-tokenised both claims every time.
+  const entries = proofs.map((proof) => ({ proof, tokens: tokenSet(proof.claim) }));
+
+  const overlap = (a, b) => {
+    if (!a.size) return 0;
+    let shared = 0;
+    for (const token of a) if (b.has(token)) shared += 1;
+    return shared / a.size;
+  };
+
   const kept = [];
-  for (const proof of proofs) {
+  for (const entry of entries) {
     const duplicate = kept.some(
       (k) =>
-        containment(proof.claim, k.claim) >= threshold ||
-        containment(k.claim, proof.claim) >= threshold,
+        overlap(entry.tokens, k.tokens) >= threshold ||
+        overlap(k.tokens, entry.tokens) >= threshold,
     );
-    if (!duplicate) kept.push(proof);
+    if (!duplicate) kept.push(entry);
   }
-  return kept;
+  return kept.map((e) => e.proof);
 }
+
+/**
+ * Band boundaries, calibrated against the distribution the engine actually
+ * produces on real material rather than against a round number.
+ *
+ * Measured reference points (Hebrew, positioning filled):
+ *   ~86 named client + press + percentage + currency + URL
+ *   ~69 third-party quote with a percentage delta
+ *   ~56 quantified outcome, no external source
+ *   ~40 written method
+ *   ~13 platitude ("I believe in teamwork and continuous learning")
+ *
+ * The previous 75/55 cut made `strong` unreachable and printed "Weak" over a
+ * user's best evidence on the reveal screen that exists to tell them the
+ * opposite.
+ */
+export const BAND_STRONG = 68;
+export const BAND_USABLE = 45;
 
 /** Band label for a score. Text, not colour — colour alone conveys nothing. */
 export function scoreBand(score) {
-  if (score >= 75) return 'strong';
-  if (score >= 55) return 'usable';
+  if (score >= BAND_STRONG) return 'strong';
+  if (score >= BAND_USABLE) return 'usable';
   return 'weak';
 }
 

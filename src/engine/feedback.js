@@ -12,10 +12,22 @@
 import { correlation, makeId, mean, round, sumValues } from '../core/util.js';
 import { CALIBRATABLE_KEYS, DIMENSION_KEYS, PRIOR_WEIGHTS } from './dimensions.js';
 import { analyzeClaim } from './mine.js';
-import { receptionScore } from './layers.js';
+import { engagementWeight, relativeReceptionScore, receptionSignal } from './layers.js';
 
-/** Minimum observations before calibration is allowed to move anything. */
-export const MIN_OBSERVATIONS = 5;
+/**
+ * Minimum *distinct artifacts* before calibration is allowed to move anything.
+ *
+ * Raised from 5. Seven dimensions are correlated independently with no
+ * multiple-comparison correction, so at n=5 more than half of users whose
+ * results are pure noise would see at least one dimension "confirmed" at
+ * |r| > 0.8. Eight does not make the estimator sound — nothing at this sample
+ * size does — but combined with the shrinkage below and the provisional
+ * labelling in the UI it stops the panel from asserting a finding.
+ */
+export const MIN_OBSERVATIONS = 8;
+
+/** Below this, the calibration panel presents itself as a hypothesis. */
+export const CONFIDENT_OBSERVATIONS = 15;
 /** Shrinkage constant: at n = k the empirical signal carries half the weight. */
 export const SHRINKAGE_K = 8;
 /** No calibrated weight may move more than this factor from its prior. */
@@ -29,30 +41,29 @@ export const MAX_WEIGHT_DRIFT = 2.5;
 export function buildObservations(state) {
   const proofById = new Map((state.proofs || []).map((p) => [p.id, p]));
   const artifactById = new Map((state.artifacts || []).map((a) => [a.id, a]));
-  const receptions = state.receptions || [];
 
-  const rates = receptions.map((r) => {
-    const impressions = Math.max(r.impressions, 1);
-    return (
-      (r.substantiveComments * 6 +
-        (r.comments - r.substantiveComments) * 2 +
-        r.saves * 4 +
-        r.shares * 3 +
-        r.reactions * 1) /
-      impressions
-    );
-  });
-  const baseline = rates.length ? mean(rates) : 0;
+  // One artifact measured five times is one observation, not five. Counting
+  // receptions made MIN_OBSERVATIONS reachable with a single post whose numbers
+  // the user re-checked each week, which is ordinary behaviour.
+  const latestPerArtifact = new Map();
+  for (const reception of state.receptions || []) {
+    const held = latestPerArtifact.get(reception.artifactId);
+    if (!held || reception.capturedAt > held.capturedAt) {
+      latestPerArtifact.set(reception.artifactId, reception);
+    }
+  }
+  const receptions = [...latestPerArtifact.values()];
+  const signals = receptions.map((r) => ({ r, ...receptionSignal(r) }));
 
   const observations = [];
-  for (const reception of receptions) {
-    const artifact = artifactById.get(reception.artifactId);
+  for (const entry of signals) {
+    const artifact = artifactById.get(entry.r.artifactId);
     if (!artifact || !artifact.proofIds.length) continue;
 
     const proofs = artifact.proofIds.map((id) => proofById.get(id)).filter(Boolean);
     // Demo material must never teach the model anything about this user.
     const real = proofs.filter((p) => !p.demo);
-    if (!real.length) continue;
+    if (!real.length || real.length !== proofs.length) continue;
 
     // Average the breakdown across the proofs backing one artifact.
     const breakdown = {};
@@ -60,9 +71,14 @@ export function buildObservations(state) {
       const values = real.map((p) => p.breakdown[key]).filter(Number.isFinite);
       if (values.length) breakdown[key] = mean(values);
     }
+
+    const peers = signals.filter((o) => o !== entry && o.mode === entry.mode);
     observations.push({
       breakdown,
-      reception: receptionScore(reception, baseline),
+      reception: relativeReceptionScore(
+        entry.r,
+        peers.length ? mean(peers.map((o) => o.value)) : 0,
+      ),
       artifactId: artifact.id,
     });
   }
@@ -178,6 +194,15 @@ export function calibrationDelta(weights) {
 export const COMPOUND_THRESHOLD = 1.6;
 
 /**
+ * Absolute floor for compounding, independent of the user's own baseline.
+ *
+ * Relative-only thresholds fire on nothing: with the minimum three records, two
+ * flops make an utterly ordinary third post "1.6x baseline", and a 240-view
+ * post was being written into the evidence base as traction.
+ */
+export const COMPOUND_MIN_ENGAGEMENT = 40;
+
+/**
  * Integration I1 — compounding. An artifact that meaningfully outperformed the
  * user's own baseline *is itself evidence*: reach and response are traction,
  * and traction is a claim a sceptic can check.
@@ -188,24 +213,14 @@ export const COMPOUND_THRESHOLD = 1.6;
  *
  * @returns {object[]} new proof units
  */
-export function compound(state, { now = Date.now(), minImpressions = 200 } = {}) {
+export function compound(state, { now = Date.now(), minImpressions = 500 } = {}) {
   const receptions = state.receptions || [];
-  if (receptions.length < 3) return []; // no baseline worth comparing against
+  if (receptions.length < 4) return []; // no baseline worth comparing against
 
+  const proofById = new Map((state.proofs || []).map((p) => [p.id, p]));
   const artifactById = new Map((state.artifacts || []).map((a) => [a.id, a]));
-  const rates = receptions.map((r) => {
-    const impressions = Math.max(r.impressions, 1);
-    return (
-      (r.substantiveComments * 6 +
-        (r.comments - r.substantiveComments) * 2 +
-        r.saves * 4 +
-        r.shares * 3 +
-        r.reactions * 1) /
-      impressions
-    );
-  });
-  const baseline = mean(rates);
-  if (baseline <= 0) return [];
+
+  const signals = receptions.map((r) => ({ r, ...receptionSignal(r) }));
 
   const alreadyCompounded = new Set(
     (state.proofs || [])
@@ -214,20 +229,40 @@ export function compound(state, { now = Date.now(), minImpressions = 200 } = {})
   );
 
   const created = [];
-  receptions.forEach((reception, index) => {
-    if (reception.impressions < minImpressions) return;
-    if (rates[index] < baseline * COMPOUND_THRESHOLD) return;
-    if (alreadyCompounded.has(reception.id)) return;
+  for (const entry of signals) {
+    const { r: reception } = entry;
+    if (alreadyCompounded.has(reception.id)) continue;
+
+    // Absolute floors first. Without them the relative test fires on a post
+    // that simply happened to follow two flops.
+    if (reception.impressions < minImpressions) continue;
+    if (engagementWeight(reception) < COMPOUND_MIN_ENGAGEMENT) continue;
+
+    // Leave-one-out baseline, same mode only.
+    const peers = signals.filter((o) => o !== entry && o.mode === entry.mode);
+    if (peers.length < 3) continue;
+    const baseline = mean(peers.map((o) => o.value));
+    if (!(baseline > 0) || entry.value < baseline * COMPOUND_THRESHOLD) continue;
 
     const artifact = artifactById.get(reception.artifactId);
-    if (!artifact) return;
+    if (!artifact || artifact.status !== 'published') continue;
+
+    // An artifact grounded in bundled fixtures must never produce a real proof
+    // unit. Without this check, loading the sample and typing three reception
+    // rows manufactures a `demo: false` traction claim, clears the site-wide
+    // demo banner, and leaves the entire evidence base as one laundered
+    // sentence assembled from numbers the user typed themselves.
+    const cited = artifact.proofIds.map((id) => proofById.get(id)).filter(Boolean);
+    if (!cited.length || cited.some((p) => p.demo)) continue;
+
+    // Reach becomes evidence only when there is something a sceptic could open.
+    // Without a link this is a number the user typed about themselves, and the
+    // compounding loop would be a pipe from self-report into the score.
+    if (!artifact.url?.trim()) continue;
 
     // Built only from observed numbers. No adjectives, no interpretation.
-    const claim = buildTractionClaim(reception, state.locale);
-    const analysis = analyzeClaim(claim, {
-      positioning: state.positioning,
-      now,
-    });
+    const claim = buildTractionClaim(reception, artifact.url, state.locale);
+    const analysis = analyzeClaim(claim, { positioning: state.positioning, now });
 
     created.push({
       id: makeId('proof'),
@@ -235,7 +270,12 @@ export function compound(state, { now = Date.now(), minImpressions = 200 } = {})
       sourceId: reception.id,
       sourceName: artifact.channel,
       kind: 'traction',
-      archetypes: [...new Set([...analysis.archetypes, 'SCALE'])],
+      // SCALE only. The generated sentence contains the word "published",
+      // which the third-party lexicon reads as external validation — so
+      // re-analysing our own output let self-reported reach close the
+      // VALIDATION gap and suppress the highest-value acquisition play, the
+      // one that tells the user to go and get a testimonial.
+      archetypes: ['SCALE'],
       breakdown: analysis.breakdown,
       score: analysis.score,
       occurredAt: artifact.publishedAt ?? reception.capturedAt,
@@ -245,13 +285,17 @@ export function compound(state, { now = Date.now(), minImpressions = 200 } = {})
       dismissed: false,
       createdAt: now,
     });
-  });
+  }
 
   return created;
 }
 
-/** Factual traction sentence assembled from the recorded numbers only. */
-function buildTractionClaim(reception, locale = 'he') {
+/**
+ * Factual traction sentence assembled from the recorded numbers only, with the
+ * artifact's own URL attached so the resulting claim is checkable rather than
+ * self-asserted.
+ */
+function buildTractionClaim(reception, url, locale = 'he') {
   const parts = [];
   if (locale === 'en') {
     parts.push(`A post I published reached ${reception.impressions.toLocaleString('en-US')} impressions`);
@@ -259,12 +303,12 @@ function buildTractionClaim(reception, locale = 'he') {
       parts.push(`with ${reception.substantiveComments} substantive comments`);
     }
     if (reception.saves > 0) parts.push(`and ${reception.saves} saves`);
-    return `${parts.join(' ')}.`;
+    return `${parts.join(' ')} — ${url}`;
   }
   parts.push(`פוסט שפרסמתי הגיע ל-${reception.impressions.toLocaleString('he-IL')} חשיפות`);
   if (reception.substantiveComments > 0) {
     parts.push(`עם ${reception.substantiveComments} תגובות ענייניות`);
   }
   if (reception.saves > 0) parts.push(`ו-${reception.saves} שמירות`);
-  return `${parts.join(' ')}.`;
+  return `${parts.join(' ')} — ${url}`;
 }

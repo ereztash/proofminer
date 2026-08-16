@@ -54,7 +54,7 @@ function fieldSpecificity(text, { idealWords = 8 } = {}) {
  * @param {object} positioning
  * @returns {{score:number, confidence:number, components:Record<string,number>, issues:object[]}}
  */
-export function scorePositioning(positioning) {
+export function scorePositioning(positioning, recognitions = []) {
   const p = positioning || {};
   const audience = (p.audience || '').trim();
   const transformation = (p.transformation || '').trim();
@@ -69,6 +69,7 @@ export function scorePositioning(positioning) {
     claim: fieldSpecificity(claim, { idealWords: 12 }),
     offerCoupling: offer ? fieldSpecificity(offer, { idealWords: 8 }) : 0,
     nonGenericity: 0,
+    defensibility: 0,
   };
 
   // Non-genericity is measured across the whole statement, because filler
@@ -81,12 +82,21 @@ export function scorePositioning(positioning) {
   if (Array.isArray(p.nonGoals) && p.nonGoals.length) nonGeneric += 10; // naming what you are not is separation
   components.nonGenericity = filled ? clamp100(nonGeneric) : 0;
 
+  // Integration I6 — third-party recognition raises defensibility.
+  //
+  // A claim you make about yourself and a claim other people repeat about you
+  // are not the same claim. This is the only component of positioning that the
+  // user cannot raise by editing a text box, which is exactly why it belongs
+  // here: it is the part of "what you own" that someone else has to grant.
+  components.defensibility = filled ? defensibilityScore(claim, recognitions) : 0;
+
   const weights = {
-    audience: 0.24,
-    transformation: 0.22,
-    claim: 0.24,
-    offerCoupling: 0.12,
-    nonGenericity: 0.18,
+    audience: 0.21,
+    transformation: 0.19,
+    claim: 0.21,
+    offerCoupling: 0.10,
+    nonGenericity: 0.16,
+    defensibility: 0.13,
   };
   let score = 0;
   for (const [key, w] of Object.entries(weights)) score += components[key] * w;
@@ -97,6 +107,31 @@ export function scorePositioning(positioning) {
     components,
     issues: positioningIssues({ audience, transformation, claim, offer, components, p }),
   };
+}
+
+/** How much of the recognition weight per type transfers to the claim. */
+const RECOGNITION_DEFENSIBILITY = {
+  endorsement: 6, citation: 10, referral: 12, feature: 16, invite: 16,
+};
+
+/**
+ * Defensibility of the claim, given who else has vouched for it.
+ *
+ * Starts low deliberately: an unvouched claim is not indefensible, it is
+ * merely unwitnessed, so the floor is 20 rather than 0. Named sources count
+ * for more than anonymous ones, and a linked source more than a named one.
+ */
+export function defensibilityScore(claim, recognitions = []) {
+  if (!claim.trim()) return 0;
+  let v = 20;
+  for (const r of recognitions) {
+    let value = RECOGNITION_DEFENSIBILITY[r.type] ?? 6;
+    if (r.by?.trim()) value += 4;
+    if (r.url?.trim()) value += 4;
+    v += value;
+  }
+  // Naming what you are not is itself a defensibility move, but a small one.
+  return clamp100(v);
 }
 
 /**

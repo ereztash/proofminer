@@ -64,7 +64,7 @@ export function layerProof(state, now = Date.now()) {
 
 /** L2 — POSITION. What single claim do you own? */
 export function layerPosition(state) {
-  const result = scorePositioning(state.positioning);
+  const result = scorePositioning(state.positioning, state.recognitions || []);
   if (result.confidence === 0) return locked('no-positioning');
   return {
     score: result.score,
@@ -115,62 +115,99 @@ export function layerArtifact(state, now = Date.now()) {
 }
 
 /**
- * Reception score for a single artifact, relative to the user's own baseline.
- * Absolute engagement numbers are meaningless across audience sizes and would
- * tell a 400-connection user they are failing while they outperform a
- * 20,000-connection account.
+ * Engagement weighted by what it costs the reader. A substantive comment is
+ * expensive; a reaction is nearly free.
  */
-export function receptionScore(reception, baseline) {
-  const impressions = Math.max(reception.impressions, 1);
-  // Weighted by cost to the reader: a substantive comment is expensive,
-  // a reaction is nearly free.
-  const weighted =
-    reception.substantiveComments * 6 +
-    (reception.comments - reception.substantiveComments) * 2 +
-    reception.saves * 4 +
-    reception.shares * 3 +
-    reception.reactions * 1;
-  const rate = weighted / impressions;
-  if (!baseline || baseline <= 0) {
-    // No baseline yet: anchor on a modest absolute rate so the first few
-    // records still produce a usable number.
-    return clamp100(saturate(rate, 0.04, 100));
-  }
-  // 1.0 = exactly at own baseline -> 55. Above baseline climbs, below drops.
-  return clamp100(55 * (rate / baseline) ** 0.7);
+export function engagementWeight(r) {
+  return (
+    r.substantiveComments * 6 +
+    (r.comments - r.substantiveComments) * 2 +
+    r.saves * 4 +
+    r.shares * 3 +
+    r.reactions * 1
+  );
+}
+
+/**
+ * The comparable quantity for one reception record.
+ *
+ * Two modes, because impressions are optional: LinkedIn shows them behind an
+ * extra click and a demoralised user will skip that field. With impressions we
+ * compare engagement *rate*; without them we compare absolute engagement, which
+ * is valid across a personal account whose audience size is roughly stable over
+ * weeks. Records are only ever compared against a baseline built from records
+ * in the same mode.
+ */
+export function receptionSignal(r) {
+  const weighted = engagementWeight(r);
+  return r.impressions > 0
+    ? { mode: 'rate', value: weighted / r.impressions }
+    : { mode: 'absolute', value: weighted };
+}
+
+/**
+ * Reference points, declared as priors (docs/METHOD.md honesty rule 5).
+ *
+ * `RATE_ANCHOR` is the weighted-engagement rate at which a post scores 50.
+ * 0.05 corresponds to roughly a 5% weighted response — a solid but not
+ * exceptional personal post. `ABSOLUTE_ANCHOR` plays the same role when the
+ * user did not report impressions.
+ *
+ * These are fixed anchors rather than the user's own moving mean, and that
+ * choice is the whole design. Scoring each record against a baseline computed
+ * from the user's other records made the layer self-referential: the average
+ * of ratios around their own mean is pinned near the midpoint, so a uniform
+ * tenfold improvement changed nothing and publishing a genuine hit *lowered*
+ * the score, because the hit inflated the denominator every other post was
+ * divided by. A rate already normalises for audience size, which was the only
+ * reason to avoid absolute numbers in the first place.
+ *
+ * Relative-to-yourself comparison still happens — it is the right question for
+ * "did this beat your norm" — but it lives in compounding and calibration,
+ * where that is what is being asked.
+ */
+export const RATE_ANCHOR = 0.05;
+export const ABSOLUTE_ANCHOR = 30;
+
+/**
+ * Score one reception on 0..100. Monotone in engagement, bounded, and 50 at
+ * the anchor.
+ */
+export function receptionScore(reception) {
+  const { mode, value } = receptionSignal(reception);
+  const anchor = mode === 'rate' ? RATE_ANCHOR : ABSOLUTE_ANCHOR;
+  return clamp100(saturate(value, anchor, 100));
+}
+
+/**
+ * How this record compares to a set of peers, on 0..100 with 50 at parity.
+ * Used where the question really is "relative to your own norm".
+ */
+export function relativeReceptionScore(reception, peerBaseline) {
+  const { value } = receptionSignal(reception);
+  if (!(peerBaseline > 0)) return 50;
+  return clamp100((100 * value) / (value + peerBaseline));
 }
 
 /** L4 — RECEPTION. How did it land? */
 export function layerReception(state, now = Date.now()) {
   const receptions = state.receptions || [];
-  if (receptions.length < 1) return locked('no-reception');
-
-  const rates = receptions.map((r) => {
-    const impressions = Math.max(r.impressions, 1);
-    const weighted =
-      r.substantiveComments * 6 +
-      (r.comments - r.substantiveComments) * 2 +
-      r.saves * 4 +
-      r.shares * 3 +
-      r.reactions * 1;
-    return weighted / impressions;
-  });
-  const baseline = mean(rates);
+  // docs/METHOD.md requires three records before this layer says anything.
+  // Below that a single number is being presented as a pattern.
+  if (receptions.length < 3) return locked('no-reception');
 
   const windowStart = now - 90 * DAY_MS;
   const recent = receptions.filter((r) => r.capturedAt >= windowStart);
-  const pool = recent.length ? recent : receptions;
-  const score = mean(pool.map((r) => receptionScore(r, baseline)));
+  const pool = recent.length >= 3 ? recent : receptions;
 
   return {
-    score: clamp100(score),
-    // Below 3 records this is an anecdote, and the UI says so.
-    confidence: Math.min(1, receptions.length / 5),
+    score: clamp100(mean(pool.map(receptionScore))),
+    confidence: Math.min(1, receptions.length / 6),
     locked: false,
     inputs: {
       records: receptions.length,
-      baseline: Number(baseline.toFixed(4)),
-      recent: recent.length,
+      pooled: pool.length,
+      modes: [...new Set(pool.map((r) => receptionSignal(r).mode))],
     },
   };
 }

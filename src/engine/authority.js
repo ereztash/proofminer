@@ -12,7 +12,7 @@ import { clamp100, round } from '../core/util.js';
 import { computeLayers } from './layers.js';
 import { acquisitionPlays, stalingProofs } from './gaps.js';
 import { detectDrift, scorePositioning } from './positioning.js';
-import { realProofs } from './mine.js';
+import { isDemoMode, realProofs } from './mine.js';
 import { decayedScore } from './score.js';
 
 /** How far built standing may exceed the evidence foundation. */
@@ -21,26 +21,53 @@ export const LIEBIG_GATE = 25;
 const FOUNDATION_WEIGHTS = { L1: 0.55, L2: 0.45 };
 const BUILT_WEIGHTS = { L3: 0.3, L4: 0.25, L5: 0.25, L6: 0.2 };
 
-/** Below this the index is presented as an estimate, not a measurement. */
-export const LOW_CONFIDENCE = 0.35;
+/**
+ * Below this the index is presented as an estimate, not a measurement.
+ *
+ * Raised from 0.35, which sat just under the confidence of the two states that
+ * most need the caveat: a user with four proofs and no publishing history
+ * (0.36), and a user whose thin foundation triggers a HOLLOW reading (0.53).
+ */
+export const LOW_CONFIDENCE = 0.55;
 
 /** Diagnosis threshold: above this a half of the stack counts as developed. */
 const DEVELOPED = 45;
 
-function weightedLayers(layers, weights) {
+/**
+ * Combine layers under a weight map.
+ *
+ * `skipLocked` renormalises over the layers that actually have data, and the
+ * asymmetry between the two halves of the stack is deliberate:
+ *
+ * - **Foundation (L1, L2) skips locked layers.** A locked L2 means the user has
+ *   not filled in the positioning form yet — it does not mean they have no
+ *   claim. Averaging in a zero there charges them for the incompleteness of
+ *   *our* form, and it is what made someone who had just pasted fifteen years
+ *   of work read "you haven't started yet".
+ * - **Built (L3–L6) counts locked layers as zero.** A locked L3 means nothing
+ *   has been published. That is a real fact about the world, and it is exactly
+ *   the gap this product exists to name.
+ */
+function weightedLayers(layers, weights, { skipLocked = false } = {}) {
   let score = 0;
   let confidence = 0;
   let totalWeight = 0;
   for (const [key, w] of Object.entries(weights)) {
-    score += (layers[key]?.score ?? 0) * w;
-    confidence += (layers[key]?.confidence ?? 0) * w;
+    const layer = layers[key];
+    if (skipLocked && layer?.locked) continue;
+    score += (layer?.score ?? 0) * w;
+    confidence += (layer?.confidence ?? 0) * w;
     totalWeight += w;
   }
+  if (totalWeight <= 0) return { score: 0, confidence: 0 };
+  const divisor = skipLocked ? totalWeight : sumWeights(weights);
   return {
-    score: clamp100(score),
-    confidence: totalWeight > 0 ? confidence / totalWeight : 0,
+    score: clamp100(score / divisor),
+    confidence: confidence / totalWeight,
   };
 }
+
+const sumWeights = (weights) => Object.values(weights).reduce((s, w) => s + w, 0);
 
 /**
  * @param {object} state
@@ -50,7 +77,7 @@ function weightedLayers(layers, weights) {
 export function computeAuthority(state, now = Date.now()) {
   const layers = computeLayers(state, now);
 
-  const foundation = weightedLayers(layers, FOUNDATION_WEIGHTS);
+  const foundation = weightedLayers(layers, FOUNDATION_WEIGHTS, { skipLocked: true });
   const built = weightedLayers(layers, BUILT_WEIGHTS);
 
   // Liebig's law of the minimum: the ceiling on built standing is the
@@ -74,24 +101,43 @@ export function computeAuthority(state, now = Date.now()) {
     gap,
     confidence,
     lowConfidence: confidence < LOW_CONFIDENCE,
-    diagnosis: diagnose(foundation.score, built.score),
+    diagnosis: diagnose(foundation.score, built.score, layers.L1),
     unlockedLayers: Object.entries(layers)
       .filter(([, l]) => !l.locked)
       .map(([k]) => k),
   };
 }
 
+/** L1 confidence below which we have not measured the evidence base at all. */
+export const MEASURED_FOUNDATION = 0.5;
+
 /**
- * The 2x2. `BURIED` is the state most of this product's users arrive in;
- * `HOLLOW` is the state the rest of the category actively produces.
- * @returns {'STALLED'|'BURIED'|'HOLLOW'|'COMPOUNDING'}
+ * The 2x2, plus one honest refusal.
+ *
+ * `BURIED` is the state most of this product's users arrive in; `HOLLOW` is the
+ * state the rest of the category actively produces.
+ *
+ * `UNCATALOGUED` is the fifth answer, and it exists because the arithmetic
+ * could not previously tell *inflated* from *not yet written down*. The built
+ * side fills from a few dropdown clicks — three real interviews and two real
+ * referrals — while the foundation side requires pasting documents. A user who
+ * honestly logged what happened to them was being told, at full confidence,
+ * that they appear larger than their evidence supports. That is calling an
+ * honest person a fraud for under-supplying input to a form.
+ *
+ * So HOLLOW is only ever returned when the evidence base has actually been
+ * measured. Otherwise the product says the true thing: we do not know yet.
+ *
+ * @returns {'STALLED'|'BURIED'|'HOLLOW'|'COMPOUNDING'|'UNCATALOGUED'}
  */
-export function diagnose(foundation, built) {
+export function diagnose(foundation, built, proofLayer = null) {
   const strongFoundation = foundation >= DEVELOPED;
   const strongBuilt = built >= DEVELOPED;
+  const measured = (proofLayer?.confidence ?? 1) >= MEASURED_FOUNDATION;
+
   if (strongFoundation && strongBuilt) return 'COMPOUNDING';
   if (strongFoundation && !strongBuilt) return 'BURIED';
-  if (!strongFoundation && strongBuilt) return 'HOLLOW';
+  if (!strongFoundation && strongBuilt) return measured ? 'HOLLOW' : 'UNCATALOGUED';
   return 'STALLED';
 }
 
@@ -109,23 +155,56 @@ export function nextMove(state, now = Date.now()) {
   const authority = computeAuthority(state, now);
   const { layers } = authority;
   const proofs = realProofs(state);
-  const positioning = scorePositioning(state.positioning);
+  const positioning = scorePositioning(state.positioning, state.recognitions || []);
 
   // 1. Nothing to work with. Everything else is premature.
   if (!state.sources?.length && !proofs.length) {
     return { id: 'move.addSource', layer: 'L1', effortMinutes: 5, view: 'mine' };
   }
 
-  // 2. Sources exist but were never mined — one click from the first value.
-  if (state.sources?.length && !state.proofs?.length) {
-    return { id: 'move.mine', layer: 'L1', effortMinutes: 1, view: 'mine' };
+  // 2. Sources exist with nothing mined from them yet. Re-checked on every
+  //    call, not only on the first run: evidence acquired through a gap play
+  //    comes back in as a new source, and the guidance has to notice it or the
+  //    acquisition loop has no return path.
+  const minedSourceIds = new Set((state.proofs || []).map((p) => p.sourceId));
+  const unmined = (state.sources || []).filter((s) => !minedSourceIds.has(s.id));
+  if (unmined.length) {
+    return {
+      id: 'move.mine',
+      layer: 'L1',
+      effortMinutes: 1,
+      view: 'mine',
+      payload: { unmined: unmined.length },
+    };
   }
+
+  // 2b. Only fixtures so far. Everything downstream would be measuring us
+  //     rather than them.
+  if (isDemoMode(state)) {
+    return { id: 'move.addRealSource', layer: 'L1', effortMinutes: 5, view: 'mine' };
+  }
+
+  const publishedCount = (state.artifacts || []).filter((a) => a.status === 'published').length;
+  const strongest = bestUnpublished(state, now);
+  const hasStrongProof = strongest ? decayedScore(strongest, now) >= 70 : false;
 
   // 3. Positioning is what makes ranking mean anything. Without an audience,
   //    icpFit is a constant and the ranking is only measuring intrinsic
   //    strength — useful, but not the product's claim.
-  if (!state.positioning?.audience?.trim()) {
+  //
+  //    Exception: when the user already holds a genuinely strong piece of
+  //    evidence and has published nothing, sending them to a five-field form
+  //    is the wrong first instruction. They came here invisible; the first
+  //    thing that should happen is that something of theirs becomes visible.
+  //    Positioning is the very next move after that.
+  if (!state.positioning?.audience?.trim() && !(hasStrongProof && publishedCount === 0)) {
     return { id: 'move.setAudience', layer: 'L2', effortMinutes: 4, view: 'position' };
+  }
+
+  // 4a. Thin evidence base, but we have not measured enough of it to call
+  //     anyone hollow. Ask for the material, do not deliver a verdict.
+  if (authority.diagnosis === 'UNCATALOGUED') {
+    return { id: 'move.catalogueMore', layer: 'L1', effortMinutes: 8, view: 'mine' };
   }
 
   // 4. Louder than the evidence. Publishing more would make it worse, and this
@@ -143,16 +222,20 @@ export function nextMove(state, now = Date.now()) {
 
   // 5. Evidence exists, nothing published. The BURIED state — the reason this
   //    product exists.
-  const publishedCount = (state.artifacts || []).filter((a) => a.status === 'published').length;
   if (proofs.length && publishedCount === 0) {
-    const best = bestUnpublished(state, now);
     return {
       id: 'move.publishFirst',
       layer: 'L3',
       effortMinutes: 12,
       view: 'studio',
-      payload: { proofId: best?.id ?? null },
+      payload: { proofId: strongest?.id ?? null },
     };
+  }
+
+  // 5b. Published something, but positioning is still empty. Now the form is
+  //     the right ask, because the ranking has real work to do.
+  if (!state.positioning?.audience?.trim()) {
+    return { id: 'move.setAudience', layer: 'L2', effortMinutes: 4, view: 'position' };
   }
 
   // 6. Evidence with a shelf life, still unpublished (integration I5).
@@ -232,12 +315,18 @@ export function nextMove(state, now = Date.now()) {
   };
 }
 
-/** Highest-value proof unit that has not been published yet. */
+/**
+ * Highest-value proof unit that has not been published yet.
+ *
+ * Demo units are excluded unconditionally — the single primary action on the
+ * dashboard must never read "publish your strongest evidence" pointing at
+ * bundled fiction.
+ */
 export function bestUnpublished(state, now = Date.now()) {
   const published = new Set(
     (state.artifacts || []).flatMap((a) => a.proofIds),
   );
-  const candidates = realProofs(state).filter((p) => !published.has(p.id));
+  const candidates = realProofs(state).filter((p) => !published.has(p.id) && !p.demo);
   if (!candidates.length) return null;
   return candidates
     .map((p) => ({ p, s: decayedScore(p, now) }))

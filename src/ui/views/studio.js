@@ -57,7 +57,7 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
                 type="button"
                 role="tab"
                 class="tab ${a === angle ? 'is-on' : ''}"
-                aria-selected="${a === angle}"
+                aria-selected="${String(a === angle)}"
                 data-act="setAngle"
                 data-angle="${a}"
               >
@@ -106,7 +106,7 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           ${isConfigured(state.settings)
             ? button('refine', refining ? t('studio.refining') : t('studio.refine'), {
                 variant: 'ghost',
-                attrs: refining ? 'disabled' : '',
+                disabled: refining,
               })
             : html`<span class="hint">${t('studio.refineOff')}</span>`}
         </div>
@@ -121,7 +121,7 @@ export function studioView(state, t, { now, selectedProofId, angle, cta, body, r
           ${button('markPublished', t('studio.markPublished'), {
             variant: 'primary',
             payload: { id: selected.id },
-            attrs: liveGrounding.ok ? '' : 'disabled',
+            disabled: !liveGrounding.ok,
           })}
         </div>
       `,

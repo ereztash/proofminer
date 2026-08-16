@@ -88,8 +88,22 @@ const CTAS = {
   },
 };
 
-/** Strip the demo marker so it never ends up inside a draft body. */
+/**
+ * Strip the inline demo marker from a claim.
+ *
+ * The marker is removed from mid-sentence for readability and re-attached as a
+ * banner line on the whole body by `composeDraft`. Stripping it and stopping
+ * there — which is what this used to do — meant demo text copied out of the app
+ * no longer announced what it was, defeating the one mechanism that made
+ * bundled fixtures un-launderable.
+ */
 const cleanClaim = (claim) => claim.replace(DEMO_MARKER, '').trim();
+
+/** Banner prepended to any body derived from demo material. */
+const DEMO_BANNER = {
+  he: '[דמו בלבד — טקסט לדוגמה, לא ניסיון אמיתי]',
+  en: '[demo only — sample text, not real experience]',
+};
 
 /**
  * Numeric tokens in a text, normalised. Used by the grounding validator.
@@ -147,8 +161,9 @@ export function composeDraft({ proofs, angle = 'direct', cta = 'none', locale = 
   const ctaText = (CTAS[lang] || CTAS.he)[cta] || '';
 
   const evidence = cited.map((p) => cleanClaim(p.claim)).join('\n\n');
+  const isDemo = cited.some((p) => p.demo);
 
-  const body = [frame.lead, evidence, frame.close, ctaText]
+  const body = [isDemo ? DEMO_BANNER[lang] : '', frame.lead, evidence, frame.close, ctaText]
     .filter((part) => part && part.trim())
     .join('\n\n')
     .trim();
@@ -166,8 +181,11 @@ export function composeDraft({ proofs, angle = 'direct', cta = 'none', locale = 
  */
 export function provenanceFooter(proofs, locale = 'he') {
   if (!proofs.length) return '';
-  const label = locale === 'en' ? 'Grounded in' : 'מבוסס על';
-  const lines = proofs.map((p) => `• ${cleanClaim(p.claim)} (${p.sourceName})`);
+  const lang = DEMO_BANNER[locale] ? locale : 'he';
+  const label = lang === 'en' ? 'Grounded in' : 'מבוסס על';
+  const lines = proofs.map(
+    (p) => `• ${p.demo ? `${DEMO_BANNER[lang]} ` : ''}${cleanClaim(p.claim)} (${p.sourceName})`,
+  );
   return `\n\n---\n${label}:\n${lines.join('\n')}`;
 }
 

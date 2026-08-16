@@ -148,6 +148,33 @@ export default {
     narrative: 'Add a before and after.',
   },
 
+  reasons: {
+    rareVerification: (v) =>
+      `This is one of only ${v.n} of your ${v.total} pieces where someone external vouches for you. That is the type you have least of and the type that convinces most.`,
+    rareNumbers: (v) =>
+      `Only ${v.n} of your ${v.total} pieces contain a checkable number. This is one of them.`,
+    onlyFailure:
+      'This is your only piece where you analyse something that did not work. Professional judgement shows there more than in any success.',
+    onlyMethod:
+      'This is your only piece describing a method rather than an event. A written method is the one thing nobody can copy off you.',
+    namedThirdParty: 'There is a named external party here. A sceptic can go and check it without you.',
+    thirdParty: 'This is not you claiming something about yourself — somebody else put you in the picture.',
+    checkable: 'There is a link here. This is evidence someone can open, not a claim they have to accept.',
+    datedAndNamed: 'There is both a date and a name here. Together they turn a claim into something checkable.',
+    percentDelta: 'There is a percentage change here. That is the hardest thing to argue with.',
+    moneyDelta: 'There is a money figure here. Revenue is the outcome fewest people are willing to write down.',
+    beforeAfter: 'There is a before and an after here. That is what turns a job description into something checkable.',
+    outcome: 'Something actually changed here — this is not a description of what you do.',
+    scale: 'There is a counted scale here. Most people never bother to count, which is why it stands out.',
+    method: 'This describes how you work, not what happened once. That is the part that stays yours.',
+    failure: 'You are writing about something that did not go well. That reads as more professional confidence, not less.',
+    peer: 'The confirmation here comes from a peer, not a client. That carries entirely different weight.',
+    credentialGraded: 'There is a graded credential here. It closes a gap, even at low weight.',
+    hedged: 'The wording here hedges. The evidence is stronger than the way you wrote it.',
+    generic: 'This is self-description, not evidence. There is nothing here anyone could check.',
+    none: 'There are not enough signals here yet to say anything definite.',
+  },
+
   bands: { strong: 'Strong', usable: 'Usable', weak: 'Weak' },
 
   archetypes: {
@@ -334,6 +361,13 @@ export default {
     saves: 'Saves',
     shares: 'Shares',
     save: 'Save measurement',
+    saved: 'Saved',
+    empty: 'No numbers entered. Nothing to save.',
+    paste: 'Paste the numbers from LinkedIn',
+    pasteHint: 'Select the stats block on the post page, copy, and paste. We will pull the numbers out.',
+    pasteAction: 'Extract numbers',
+    pasteFailed: 'No numbers found in that text.',
+    optional: 'Optional — without impressions we compare absolute engagement',
     conversions: 'What moved because of it',
     addConversion: 'Add inbound',
     conversionTypes: {

@@ -32,6 +32,7 @@ export const clamp100 = (n) => Math.round(clamp(n, 0, 100));
  * @param {number} max ceiling
  */
 export function saturate(value, half, max = 100) {
+  if (!Number.isFinite(value)) return value > 0 ? max : 0;
   const v = Math.max(0, value);
   if (half <= 0) return v > 0 ? max : 0;
   return (max * v) / (v + half);

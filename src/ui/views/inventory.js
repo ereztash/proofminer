@@ -85,13 +85,15 @@ function row(proof, t, now, expanded) {
       ${button('pin', proof.pinned ? '★' : '☆', {
         variant: 'ghost',
         payload: { id: proof.id },
-        attrs: `aria-label="${t('inventory.pin')}" aria-pressed="${proof.pinned}"`,
+        ariaLabel: t('inventory.pin'),
+        ariaPressed: proof.pinned,
       })}
       ${button('dismiss', t('inventory.hide'), { variant: 'ghost', payload: { id: proof.id } })}
       ${button('expand', t('inventory.detail'), {
         variant: 'ghost',
         payload: { id: proof.id },
-        attrs: `aria-expanded="${isOpen}" aria-controls="bd-${proof.id}"`,
+        ariaExpanded: isOpen,
+        ariaControls: `bd-${proof.id}`,
       })}
     </div>
 

@@ -12,7 +12,7 @@
 
 import { ARCHETYPES } from '../core/schema.js';
 import { clamp100, sortByDesc } from '../core/util.js';
-import { daysUntilStale, decayedScore } from './score.js';
+import { BAND_USABLE, daysUntilStale, decayedScore } from './score.js';
 import { realProofs } from './mine.js';
 
 /**
@@ -31,8 +31,14 @@ const ARCHETYPE_WEIGHT = {
   },
 };
 
-/** A proof must be at least this strong (after decay) to count as coverage. */
-const COVERAGE_THRESHOLD = 50;
+/**
+ * A proof must reach the `usable` band (after decay) to count as coverage.
+ *
+ * Tied to the band boundary rather than set independently: an archetype is
+ * covered when the user holds evidence of it the product would call usable,
+ * and those two statements must not be able to disagree.
+ */
+const COVERAGE_THRESHOLD = BAND_USABLE;
 
 /**
  * Acquisition plays, one per archetype. `effortMinutes` is honest: asking a
@@ -122,7 +128,11 @@ export function acquisitionPlays(state, now = Date.now()) {
  * High-value proof that will lose meaningful value soon gets publishing
  * priority over equally strong but stable evidence.
  */
-export function stalingProofs(state, now = Date.now(), { withinDays = 90, minScore = 60 } = {}) {
+export function stalingProofs(
+  state,
+  now = Date.now(),
+  { withinDays = 90, minScore = BAND_USABLE } = {},
+) {
   const published = new Set(
     (state.artifacts || [])
       .filter((a) => a.status === 'published')
@@ -136,9 +146,13 @@ export function stalingProofs(state, now = Date.now(), { withinDays = 90, minSco
       current: Math.round(decayedScore(proof, now)),
       daysLeft: daysUntilStale(proof, now),
     }))
+    // Gate on the *undecayed* score. Gating on the decayed one required the
+    // proof to still be above the threshold after the decay that put it in this
+    // window in the first place — which needed raw scores above the engine's
+    // own ceiling, so the integration could never fire.
     .filter(
-      ({ current, daysLeft }) =>
-        current >= minScore && daysLeft !== null && daysLeft <= withinDays,
+      ({ proof, daysLeft }) =>
+        proof.score >= minScore && daysLeft !== null && daysLeft <= withinDays,
     )
     .map((entry) => ({ ...entry, daysLeft: Math.max(0, entry.daysLeft) }))
     .sort((a, b) => a.daysLeft - b.daysLeft);
