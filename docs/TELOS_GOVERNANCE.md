@@ -1,252 +1,374 @@
-# Telos Governance — Governing Rule v1.5
+# Telos Governance — Governing Rule v1.6
 
 ## Status
 
-This document has higher authority than the current product doctrine, category, commercial model, UX plan, characterization process, research process, strategy simulation, semantic model, decision method, measurement plan, implementation plan or Definition of Done.
+This document has higher authority than product doctrine, category, commercial model, UX, UI, characterization, research, simulation, semantic model, decision method, measurement plan, implementation plan or Definition of Done.
 
-Those artifacts are working hypotheses about how to realize the telos. They are not substitutes for it.
+Lower layers are working hypotheses about how to realize O. They are never protected from revision by prior implementation effort.
 
 ---
 
-# O — End-to-end user telos
+# O — end-to-end user telos
 
 The system exists to help a professional at a consequential transition move from:
 
-> **"I know roughly where I want to go professionally, but there are many plausible things I could do and I do not know what deserves my limited resources now."**
+> **"I know roughly where I want to go, I have several plausible things I could do, and I am about to commit scarce time / money / attention without knowing which assumptions my plan is really relying on."**
 
 into:
 
-> **grounded action with the least unnecessary cognitive work, while keeping the commitments, trade-offs, evidence and reasons sufficiently visible and manipulable that the user can challenge and revise them without starting over.**
+> **a grounded commitment: the load-bearing bets behind the plan are sufficiently explicit, contestable and evidence-linked that the user can KEEP the plan, CHANGE it, or TEST FIRST before paying the full cost.**
 
-The product is not primarily a recommendation generator, form, chat, dashboard, methodology extractor or strategy canvas.
+The product does **not** promise to discover the one true strategic bottleneck.
 
-Its job is to make the smallest decision-relevant part of the professional transition explicit enough to act on and revisable enough to learn from.
+Its core responsibility is narrower and more defensible:
 
-The system should help the user:
+> **reduce avoidable commitment to weakly grounded strategic bets before their cost is paid.**
 
-1. make the desired professional state and relevant boundary explicit;
-2. externalize the plausible actions they are actually considering;
-3. expose the scarce resources those actions compete for;
-4. preserve the user's prior representation / allocation before system influence where that baseline matters;
-5. make real trade-offs manipulable rather than merely verbal;
-6. reveal dependencies only where they can block or reorder action;
-7. distinguish user belief, external evidence, system inference and hypothesis;
-8. surface useful latent expertise from the user's professional practice only when it can change action;
-9. challenge transferability / blind spots instead of treating expertise as truth;
-10. identify unknowns capable of changing the live action / allocation;
-11. research the external field only where outside evidence is needed;
-12. choose the least-complex sufficient reasoning process;
-13. produce an explicit strategy / allocation candidate only when a candidate is needed;
-14. stress-test that candidate when simulation can change strategy or FIELD design;
-15. isolate `FIELD_DEBT`: load-bearing claims that still require real behavior, payment, execution or outcome evidence;
-16. preserve the user's authorship and ability to rearrange / reject the system's model;
-17. observe execution and outcomes;
-18. update the manipulable model / allocation / decision lineage as evidence accumulates;
-19. reject stale / non-transferable history rather than allowing memory to become authority by age alone.
+The system is successful only when the clarification changes or justifiably preserves a real commitment, resource allocation, sequence, evidence request or discriminating test.
 
-Professional authority may be a desired state or mechanism inside this telos, but it is not the mandatory problem language or universal end state.
-
-The system cannot guarantee professional success or market recognition. It is responsible for improving the grounding, inspectability, revisability and actionability of decisions under uncertainty.
+Insight language without commitment consequence is not sufficient value.
 
 ---
 
-# UI / interaction telos
+# Canonical first-session job — Commitment Gate
 
-The interface exists to make the current decision-relevant model **operable**, not merely readable.
+Before system influence, preserve the user's real transition, intended actions and material resource exposure.
 
-The preferred interaction is direct manipulation when the gesture has semantic identity with the decision:
+Then:
 
-- reorder when sequence changes meaning;
-- allocate when a conserved resource is being divided;
-- move between states when the state itself changes the plan;
-- connect dependency only when one action can block / unlock another;
-- expose evidence / uncertainty only where it can change action.
+1. infer what would have to be sufficiently true for the current plan / allocation to make sense;
+2. mark that interpretation as **system inference**, never as user-owned belief or external fact;
+3. allow the user to correct / reject the interpretation;
+4. consider a plausible competing explanation when it can change action;
+5. inspect the evidence landscape: support, contradiction, non-discriminating evidence and missing evidence;
+6. emit exactly one commitment outcome:
+   - `KEEP` — the prior plan survives the current challenge;
+   - `CHANGE` — action / order / allocation changes;
+   - `TEST_FIRST` — a load-bearing uncertainty remains and a smaller discriminating observation should precede the larger commitment;
+7. state what evidence would reverse the result.
 
-The interface must not add interaction merely to feel innovative.
+The desired first-session moment is not:
 
-A slider is appropriate only for a genuine continuous quantity such as time, money, horizon or a bounded numeric amount. Generic importance, confidence or strategic correctness must not be converted into slider precision by default.
-
-The model must grow progressively. The default surface should contain only the smallest useful objects. Additional structure appears when a live disagreement, dependency, uncertainty or evidence need can change action.
-
-Necessary friction is allowed when it protects baseline validity, real trade-offs, authorship, evidence boundaries or reversal conditions. Ceremonial friction is not.
-
----
-
-# Pre-FIELD telos
-
-The purpose of internal analysis before real-world exposure is **not to maximize confidence**.
+> "The AI found my real problem."
 
 It is:
 
-> **to maximize the decision value of the next real-world test by removing failure modes that can be discovered internally and isolating the smallest set of load-bearing claims that only reality can resolve.**
-
-Call this `FIELD Yield`.
-
-A good pre-FIELD process makes the next test more discriminating, less contaminated by internally solvable uncertainty, explicit about which decision changes after each result, and smaller when a smaller test can answer the load-bearing question.
-
-A simulation that merely delays FIELD without changing strategy or test design fails this telos.
+> **"I had not noticed that my plan was spending scarce resources as if X were already established. Now I can see what the plan is betting on, what could make that wrong, and whether I should proceed, change, or test first."**
 
 ---
 
-# Business telos
+# Plan-as-theory invariant
 
-The business exists to capture a sustainable share of the value created by the user telos **without distorting recommendations or interface behavior to increase engagement, billing duration, interaction count, analytical complexity, simulation depth or dependence on system authority**.
+A resource-using action normally embeds a mechanism hypothesis, but the mapping is not one-to-one and must remain contestable.
 
-Recommendation and interaction integrity outrank commercial cadence.
+Examples:
 
-A business model that requires artificial daily use, unnecessary manipulation, stale monitoring, endless analysis or user dependence fails even if it produces higher short-term retention.
+- more publishing may behave as if visibility / exposure is limiting;
+- rewriting positioning / site may behave as if translation / message is limiting;
+- case studies / testimonials may behave as if proof / legitimacy is limiting;
+- outbound / networking may behave as if access is limiting;
+- additional training may behave as if capability is limiting;
+- pricing / packaging changes may behave as if offer architecture is limiting.
+
+The system may say:
+
+> **"Your plan behaves as if X were load-bearing."**
+
+It may not silently say:
+
+> **"You believe X"** or **"X is the true problem."**
 
 ---
 
-# Governing hierarchy
+# Minimum product hierarchy
 
 ```text
-USER O / TELOS
-  ↓
-Telos Governance Loop
-  ↓
-Minimum decision-relevant representation
-  ↓
-Characterization Governance when needed
-  ↓
-Decision-relevant unknowns / targeted external research
-  ↓
-Live action / allocation frame
-  ↓
-Meta-decision: how should this be decided?
-  ↓
-Strategy / allocation candidate when needed
-  ↓
-Strategic Wind Tunnel when decision-relevant
-  ↓
-FIELD_DEBT + next discriminating FIELD test
-  ↓
-Current Definition of Done
-  ↓
-Product / UX / commercial architecture
-  ↓
-Measurement and semantic models
-  ↓
-Decision methods / frameworks / algorithms
-  ↓
-UI implementation
+PROFESSIONAL TRANSITION
+→ CURRENT PLAN / ACTIONS
+→ MATERIAL RESOURCE EXPOSURE
+→ FROZEN PRE-SYSTEM COMMITMENT
+→ CANDIDATE IMPLIED BET
+→ USER CORRECTION / CONTESTABILITY
+→ COMPETING EXPLANATION WHEN REQUISITE
+→ DECISION-RELEVANT EVIDENCE / UNKNOWN
+→ KEEP | CHANGE | TEST_FIRST
+→ REVERSAL CONDITION
+→ FIELD ACTION / OBSERVATION
+→ LEARNING / NEXT COMMITMENT
 ```
 
-No lower layer may protect itself from revision when a higher layer shows it is obstructing O.
-
-No metric, intake field, canvas object, manipulation, semantic object, characterization process, simulation, screen, framework, decision method, price model, implementation investment or prior decision is protected from revision.
+Characterization, professional operating models, external research, Wind Tunnel, dependency modeling and richer decision workspaces are subordinate capabilities. They are routed only when required to discriminate the current load-bearing bet or execute the commitment outcome responsibly.
 
 ---
 
-# Recursive DOD / Pressure / Telos loop
+# User-effort rule
 
-For substantial product / UX changes, run three adversarial roles:
+The product should infer structure from what the user is already about to do before asking them to describe the same structure abstractly.
 
-## DOD Agent
+Prefer:
 
-Ask:
+- actual planned action over generic priority rating;
+- actual hours / money / deadline over importance score;
+- actual sequence over verbal descriptions of sequence;
+- actual evidence source over confidence slider;
+- correction of a candidate inference over a long methodology questionnaire.
 
-> **What must be observably true for the current O to be realized?**
+Necessary friction is allowed when it protects baseline validity, real trade-offs, authorship, evidence boundaries or reversal conditions.
 
-It converts O into falsifiable conditions, not feature checklists.
-
-## Pressure Agent
-
-Attack both O and DOD:
-
-> **Is this still a local optimization around the current mechanism? Could a simpler or structurally different mechanism achieve the user change with less burden or fewer unsupported assumptions?**
-
-A successful attack reopens O. It does not merely append another DOD item.
-
-## Telos Agent
-
-After a successful attack, reconstruct O from the end-user change, not from the current product architecture.
-
-The loop continues until another internal attack changes only implementation rules rather than the governing user change. At that point remaining uncertainty becomes FIELD_DEBT.
-
-Current recorded run: `docs/RECURSIVE_UI_DOD_PRESSURE_V1.md`.
-
----
-
-# Recursive governance loop
-
-Before declaring a meaningful phase complete:
-
-1. **RECALL O** — reconstruct the end-user change. Do not substitute the current mechanism.
-2. **RECONSTRUCT TARGET STATE** — what must be true for this user in this transition?
-3. **BUILD THE MINIMUM USEFUL REPRESENTATION** — expose only the objects needed to reveal the current trade-off / action.
-4. **CHARACTERIZE WHEN NEEDED** — use user expertise / cases only when they can change the representation or action.
-5. **IDENTIFY DECISION-RELEVANT UNKNOWNS** — what remains unknown that can still change the action / allocation?
-6. **FRAME THE LIVE ACTION / ALLOCATION** — prerequisites, dependencies, resource commitments, opportunity cost, reversibility, expected learning and triggers.
-7. **SELECT REQUISITE REASONING** — choose the least-complex sufficient process.
-8. **BUILD AN EXPLICIT STRATEGY CANDIDATE WHEN NEEDED** — mechanism, prerequisites, resources, signal horizon, assumptions and reversal conditions.
-9. **RUN THE WIND TUNNEL WHEN IT CAN CHANGE STRATEGY / FIELD DESIGN** — structural kills, evidence contradiction, shocks, competitor / stakeholder response, boundary shifts, sensitivity and pre-mortem.
-10. **EXTRACT FIELD_DEBT** — what only real behavior / payment / execution / outcome can resolve?
-11. **GAP TEST** — which unresolved gap can still materially change O, representation, action, allocation, research, method, strategy, FIELD design or learning?
-12. **SELECT HIGHEST-LEVERAGE GAP** — unfinished work has no automatic claim to resources.
-13. Choose one outcome: `CONTINUE / REPLAN / FIELD / STOP`.
-
----
-
-# REPLAN triggers
-
-Replan when the current framing, interface or DOD:
-
-- turns the system's recommendation into the main object instead of the user's manipulable plan;
-- requires a wizard / fixed sequence where object manipulation can preserve context with less burden;
-- introduces a full canvas before the user has a decision that needs it;
-- uses sliders for non-continuous judgments and creates false precision;
-- collects descriptions where an action / ordering / allocation can be shown directly;
-- makes direct manipulation ornamental rather than decision-semantic;
-- makes the user rebuild context after every change;
-- hides opportunity cost when resources are finite;
-- overwrites the user's model rather than showing disagreement;
-- protects an interaction pattern merely because it has already been implemented.
-
----
-
-# Anti-recursion / requisite information rule
-
-Before asking another question, adding another object, running another lens, opening another research loop, generating another scenario, adding another interaction or escalating to a more complex decision method, ask:
-
-> **Which live representation, action, allocation or FIELD test could change if we did this?**
-
-If none can materially change, reject it.
-
-The same rule applies to interaction richness: more manipulability is not automatically more useful.
+Ceremonial introspection is not.
 
 ---
 
 # Evidence-class invariant
 
 ```text
-F0 — real field observation / payment / action / outcome
-F1 — external observed evidence / real datasets / current public market facts
-F2 — structural / logical consequence
-F3 — plausible scenario assumption
+F0 — real behavior / payment / execution / outcome
+F1 — external observed evidence / real current data
+F2 — structural or logical consequence of the represented plan
+F3 — plausible scenario / mechanism hypothesis
 F4 — synthetic stakeholder / LLM-generated behavior
 ```
 
-Lower classes cannot silently inherit the authority of higher classes.
+A lower class may not silently inherit the authority of a higher class.
+
+An implied bet reconstructed from the user's plan is normally `F2/F3`: grounded in the plan structure but still an interpretation of mechanism.
+
+---
+
+# Decision consequence invariant
+
+Every material reveal must terminate in one of:
+
+```text
+KEEP
+CHANGE
+TEST_FIRST
+```
+
+`interesting`, `surprising`, `deep`, `personalized`, `insightful`, `high confidence` or `AI recommends` are not commitment outcomes.
+
+### KEEP
+
+Valid when challenge and available evidence do not justify changing the current commitment.
+
+A product that forces novelty to demonstrate value fails O.
+
+### CHANGE
+
+Must change at least one real commitment:
+
+- action;
+- sequence;
+- allocation;
+- boundary;
+- prerequisite;
+- evidence acquisition.
+
+### TEST_FIRST
+
+Valid only when:
+
+- the unresolved claim is load-bearing;
+- the larger commitment is material enough to justify delay / staging;
+- the proposed test can discriminate competing explanations;
+- the test is smaller than the commitment it protects;
+- the result has registered decision consequences.
+
+`TEST_FIRST` must not become a reflexive analysis-delay mechanism.
+
+---
+
+# UI / interaction telos
+
+The interface exists to make commitment logic inspectable before it becomes costly.
+
+The primary visual distinction is:
+
+```text
+YOUR COMMITMENT
+SYSTEM INFERENCE
+EVIDENCE / UNKNOWN
+```
+
+They must never be visually merged.
+
+The preferred first-session hierarchy is:
+
+```text
+WHAT YOU ARE ABOUT TO DO
+↓
+WHAT YOUR PLAN IS BETTING ON
+↓
+WHAT WE ACTUALLY KNOW
+↓
+KEEP / CHANGE / TEST FIRST
+↓
+WHAT WOULD REVERSE THIS
+```
+
+Direct manipulation remains useful when the gesture is semantically identical to the decision: allocating finite hours, changing order, moving an action or accepting/rejecting a proposed change.
+
+Interaction novelty has no authority by itself.
+
+---
+
+# Characterization governance
+
+Use professional-case reconstruction / ProfessionalOperatingModel / self-application only when it can change:
+
+- the implied bet;
+- a competing explanation;
+- the evidence needed;
+- the commitment outcome;
+- the reversal condition.
+
+The user's expertise is a high-resolution lens, not a truth source.
+
+Do not run characterization merely because the user has an interesting profession.
+
+---
+
+# Research governance
+
+External research is justified when the current commitment depends on an outside-world claim the user cannot know from introspection.
+
+Each research request must state:
+
+- `bet_affected`;
+- `unknown`;
+- `evidence_that_would_change_KEEP_CHANGE_TEST_FIRST`;
+- source types needed;
+- stop condition.
+
+Do not research broadly for context when a smaller discriminating observation can resolve the commitment.
+
+---
+
+# Strategic Wind Tunnel governance
+
+Wind Tunnel remains subordinate.
+
+Use it only after an explicit commitment / strategy candidate exists and only when it can change:
+
+- `KEEP / CHANGE / TEST_FIRST`;
+- the resource allocation;
+- the discriminating FIELD test;
+- the reversal condition.
+
+Synthetic stakeholders remain F4 hypothesis generators only.
+
+Simulation may remove internally discoverable failure modes. It may not close willingness-to-pay, buyer behavior, execution or outcome truth.
+
+---
+
+# Pre-FIELD telos — FIELD Yield
+
+The purpose of internal work before real exposure is not maximum confidence.
+
+It is:
+
+> **remove internally discoverable failure modes and isolate the smallest load-bearing claim that reality must resolve before a material commitment.**
+
+A FIELD test is high-yield when:
+
+- it attacks a registered load-bearing bet;
+- it can discriminate competing explanations;
+- each meaningful result changes `KEEP / CHANGE / TEST_FIRST` or the next commitment;
+- it is smaller than the commitment it protects;
+- it does not bundle unrelated uncertainties unnecessarily.
+
+---
+
+# Business telos
+
+The business exists to capture a sustainable share of created value without distorting the product toward engagement, complexity, dependence or perpetual uncertainty.
+
+The economic value hypothesis is **avoided or improved consequential commitment**, not time spent in the product.
+
+A commercial model that requires artificial recurring use fails even if retention rises.
+
+---
+
+# Recursive DOD / Pressure / Telos loop
+
+For substantial product changes:
+
+## DOD Agent
+
+Ask:
+
+> **What must be observably true for this O to be realized?**
+
+## Pressure Agent
+
+Attack O and DOD:
+
+> **Is this still a local optimization around the current mechanism? Could a simpler or structurally different mechanism prevent the same costly commitment with less burden or fewer unsupported assumptions?**
+
+## Telos Agent
+
+If Pressure succeeds, reconstruct O from the user change rather than current architecture.
+
+## Tool / Mechanism Agent
+
+After O survives, choose the smallest mechanism capable of producing the required observable change.
+
+Current recorded run: `docs/RECURSIVE_MAGIC_MOMENT_V1.md`.
+
+---
+
+# REPLAN triggers
+
+Replan when the system:
+
+- claims to know a true root cause without evidence capable of supporting that claim;
+- creates an alternative diagnosis mainly to generate surprise;
+- asks the user for an abstract bottleneck statement when the current plan can reveal a candidate implied bet with less burden;
+- surfaces assumptions that cannot change a commitment;
+- defaults to `TEST_FIRST` when action is cheap, reversible and learning-by-doing dominates;
+- turns every plan into a complex diagnostic canvas;
+- treats user agreement as validation of strategic truth;
+- uses system inference as if it were external evidence;
+- protects the manipulable workspace when a simpler Commitment Gate produces the same value.
+
+---
+
+# Anti-recursion / requisite information rule
+
+Before another question, object, lens, research task, scenario, visual element or reasoning method, ask:
+
+> **Which load-bearing bet, commitment outcome, resource allocation, reversal condition or FIELD test could change?**
+
+If none can materially change, reject the additional layer.
+
+---
+
+# FIELD falsification
+
+The Commitment Gate must be compared with a strong simple alternative.
+
+### Arm S — Strong Simple
+
+Goal → current situation → constraints → alternatives → recommendation.
+
+### Arm G — Commitment Gate
+
+Freeze plan → infer candidate load-bearing bet → user corrects → competing explanation → discriminating evidence → `KEEP / CHANGE / TEST_FIRST` → reversal condition.
+
+Collapse G toward S if G repeatedly fails to produce unique decision-relevant value at justified effort.
+
+No credit for user enthusiasm, insight language or perceived depth alone.
 
 ---
 
 # STOP
 
-STOP is permitted only when O has been recalled, the target state and minimum useful representation have been reconstructed, no additional characterization / information / reasoning / simulation / interaction layer can plausibly change a material action at justified cost, and remaining FIELD_DEBT is tested, immaterial, infeasible or lower-value than stopping.
+STOP internal escalation when:
 
-STOP means:
+- the current O has been recalled;
+- the real intended commitment is explicit;
+- the highest-exposure load-bearing bet is sufficiently represented;
+- further internal work cannot plausibly change `KEEP / CHANGE / TEST_FIRST`, allocation, reversal or FIELD design at justified cost;
+- remaining uncertainty requires real behavior / evidence.
 
-> **No further justified representation, characterization, information request, manipulation, research, simulation, decision analysis, action or field test is currently expected to materially improve realization of O.**
-
----
-
-# The DOD is subordinate
-
-The Definition of Done is the current best falsifiable model of what must be true to realize O.
-
-It MUST change when this governance loop reveals that it is protecting an obsolete telos, a fixed intake, a recommendation-first workflow, a full canvas, an easy metric, simulation theater, interaction theater or commercial cadence.
-
-Passing the DOD never authorizes STOP if O is still blocked.
-
-A DOD item that no longer contributes to O should be removed rather than completed.
+Then the correct outcome is `FIELD`, not more refinement.
