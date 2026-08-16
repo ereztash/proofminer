@@ -1,0 +1,101 @@
+/**
+ * The dashboard.
+ *
+ * Order is the argument: the Visibility Gap first (the user's own conscious
+ * pain, quantified), then the single Next Move, then the diagnosis, and only
+ * then the six layers. The composite index is present but subordinate — it is
+ * a summary, and a summary is not what gets someone to act at 2am.
+ */
+
+import { bidi, html } from '../html.js';
+import { button, layerCard, notice, section } from '../components.js';
+import { LAYER_KEYS } from '../../engine/layers.js';
+
+export function dashboardView(state, t, { authority, move }) {
+  const { gap, foundation, built, index, diagnosis, lowConfidence, gated } = authority;
+
+  return html`<div class="stack">
+    ${gapCard(gap, foundation, built, index, lowConfidence, t)}
+    ${moveCard(move, t)}
+    ${diagnosisCard(diagnosis, gated, t)}
+    ${section(
+      t('nav.dashboard'),
+      '',
+      html`<div class="layers">
+        ${LAYER_KEYS.map((key) => layerCard(key, authority.layers[key], t))}
+      </div>`,
+    )}
+  </div>`;
+}
+
+function gapCard(gap, foundation, built, index, lowConfidence, t) {
+  const f = Math.round(foundation);
+  const b = Math.round(built);
+  const direction = gap > 4 ? 'positive' : gap < -4 ? 'negative' : 'zero';
+
+  return html`<section class="hero ${direction === 'negative' ? 'hero--stop' : ''}">
+    <div class="hero__main">
+      <p class="hero__label">${t('gap.label')}</p>
+      <p class="hero__number ${direction === 'negative' ? 'is-negative' : ''}">
+        ${bidi(gap > 0 ? `+${gap}` : String(gap))}
+      </p>
+      <p class="hero__sentence">
+        ${direction === 'zero' ? t('gap.zero') : t(`gap.${direction}`, f, b)}
+      </p>
+      <p class="hero__explain">
+        ${direction === 'negative' ? t('gap.explainNegative') : t('gap.explainPositive')}
+      </p>
+      ${lowConfidence ? html`<p class="hero__estimate">${t('gap.estimate')}</p>` : ''}
+    </div>
+    <div class="hero__side">
+      <div class="hero__stat">
+        <span>${t('layers.L1.name')} + ${t('layers.L2.name')}</span>
+        <b>${bidi(f)}</b>
+      </div>
+      <div class="hero__stat">
+        <span>${t('layers.L3.name')} → ${t('layers.L6.name')}</span>
+        <b>${bidi(b)}</b>
+      </div>
+      <div class="hero__stat hero__stat--muted">
+        <span>${t('gap.index')}</span>
+        <b>${bidi(Math.round(index))}</b>
+      </div>
+    </div>
+  </section>`;
+}
+
+/**
+ * The only element on the page styled as primary. If the user does nothing but
+ * this card, repeatedly, that is the whole product working as intended.
+ */
+function moveCard(move, t) {
+  // Move ids contain dots, so the array path form is required here.
+  const why = t(['moves', move.id, 'why'], move.payload?.daysLeft ?? 0);
+
+  return html`<section class="move">
+    <div class="move__head">
+      <span class="move__label">${t('moves.label')}</span>
+      <span class="move__only">${t('moves.only')}</span>
+    </div>
+    <h2 class="move__title">${t(['moves', move.id, 'title'])}</h2>
+    <p class="move__why">${typeof why === 'string' ? why : ''}</p>
+    <div class="move__foot">
+      ${button('goto', t('moves.do'), {
+        variant: 'primary',
+        payload: { view: move.view, proof: move.payload?.proofId || '', artifact: move.payload?.artifactId || '' },
+      })}
+      <span class="move__meta">
+        ${t('moves.minutes', move.effortMinutes)} · ${t(`layers.${move.layer}.name`)}
+      </span>
+    </div>
+  </section>`;
+}
+
+function diagnosisCard(diagnosis, gated, t) {
+  return section(
+    t(`diagnosis.${diagnosis}.title`),
+    '',
+    html`<p class="prose">${t(`diagnosis.${diagnosis}.body`)}</p>
+      ${gated ? notice('stop', t('gap.explainNegative')) : ''}`,
+  );
+}
