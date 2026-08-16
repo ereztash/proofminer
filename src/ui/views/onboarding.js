@@ -18,6 +18,7 @@
 import { html } from '../html.js';
 import { button, field, scoreChip, textArea } from '../components.js';
 import { inventorySignals, reasonFor } from '../../engine/explain.js';
+import { BAND_USABLE } from '../../engine/score.js';
 
 /**
  * Situations, phrased as the pain rather than as the goal.
@@ -157,6 +158,13 @@ const checkedAttr = html`checked`;
  */
 export function firstLightView(state, t, { proofs, top3, demo = false }) {
   const signalCache = inventorySignals(proofs);
+  // The escape hatch fired only at *zero* proofs, so a paste that yielded four
+  // weak fragments still got "three you would never have published yourself"
+  // printed over three cards in the weak band, each explained with "not enough
+  // signs here to say anything definite". Promising a reveal and delivering
+  // that inverts the one screen the whole product hangs on. Quality decides,
+  // not count.
+  const thin = !demo && !proofs.some((p) => p.score >= BAND_USABLE);
   if (!proofs.length) {
     return html`<div class="cold">
       <div class="cold__inner">
@@ -177,7 +185,10 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       </h1>
       <p class="cold__body">${demo ? t('firstLight.demoSubtitle') : t('firstLight.subtitle')}</p>
 
-      <h2 class="cold__step">${t('firstLight.threeTitle')}</h2>
+      <h2 class="cold__step">
+        ${thin ? t('firstLight.thinTitle') : t('firstLight.threeTitle')}
+      </h2>
+      ${thin ? html`<p class="cold__body">${t('firstLight.thinBody')}</p>` : ''}
       <ol class="reveal">
         ${top3.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>

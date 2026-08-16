@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractSignals, inferArchetypes, inferKind, inferOccurredAt } from '../../src/engine/signals.js';
+import { extractSignals, inferArchetypes, inferKind, inferOccurredAt, spelledNumbers } from '../../src/engine/signals.js';
 import { makeContext, scoreDimensions, PRIOR_WEIGHTS } from '../../src/engine/dimensions.js';
 import {
   DECAY_FLOOR,
@@ -282,5 +282,37 @@ describe('mining', () => {
       now: NOW,
     });
     expect(targeted.score).toBeGreaterThan(neutral.score);
+  });
+});
+
+describe('Hebrew writes numbers as words', () => {
+  it('reads the dual forms', () => {
+    // `יומיים` *is* the number two. Without these the same fact scored 49 in
+    // digits and 38 in words, and a client email saying "סוגרים הזמנה ביומיים"
+    // registered no magnitude at all and ranked last.
+    for (const [text, value] of [
+      ['סוגרים הזמנה ביומיים', 2],
+      ['ניסיון של שנתיים', 2],
+      ['תוך שבועיים', 2],
+      ['נמשך חודשיים', 2],
+    ]) {
+      expect(spelledNumbers(text), text).toContain(value);
+      expect(extractSignals(text).numberCount, text).toBeGreaterThan(0);
+    }
+  });
+
+  it('reads a claim signed by a named person with a role as third-party', () => {
+    const signed = 'היום אנחנו סוגרים הזמנה ביומיים והצוות מרוצה — יוסי כהן, מנכ"ל, חברת גמא לוגיסטיקה';
+    expect(extractSignals(signed).thirdParty).toBe(true);
+  });
+
+  it('does not read the user describing their own role as third-party', () => {
+    for (const text of [
+      'ניהלתי צוות של 22 עובדים — מנהל תפעול בכיר',
+      'שימשתי כמנהל הפרויקט לאורך שנתיים',
+      'I was the director of operations for four years',
+    ]) {
+      expect(extractSignals(text).thirdParty, text).toBe(false);
+    }
   });
 });

@@ -82,6 +82,11 @@ export default {
       'This is a sample we brought, not anything of yours. It is here only to show how the ' +
       'ranking works — the moment you paste your own material it drops out of the calculation.',
     threeTitle: 'Three you would never have published yourself',
+    thinTitle: 'Too little here to tell you anything definite',
+    thinBody:
+      'What you pasted mostly describes roles rather than what came out of them. These are the ' +
+      'closest things to evidence in it, and they are still weak. Paste something with a number, ' +
+      'a date or somebody else\'s name in it: a project summary, a client email, a recommendation.',
     why: 'Why this one',
     continue: 'Got it — show me the full picture',
     emptyTitle: 'Not enough to start with',

@@ -201,3 +201,30 @@ describe('First Light on the sample', () => {
     expect(markup).toContain('במה שהדבקת');
   });
 });
+
+describe('the reveal does not promise more than it found', () => {
+  const t = translator('he');
+  const unit = (score) => ({
+    id: `p${score}`, claim: 'אני אחראי על תחום השירות בארגון.', score,
+    breakdown: { falsifiability: 30 }, demo: false, dismissed: false,
+  });
+
+  it('says so plainly when nothing in the paste reaches the usable band', () => {
+    // The escape hatch fired only at zero proofs, so four weak fragments still
+    // got "three you would never have published yourself" printed over them.
+    const proofs = [unit(33), unit(32), unit(29)];
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs }, t, { proofs, top3: proofs, demo: false }),
+    );
+    expect(markup).toContain(t('firstLight.thinTitle'));
+    expect(markup).not.toContain(t('firstLight.threeTitle'));
+  });
+
+  it('still makes the promise when the evidence carries it', () => {
+    const proofs = [unit(61), unit(48), unit(33)];
+    const markup = toString_(
+      firstLightView({ ...emptyState(), proofs }, t, { proofs, top3: proofs, demo: false }),
+    );
+    expect(markup).toContain(t('firstLight.threeTitle'));
+  });
+});
