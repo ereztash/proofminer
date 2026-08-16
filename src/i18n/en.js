@@ -65,6 +65,10 @@ export default {
     weeksMonths: 'A few months',
     weeksLong: 'Too long',
     start: 'Show me what I already have',
+    wizardLabel: 'Initial fit check',
+    stepClaim: 'Choice claim',
+    stepEvidence: 'Expected evidence',
+    stepMaterial: 'Material to test',
     firstStepTitle: 'Paste something that already exists',
     firstStepBody:
       'Paste the material that should support the claim: a CV, client thank-you email, project summary, recommendation, old post, work method or role description. Nothing needs rewriting.',
