@@ -85,7 +85,15 @@ export function positionView(state, t) {
       ? section(
           t('position.drift.title'),
           '',
-          notice('warn', t('position.drift.body', t(['archetypes', drift.topArchetype]))),
+          notice(
+            'warn',
+            t(
+              'position.drift.body',
+              t(['archetypes', drift.topArchetype]),
+              Math.round(drift.convertingShare * 100),
+              Math.round(drift.publishedShare * 100),
+            ),
+          ),
         )
       : ''}
   </div>`;

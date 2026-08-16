@@ -15,7 +15,7 @@ import { BAND_USABLE, dedupeProofs, decayFactor, scoreBand } from '../../src/eng
 import { computeLayers } from '../../src/engine/layers.js';
 import { compound } from '../../src/engine/feedback.js';
 import { acquisitionPlays, archetypeCoverage } from '../../src/engine/gaps.js';
-import { scorePositioning } from '../../src/engine/positioning.js';
+import { detectDrift, scorePositioning } from '../../src/engine/positioning.js';
 import {
   RATE_ANCHOR,
   layerReception,
@@ -749,5 +749,76 @@ describe('self-report cannot buy the evidence half', () => {
       NOW_,
     );
     expect(after.foundation - before.foundation).toBeLessThan(8);
+  });
+});
+
+describe('integrations that were alive and unreachable', () => {
+  it('routes the next move at staling evidence at least sometimes', () => {
+    // Gated on the decayed score, which needed a raw score of 75 — nothing in
+    // the corpus reaches it, so across a five-year weekly sweep the branch
+    // fired zero times. Same trap gaps.js documents fixing one layer down.
+    const text = [
+      'ב-2025 קיצרתי אצל חברת אלפא לוגיסטיקה את זמן האספקה מ-19 יום ל-7 ימים.',
+      'ניהלתי מערך של 22 עובדים בשלושה אתרים ותקציב שנתי של 12 מיליון ש"ח.',
+      'הובלתי הטמעה של מערכת ניהול מלאי בארבעה סניפים במהלך 2024.',
+    ].join('\n');
+    const captured = Date.UTC(2025, 0, 1);
+    let fired = 0;
+    for (let week = 0; week < 120; week += 1) {
+      const at = NOW + week * 7 * DAY;
+      const state = stateWith({
+        profile: { track: 'independent', weeksInMotion: 20, onboarded: true, sawFirstLight: true, declined: false, noInboundAt: null },
+        positioning: { audience: 'מנהלי תפעול בחברות לוגיסטיקה', transformation: 'זמן אספקה קצר', claim: 'מערכי אספקה אמינים', offer: 'ליווי', nonGoals: [] },
+        sources: [{ id: 's1', name: 'cv', demo: false, addedAt: captured, minedAt: null, text }],
+      });
+      state.proofs = mineSources(state, { now: captured });
+      state.artifacts = [artifact({ id: 'a0', proofIds: [], publishedAt: at - 20 * DAY })];
+      if (nextMove(state, at).id === 'move.publishStaling') fired += 1;
+    }
+    expect(fired).toBeGreaterThan(0);
+  });
+
+  it('does not accuse a coherent user of positioning drift', () => {
+    // Drift was word overlap against the declared claim, and on-topic evidence
+    // phrased differently scored 0.000 — identical to unrelated evidence.
+    const proof = (id, archetype) => ({
+      id, claim: 'x', sourceId: '', sourceName: '', kind: 'experience',
+      archetypes: [archetype], breakdown: {}, score: 60, occurredAt: null,
+      demo: false, origin: 'mined', pinned: false, dismissed: false, createdAt: NOW,
+    });
+    const build = (converting, published) => {
+      const proofs = [proof('pV', 'VALIDATION'), proof('pM', 'METHOD')];
+      const artifacts = published.map((a, i) =>
+        artifact({ id: `a${i}`, proofIds: [a === 'VALIDATION' ? 'pV' : 'pM'] }),
+      );
+      const conversions = converting.map((a, i) => ({
+        id: `c${i}`, type: 'call', note: '', at: NOW - 5 * DAY,
+        artifactId: artifacts.find((x) => x.proofIds[0] === (a === 'VALIDATION' ? 'pV' : 'pM'))?.id ?? null,
+      }));
+      return stateWith({
+        positioning: { audience: 'a', transformation: 'b', claim: 'מערכי אספקה שאפשר לסמוך עליהם', offer: 'c', nonGoals: [] },
+        proofs, artifacts, conversions,
+      });
+    };
+    const M = 'METHOD', V = 'VALIDATION';
+    expect(detectDrift(build([M, M, M, M], [M, M, M, M])).drifting).toBe(false);
+    expect(detectDrift(build([V, V, M, M], [V, V, M, M])).drifting).toBe(false);
+    // And still fires when the mismatch is real and countable.
+    expect(detectDrift(build([V, V, V, V], [V, M, M, M, M, M, M, M])).drifting).toBe(true);
+  });
+
+  it('stops asking who got in touch once the user says nobody did', () => {
+    const base = stateWith({
+      profile: { track: 'independent', weeksInMotion: 20, onboarded: true, sawFirstLight: true, declined: false, noInboundAt: null },
+      positioning: { audience: 'a', transformation: 'b', claim: 'c', offer: 'd', nonGoals: [] },
+      proofs: [proofFrom('ב-2025 קיצרתי את זמן האספקה מ-19 יום ל-7 ימים אצל לקוח.')],
+      artifacts: [0, 1, 2].map((i) => artifact({ id: `a${i}`, publishedAt: NOW - (40 - i) * DAY })),
+      receptions: [0, 1, 2].map((i) => reception({ id: `r${i}`, artifactId: `a${i}` })),
+    });
+    // Three weeks of publishing with reception and no inbound: the product
+    // stops asking an unanswerable question and names the actual problem.
+    expect(nextMove(base, NOW).id).not.toBe('move.logConversion');
+    const acknowledged = { ...base, profile: { ...base.profile, noInboundAt: NOW - 2 * DAY } };
+    expect(nextMove(acknowledged, NOW).id).toBe('move.logConversion');
   });
 });

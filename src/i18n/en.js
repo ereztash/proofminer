@@ -325,6 +325,20 @@ export default {
       title: 'Strengthen evidence you already hold',
       why: 'You have something of every type, but none of it is strong enough to carry the weight. A date, a name, a number or a link on an existing piece is worth more than a new one.',
     },
+    'move.askPlainly': {
+      title: 'The post was read. It asked for nothing.',
+      why:
+        'People responded to what you published and nobody got in touch. That is not an evidence ' +
+        'gap, it is an ending — the text stops without saying what can be done with you. Publish ' +
+        'your next strongest piece with one closing line.',
+    },
+    'move.strongerEvidence': {
+      title: 'No response and no inbound. It is the evidence.',
+      why:
+        'You published, the reach happened, and the response was weak. More of the same will not ' +
+        'change that — go through the inventory and pick the piece with the strongest number, ' +
+        'name or date you actually hold.',
+    },
     'move.attributeConversion': {
       title: 'Mark where the inbound came from',
       why: 'You logged inbound without tying it to the post that produced it. Without that link nobody can tell you which of the things you published actually moves people.',
@@ -382,9 +396,20 @@ export default {
       'nonGoals.missing': 'You did not write what you are not. That is cheap differentiation.',
     },
     drift: {
-      title: 'Gap between what you declare and what works',
-      body: (a) => `What actually generates inbound for you rests on ${a}, not on what your positioning says.`,
+      title: 'What produces inbound is not what you publish',
+      body: (a, cShare, pShare) =>
+        `${cShare}% of your inbound came from ${a} evidence — and it is only ${pShare}% of what ` +
+        `you have published. That is a count over your own records, not an estimate.`,
     },
+  },
+
+  channels: {
+    post: 'Post',
+    comment: 'Comment',
+    article: 'Article',
+    profile: 'Profile',
+    talk: 'Talk',
+    casestudy: 'Case study',
   },
 
   inventory: {
@@ -447,6 +472,9 @@ export default {
     copyWithSources: 'Copy with sources',
     save: 'Save as draft',
     markPublished: 'I published this',
+    channelLabel: 'Where this goes',
+    channelHint:
+      'A body of work that lives entirely in posts reads thin. A talk, an article or a case study counts differently.',
     urlLabel: 'Link to the post (optional)',
     chars: (n) => `${n} characters`,
     fold: 'Visible before "see more"',
@@ -491,6 +519,10 @@ export default {
     saved: 'Saved',
     empty: 'No numbers entered. Nothing to save.',
     needDetail: 'Add a note, or pick the post it came from.',
+    noInbound: 'Nobody has been in touch yet',
+    noInboundHint:
+      'That is a legitimate answer and we record it. There is no point asking you the same question every week.',
+    noInboundSaved: 'Recorded. We will ask again in about three weeks.',
     needWho: 'Say who, or add a link. Recognition with no source is not recognition.',
     paste: 'Paste the numbers from LinkedIn',
     pasteHint: 'Select the stats block on the post page, copy, and paste. We will pull the numbers out.',

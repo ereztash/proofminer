@@ -94,6 +94,13 @@ export function emptyState() {
        * a reload instead of quietly letting them back into the funnel.
        */
       declined: false,
+      /**
+       * When the user acknowledged that nothing has come in yet. Records a
+       * null result so the guidance can stop asking and move on, instead of
+       * putting the same unanswerable question every visit to the person whose
+       * named pain is that publishing produced nothing.
+       */
+      noInboundAt: null,
       /** True once the First Light reveal has been shown. */
       sawFirstLight: false,
     },
@@ -247,6 +254,7 @@ export function normalizeState(input) {
       weeksInMotion: Math.max(0, Math.round(num(profile.weeksInMotion, 0))),
       onboarded: bool(profile.onboarded),
       declined: bool(profile.declined),
+      noInboundAt: Number.isFinite(profile.noInboundAt) ? profile.noInboundAt : null,
       sawFirstLight: bool(profile.sawFirstLight),
     },
     positioning: {

@@ -39,6 +39,8 @@ export const MOVE_IDS = Object.freeze([
   'move.logConversion',
   'move.logRecognition',
   'move.attributeConversion',
+  'move.askPlainly',
+  'move.strongerEvidence',
   'move.closeGap',
   'move.sharpenPositioning',
   'move.resolveDrift',
@@ -315,11 +317,21 @@ export function nextMove(state, now = Date.now()) {
   }
 
   // 6. Evidence with a shelf life, still unpublished (integration I5).
-  // Quality-gated, and only ahead of the ordinary publish rule when the piece
-  // is at least as good. Without this it routed the single Next Move at a
-  // "weak"-band proof while an 87-scoring one sat unpublished one screen away.
+  //
+  // Quality-gated on the **undecayed** score, like `stalingProofs` itself. This
+  // gate was written against `entry.current`, the decayed one — and a proof is
+  // in the staling window precisely *because* it has decayed to around 60% of
+  // its value, so clearing 45 after decay demanded a raw score of 75. Nothing
+  // in the corpus reaches 75; the best is 72. Across a five-year weekly sweep
+  // the branch fired zero times: the integration was alive and unreachable,
+  // which is the identical trap `gaps.js` documents fixing one layer down.
+  //
+  // Only ahead of the ordinary publish rule when the piece is at least as good,
+  // or it routed the single Next Move at a weak proof while an 87-scoring one
+  // sat unpublished one screen away.
   const staling = stalingProofs(state, now).find(
-    (entry) => entry.current >= BAND_USABLE && (!strongest || entry.current >= decayedScore(strongest, now) - 10),
+    (entry) =>
+      entry.proof.score >= BAND_USABLE && (!strongest || entry.proof.score >= strongest.score - 10),
   );
   if (staling) {
     return {
@@ -384,6 +396,32 @@ export function nextMove(state, now = Date.now()) {
   const recentRecognitions = (state.recognitions || []).filter((r) => now - r.at <= 180 * DAY).length;
 
   if (publishedWithReception >= 2 && recentConversions === 0) {
+    // The dead end this branch used to be. Asking "who came to you because of
+    // this?" is right once. Asking it every visit for the rest of time, with
+    // the gap frozen, means the single primary action is a question whose
+    // honest answer is "nobody" — put to the person whose named pain is *I post
+    // and nothing happens*. So after three weeks of publishing with reception
+    // and no inbound, the product stops asking and says something true instead.
+    const oldestMeasured = Math.min(
+      ...(state.artifacts || [])
+        .filter((a) => a.status === 'published' && Number.isFinite(a.publishedAt))
+        .map((a) => a.publishedAt),
+    );
+    const weeksPublishing = Number.isFinite(oldestMeasured)
+      ? (now - oldestMeasured) / (7 * DAY)
+      : 0;
+    const acknowledged =
+      Number.isFinite(state.profile?.noInboundAt) && now - state.profile.noInboundAt <= 21 * DAY;
+
+    if (weeksPublishing >= 3 && !acknowledged) {
+      // Which problem it is, is measurable. If people responded and nobody
+      // moved, the posts land and do not ask. If they did not respond either,
+      // the evidence is not carrying — and that is an L1 problem, not an L5 one.
+      const responded = !layers.L4.locked && layers.L4.score >= BAND_USABLE;
+      return responded
+        ? { id: 'move.askPlainly', layer: 'L5', effortMinutes: 10, view: 'studio' }
+        : { id: 'move.strongerEvidence', layer: 'L1', effortMinutes: 15, view: 'inventory' };
+    }
     return { id: 'move.logConversion', layer: 'L5', effortMinutes: 2, view: 'measure' };
   }
   if (publishedWithReception >= 3 && recentRecognitions === 0) {
