@@ -4,6 +4,10 @@ import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.PROOFMINER_BASE_URL;
 
+const chooseSituation = async (page, name) => {
+  await page.locator('label.choice__opt', { hasText: name }).click();
+};
+
 test.describe('production smoke', () => {
   test.beforeEach(async ({ page }) => {
     test.skip(!BASE_URL, 'Set PROOFMINER_BASE_URL to a Vercel preview or production URL.');
@@ -15,7 +19,7 @@ test.describe('production smoke', () => {
   test('expert/consultant fit gate reaches First Light with an allowed action level', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/ראיה|evidence/i);
 
-    await page.getByLabel(/מומחה|Expert/i).check();
+    await chooseSituation(page, /מומחה|Expert/i);
     await expect(page.locator('#fit-confidence')).toBeVisible();
     await expect(page.locator('#fit-claim')).toBeVisible();
     await expect(page.locator('#fit-evidence')).toBeVisible();
@@ -32,7 +36,7 @@ test.describe('production smoke', () => {
   });
 
   test('weak material cannot jump straight to a draft action', async ({ page }) => {
-    await page.getByLabel(/יועץ|Consultant/i).check();
+    await chooseSituation(page, /יועץ|Consultant/i);
     await page.locator('#fit-claim').fill('אני יועץ טוב יותר מאלטרנטיבות');
     await page.locator('#fit-evidence').fill('אין לי ראיה אחת ברורה עדיין');
     await page.locator('#cold-paste').fill('אני יועץ מנוסה, יצירתי, רציני ובעל יכולות גבוהות.');
@@ -42,7 +46,7 @@ test.describe('production smoke', () => {
   });
 
   test('concrete but mismatched evidence remains strengthening-only', async ({ page }) => {
-    await page.getByLabel(/יועץ|Consultant/i).check();
+    await chooseSituation(page, /יועץ|Consultant/i);
     await page.locator('#fit-claim').fill('אני יודע לבנות תהליכי מכירה שמביאים פניות חמות');
     await page.locator('#fit-evidence').fill('ראיה שמראה שפניות חמות הגיעו מתוכן או הפניות');
     await page.locator('#cold-paste').fill(
