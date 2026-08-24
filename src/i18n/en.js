@@ -325,41 +325,57 @@ export default {
       title: 'Pull one measurable result out of a client or project',
       body: 'Pick one finished project. Write three lines: what it was before, what you did, what it was after. If you have no number, ask someone who was there.',
       needs: 'To count: a before number and an after number, the year, and the client or place.',
+      without:
+        'State the change in words — what happened before, what happened after. That clears the bar.',
     },
     'play.validation': {
       title: 'Ask for written confirmation from someone who was there',
       body: 'One message: "We worked together on X. I am collecting what actually happened — could you write me two lines on what changed for you?" Most people answer.',
       needs: 'To count: the quote in quotation marks, the name and role of whoever wrote it, and a link if there is one.',
+      without:
+        'Not needed. An attributed quote stands on its own.',
     },
     'play.scale': {
       title: 'Count how many. Just count.',
       body: 'How many clients, participants, years, projects. The number is already in your head and was never written down.',
       needs: 'To count: the number itself with a unit — clients, employees, sites — and a period.',
+      without:
+        'There is no route here without a number. This is the one of the eight that is literally a count — if you have nothing to count, skip it and come back when you do.',
     },
     'play.method': {
       title: 'Write your method out in steps',
       body: 'You do it the same way every time. Write the steps down. A written method is evidence nobody can copy off you.',
       needs: 'To count: the steps themselves, when you wrote it, and the link if you published it anywhere.',
+      without:
+        'Possible, provided the method is dated and attributed to where you ran it, ideally with a link. Without those it lands under the bar.',
     },
     'play.credential': {
       title: 'List your credentials',
       body: 'Degree, course, licence, certificate. Five minutes.',
       needs: 'To count: the institution, the year, and a link if there is one. "I have a degree" on its own does not reach the bar.',
+      without:
+        'Not needed. A year is a date, not a magnitude.',
     },
     'play.peer': {
       title: 'Get a mention from a peer, not a client',
       body: 'A happy client is expected. A peer saying you are good is something else. Ask someone in your field to confirm something specific.',
       needs: 'To count: the peer\'s name and role, what exactly they said, and where.',
+      without:
+        'Not needed. A name, a role and a place are enough.',
     },
     'play.failure': {
       title: 'Write about something that did not work',
       body: 'Not to sound modest. A failure you analyse precisely proves professional judgement better than any success.',
       needs: 'To count: what you tried, when, what it cost — time or money — and what you have done differently since.',
+      without:
+        'What it cost can be said in words — who stopped working with you, what was cancelled, what was rolled back. It needs a date and a name to clear the bar.',
     },
     'play.origin': {
       title: 'Write why this, and why you',
       body: 'Not a life story. The specific turn that gave you an angle others do not have.',
       needs: 'To count: the year, the place, and the particular thing you saw. This is a weaker kind of evidence, and its bar is lower to match.',
+      without:
+        'Not needed. The year, the place, and exactly what you saw.',
     },
   },
 
@@ -525,6 +541,15 @@ export default {
   },
 
   gaps: {
+    withoutLabel: 'If you have no number',
+    withoutCost:
+      'The same evidence, with the figure taken out, scores lower. That is not a bug — ' +
+      'a number adds strength, and the system does not pretend the two routes are equal. ' +
+      'Well-written evidence without one still clears the bar.',
+    sparseNote:
+      'None of your evidence carries a number, so the moves you can make without one sort first. ' +
+      'The thresholds have not moved.',
+
     otherPlays: (n) => `${n} more gaps, if you want to see them all`,
     collect: 'I have it — let me add it',
     bestOf: (best, need) => `Your strongest: ${best} · needs ${need}`,

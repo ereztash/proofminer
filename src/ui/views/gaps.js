@@ -15,18 +15,27 @@
 
 import { html } from '../html.js';
 import { button, notice, section } from '../components.js';
-import { acquisitionPlays, archetypeCoverage, stalingProofs } from '../../engine/gaps.js';
+import {
+  SPARSE_MAGNITUDE,
+  acquisitionPlays,
+  archetypeCoverage,
+  magnitudeDensity,
+  stalingProofs,
+} from '../../engine/gaps.js';
 
 export function gapsView(state, t, { now, selectedPlay = null }) {
   const coverage = archetypeCoverage(state, now);
   const plays = acquisitionPlays(state, now);
   const staling = stalingProofs(state, now);
+  const density = magnitudeDensity(state);
+  const sparse = density !== null && density.share <= SPARSE_MAGNITUDE;
 
   // The play the Next Move sent them here for, when there is one.
   const lead = plays.find((p) => p.id === selectedPlay) ?? plays[0] ?? null;
   const rest = plays.filter((p) => p !== lead);
 
   return html`<div class="stack">
+    ${sparse ? notice('info', t('gaps.sparseNote')) : ''}
     ${lead ? playCard(lead, t, { primary: true }) : notice('info', t('gaps.allCovered'))}
 
     ${rest.length
@@ -73,11 +82,28 @@ export function gapsView(state, t, { now, selectedPlay = null }) {
   </div>`;
 }
 
+/**
+ * The route without a magnitude is shown on the play the user is being asked
+ * to act on, and on any play that has no such route — so nobody is sent to
+ * SCALE with nothing to count. Repeating it on all seven folded cards would
+ * turn a useful line into wallpaper.
+ */
 function playCard(play, t, { primary }) {
+  const showWithout = primary || play.magnitudeOnly;
   return html`<section class="play ${primary ? 'play--primary' : ''}">
     <h3 class="play__title">${t(['plays', play.id, 'title'])}</h3>
     <p class="play__body">${t(['plays', play.id, 'body'])}</p>
     <p class="play__needs">${t(['plays', play.id, 'needs'])}</p>
+
+    ${showWithout
+      ? html`<p class="play__without">
+          <span class="play__without-label">${t('gaps.withoutLabel')}</span>
+          ${t(['plays', play.id, 'without'])}
+        </p>`
+      : ''}
+    ${primary && !play.magnitudeOnly
+      ? html`<p class="play__cost">${t('gaps.withoutCost')}</p>`
+      : ''}
 
     ${play.shortOfBar
       ? // Closing the loop the reviewer found open: the play was re-issued

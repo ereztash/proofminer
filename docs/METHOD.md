@@ -395,6 +395,47 @@ The engine computes coverage against the declared positioning and emits
 evidence, ranked by impact ÷ effort. This is the hand-holding mechanism: the
 product does not only rank what you have, it tells you what to go get.
 
+#### The route that carries no magnitude
+
+Some people cannot produce a number. Not "have not yet" — cannot: a designer
+whose unchosen concepts are never measured, a coach who refuses to let a price
+carry meaning. An instruction that opens *give me a figure* is, for them, the
+same instruction re-issued forever.
+
+Seven of the eight plays can be satisfied without one. Measured on
+best-practice evidence written with no magnitude at all, against each
+archetype's own bar (pinned in `tests/engine/gaps.test.js`):
+
+| | bar | without a magnitude | what carries it |
+|---|---|---|---|
+| `OUTCOME` | 45 | 54 | a stated before → after, in words |
+| `PEER` | 45 | 53 | name, role, place |
+| `VALIDATION` | 45 | 51 | an attributed quotation |
+| `FAILURE` | 42 | 47 | date and named party |
+| `METHOD` | 40 | 43 | dated, attributed, linked |
+| `ORIGIN` | 30 | 31 | year, place, what you saw |
+| `CREDENTIAL` | 42 | — | never required one; a year is a date |
+| `SCALE` | 45 | **none** | `hasScaleUnit` needs a digit beside the unit |
+
+`SCALE` is the exception and the copy says so rather than inventing a route:
+`inferArchetypes` reaches it only through `hasScaleUnit`, which requires an
+actual digit, so a magnitude-free claim is not classified as `SCALE` at all.
+
+**What this does not do is lower a bar.** Coverage thresholds, `BAND_USABLE`
+and the Liebig gate are untouched. Holding a claim still and removing its
+figure lowers its score — `specificity` and `outcome` reward magnitude and
+that is not adjusted — and `plays.*.without` states that cost instead of
+implying the two routes are equal. The narrower claim is the true one: a
+well-written claim with no number routinely outscores a terse one with a
+number, so the product only ever asserts the controlled comparison.
+
+The single ranking effect: when `magnitudeDensity` shows that **no** unit in an
+inventory of at least three carries a magnitude, the `SCALE` play's value is
+multiplied by `MAGNITUDE_ONLY_DISCOUNT`. Nothing else moves. `SCALE` sorts
+third for an independent user and second for a job seeker on cheapness alone,
+so without this the one play they cannot perform is offered before the ones
+they can.
+
 ### I4. L5 → L2 · Claim validation (drift detection)
 What actually converted is compared against the claim the user says they own.
 Divergence surfaces as positioning drift — the market is buying something other
@@ -446,6 +487,8 @@ measurement, it is a prior — see honesty rule 5.
 | `DECAY_FLOOR` | 0.35 | decay never removes more than 65% of a proof's value |
 | half-lives | credential 1460, experience 1095, outcome 730, media 540, event 365, traction 180 | days, by proof kind |
 | coverage thresholds | 45 default; ORIGIN 30, METHOD 40, CREDENTIAL 42, FAILURE 42 | measured from best-practice evidence per archetype |
+| `SPARSE_MAGNITUDE` / sample floor | 0.20 / 3 units | share of units carrying a magnitude below which the inventory reads as one the user cannot add numbers to |
+| `MAGNITUDE_ONLY_DISCOUNT` | 0.5 | applied to the `SCALE` play's rank value only, never to a threshold |
 | `MIN_OBSERVATIONS` / `SHRINKAGE_K` / `CONFIDENT_OBSERVATIONS` | 8 / 8 / 15 | calibration |
 | `MAX_WEIGHT_DRIFT` | 2.5 | points per dimension per calibration pass |
 | `COMPOUND_THRESHOLD` / `COMPOUND_MIN_ENGAGEMENT` / min impressions | 1.6 / 40 / 500 | compounding gates |

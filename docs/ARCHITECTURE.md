@@ -23,7 +23,7 @@ construction, and directly testable without a renderer. Adding React would put
 a build-time dependency and a component lifecycle between the tests and the
 thing being tested, in exchange for conveniences this UI does not need. The
 whole runtime is zero-dependency; the only production asset is one JS bundle
-of roughly 67 kB gzipped.
+of roughly 68 kB gzipped.
 
 The cost is honest: the view layer is a hand-rolled `innerHTML` renderer with
 focus restoration. That is acceptable at this size and would not be at ten
@@ -132,6 +132,9 @@ than its surface:
 - **authority** — layer locking, the Liebig gate (including *"six times the
   output, identical standing"*), all four diagnoses, next-move ordering, gap
   ranking, positioning issues
+- **gaps** — the magnitude-free route for every archetype and its absence for
+  `SCALE`, density sampling, and the proof that the demotion re-ranks without
+  moving a threshold
 - **feedback** — calibration shrinkage, the fixed-dimension guarantee,
   compounding thresholds and idempotence
 - **drafts** — the grounding validator across every angle × CTA × locale

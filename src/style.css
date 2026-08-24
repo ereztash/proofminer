@@ -1427,6 +1427,33 @@ p {
   border-inline-start: 3px solid var(--line);
 }
 
+/* The route that carries no magnitude. Marked apart from `.play__needs` so a
+   user who cannot produce a number can find it without reading the full-strength
+   route first, and so the SCALE card's "there is no route" reads as an answer
+   rather than as a second instruction. */
+.play__without {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin-block-start: 0.5rem;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px dashed var(--line);
+}
+
+.play__without-label {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  margin-block-end: 0.15rem;
+}
+
+.play__cost {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  margin-block-start: 0.5rem;
+  max-inline-size: 64ch;
+}
+
 .plays-more {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
