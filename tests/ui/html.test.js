@@ -387,3 +387,74 @@ describe('the extraction consent surface', () => {
     expect(markup).toContain('disabled');
   });
 });
+
+describe('what you expected, beside what was found', () => {
+  const t = translator('he');
+  const withExpectation = (expectedEvidence, claim) => {
+    const state = emptyState();
+    state.profile.expectedEvidence = expectedEvidence;
+    const proof = {
+      id: 'p1', claim, sourceId: 's', sourceName: 'src',
+      kind: 'outcome', archetypes: ['OUTCOME'],
+      breakdown: { falsifiability: 70, verification: 70, outcome: 70, specificity: 70 },
+      score: 62, occurredAt: null, demo: false, origin: 'mined',
+      pinned: false, dismissed: false, createdAt: 0,
+    };
+    return toString_(firstLightView(state, t, { proofs: [proof], top3: [proof] }));
+  };
+
+  it('renders nothing when the question went unanswered', () => {
+    const out = withExpectation('', 'ב-2025 קיצרתי את זמן האספקה מ-19 יום ל-7 ימים באלפא.');
+    expect(out).not.toContain(t('firstLight.expectedTitle'));
+  });
+
+  it('reports a match as confirmation, not as a correction', () => {
+    const out = withExpectation(
+      'סיכום פרויקט שבו זמני האספקה ירדו',
+      'ב-2025 קיצרתי אצל אלפא את זמני האספקה מ-19 יום ל-7 ימים.',
+    );
+    expect(out).toContain(t('firstLight.expectedAligned'));
+    expect(out).not.toContain(t('firstLight.expectedDiffers'));
+    // A match needs no caveat: nothing is being asserted about the user.
+    expect(out).not.toContain(t('firstLight.expectedCaveat'));
+  });
+
+  it('states the caveat instead of a verdict when the two diverge', () => {
+    const out = withExpectation(
+      'המלצה בכתב ממנכ"ל שעבדתי איתו',
+      'ב-2025 קיצרתי אצל אלפא את זמני האספקה מ-19 יום ל-7 ימים.',
+    );
+    expect(out).toContain(t('firstLight.expectedDiffers'));
+    expect(out).toContain(t('firstLight.expectedCaveat'));
+  });
+
+  it('lands after the three reveals, never before them', () => {
+    const out = withExpectation(
+      'המלצה בכתב ממנכ"ל שעבדתי איתו',
+      'ב-2025 קיצרתי אצל אלפא את זמני האספקה מ-19 יום ל-7 ימים.',
+    );
+    // credit before critique (docs/UX.md)
+    expect(out.indexOf('class="reveal"')).toBeLessThan(out.indexOf('class="expected"'));
+  });
+
+  it('never puts the self-reported confidence on screen', () => {
+    const state = emptyState();
+    state.profile.fitConfidence = 9;
+    state.profile.expectedEvidence = 'המלצה בכתב';
+    const proof = {
+      id: 'p1', claim: 'ב-2025 קיצרתי אצל אלפא את זמני האספקה.', sourceId: 's', sourceName: 'src',
+      kind: 'outcome', archetypes: ['OUTCOME'], breakdown: { outcome: 70 }, score: 31,
+      occurredAt: null, demo: false, origin: 'mined', pinned: false, dismissed: false, createdAt: 0,
+    };
+    const out = toString_(firstLightView(state, t, { proofs: [proof], top3: [proof] }));
+    // The number itself, and any pairing of it with the measured score, are the
+    // feature this deliberately does not build — see core/schema.js.
+    expect(out).not.toMatch(/\b9\b/);
+  });
+
+  it('no longer promises a comparison the product will not make', () => {
+    for (const bundle of [heBundle, enBundle]) {
+      expect(bundle.onboarding.fitNote).not.toMatch(/סיכון|הזדמנות|risk|opportunity/);
+    }
+  });
+});

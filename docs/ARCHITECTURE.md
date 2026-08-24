@@ -23,7 +23,7 @@ construction, and directly testable without a renderer. Adding React would put
 a build-time dependency and a component lifecycle between the tests and the
 thing being tested, in exchange for conveniences this UI does not need. The
 whole runtime is zero-dependency; the only production asset is one JS bundle
-of roughly 68 kB gzipped.
+of roughly 69 kB gzipped.
 
 The cost is honest: the view layer is a hand-rolled `innerHTML` renderer with
 focus restoration. That is acceptable at this size and would not be at ten

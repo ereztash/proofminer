@@ -128,6 +128,22 @@ they came to escape.
    than they think. **This is the product's entire hook and it must land inside
    3 minutes of arrival.**
 
+   **After the three, and only after them: what you expected.** Onboarding asks
+   which single piece of evidence the user thinks holds their claim. First
+   Light shows that answer beside the unit that actually scored highest. A
+   match is reported as confirmation — that is credit, not a test they passed.
+   A divergence is reported as one line worth looking at, with the caveat that
+   the comparison is token overlap and cannot tell a blind spot from a miner
+   that missed the line. It renders nothing when the question went unanswered.
+
+   **The version deliberately not built** is the neighbouring one: setting the
+   self-reported `fitConfidence` against L1's measured band. "You said 8, your
+   evidence says 31" reverses the product's emotional direction — the gap
+   exists to say the world undervalues you, not that you overvalue yourself —
+   and pairs two scales that are nowhere defined against each other. The
+   reasoning is kept next to the field in `core/schema.js` so the idea is
+   refused once rather than re-proposed.
+
 3. **Screen 2+ — the dashboard**, unlocked only once L1 exists.
 
 Layers L3–L6 stay visibly **locked, not failed**. A locked layer says

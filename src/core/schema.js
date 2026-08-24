@@ -86,9 +86,31 @@ export function emptyState() {
       track: 'independent',
       /** Whether the user's work is framed mainly as consulting action or expert judgement. */
       practiceMode: 'consultant',
-      /** Self-reported confidence that they know why to choose them over an alternative. */
+      /**
+       * Self-reported confidence that they know why to choose them over an
+       * alternative.
+       *
+       * **Deliberately never displayed, and never set against a measured
+       * score.** The tempting feature — "you said 8, your evidence says 31" —
+       * fails three ways at once. It reverses the emotional direction of the
+       * product, which exists to tell someone the world undervalues them, not
+       * that they overvalue themselves (`docs/UX.md`: never scold, credit
+       * before critique). It is a category error wearing a finding's clothes:
+       * this is self-reported clarity about differentiation, L1's band is
+       * measured evidence quality, and the two scales are not defined against
+       * each other anywhere. And `docs/METHOD.md` opens by promising that every
+       * number the product shows is derivable from it — this one is not in it.
+       *
+       * It is kept because the question does work in the conversation where it
+       * is asked. Its only sanctioned use is calibrating register, never
+       * arithmetic.
+       */
       fitConfidence: 5,
-      /** The evidence they expect should support that choice, before the miner tests it. */
+      /**
+       * The evidence they expect should support that choice, before the miner
+       * tests it. Read in First Light, beside the unit that actually scored
+       * highest — see `expectedCard` in `ui/views/onboarding.js`.
+       */
       expectedEvidence: '',
       /** Weeks the user has been at this. Sets the urgency register. */
       weeksInMotion: 0,

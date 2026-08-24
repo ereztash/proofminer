@@ -50,7 +50,7 @@ export default {
     modeExpertOffer: 'Expertise / diagnosis',
     fitQuestion: 'From 1 to 10, how clear is it why someone should choose you over an alternative?',
     fitNote:
-      'This is not a score. It is a starting point: high confidence without evidence is risk, and low confidence with strong evidence is opportunity.',
+      'This is not a score, and it will not be compared against any other number. It is a starting point — so we know where you are coming in.',
     fitLow: 'I do not know what to show',
     fitHigh: 'I know exactly',
     claimQuestion: 'What sentence do you want the client to believe?',
@@ -95,6 +95,20 @@ export default {
   },
 
   firstLight: {
+    expectedTitle:
+      'What you expected, and what was found',
+    expectedLabel:
+      'You said the evidence that best holds your claim is',
+    foundLabel:
+      'What scored highest',
+    expectedAligned:
+      'These are the same thing. What you thought was holding you up is holding you up.',
+    expectedDiffers:
+      'These are not the same thing. That does not mean you were wrong, and it does ' +
+      'not mean the ranking is right. It is one line worth looking at.',
+    expectedCaveat:
+      'This comparison is word overlap, not understanding. If the evidence you ' +
+      'expected is not listed above, the likelier reason is that it was not in what you pasted.',
     title: (n) => `We found ${n} pieces of evidence in what you pasted.`,
     subtitle:
       'These are not content ideas. These are things that already happened, that you hold and nobody sees.',
