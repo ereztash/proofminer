@@ -70,6 +70,7 @@ function row(proof, t, now, expanded, inventory, signalCache) {
       <p class="proof__meta">
         ${t('inventory.source')}: ${proof.sourceName} · ${t(['inventory', 'origin', proof.origin])}
         ${proof.demo ? html` · <span class="tag tag--demo">${t('mine.demoBadge')}</span>` : ''}
+        ${proof.via === 'model' ? html` · <span class="tag">${t('common.viaModel')}</span>` : ''}
       </p>
       <p class="proof__strong">
         <b>${t('inventory.strong')}:</b>

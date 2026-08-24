@@ -23,7 +23,7 @@ construction, and directly testable without a renderer. Adding React would put
 a build-time dependency and a component lifecycle between the tests and the
 thing being tested, in exchange for conveniences this UI does not need. The
 whole runtime is zero-dependency; the only production asset is one JS bundle
-of roughly 52 kB gzipped.
+of roughly 67 kB gzipped.
 
 The cost is honest: the view layer is a hand-rolled `innerHTML` renderer with
 focus restoration. That is acceptable at this size and would not be at ten
@@ -52,10 +52,46 @@ everything, so export exists and is one click.
 
 ### Deterministic core, optional model
 Every number this product shows comes from deterministic code. The LLM adapter
-is off by default, never scores anything, and can only rewrite text the user
-already owns — and its output is rejected unless it passes the same grounding
-validator that template drafts pass. A model outage or an absent key removes a
-convenience, never a capability.
+is off by default and never scores anything. It has exactly two jobs, and a
+gate on each:
+
+- **`refineDraft`** rewrites text the user already owns; its output is rejected
+  unless it passes the same grounding validator that template drafts pass.
+- **`extractClaims`** proposes which passages of a source document are evidence;
+  its output passes `engine/extract.js`, which keeps a candidate only if it can
+  be located verbatim in that document and returns the *document's* characters,
+  sliced at the located offsets, rather than the model's string.
+
+The second gate is the stronger of the two, and deliberately so. A rewriter has
+a legitimate reason to produce words that are not in its input, which is why its
+check has to be heuristic in places. An extractor does not: every passage it
+returns should already exist. Making the comparison exact turns fabrication from
+unlikely into structurally impossible, so this is the one place in the product
+where a model's output needs no human review to be safe — it is either the
+user's text or it is discarded.
+
+The division of labour is the design: **boundaries are a judgement, worth is a
+measurement.** Sentence splitting cannot see that a proof runs across two
+sentences or that a paragraph of pleasantries holds one buried outcome, and
+that judgement is what the model is bought for. It is not permitted anywhere
+near the scoring, and the spans it returns run through the same nine dimensions
+with the same weights as a split sentence.
+
+The gate is applied in `mineSources`, not only where the model answers. Stored
+spans are re-verified against their source on every mining pass, so state that
+arrives from an edited export cannot inject a claim either — and the schema
+therefore validates only the *shape* of `source.extracted`, leaving the
+*guarantee* to the miner. That also keeps `core/` free of any dependency on
+`engine/`.
+
+A model outage, an absent key or a disabled toggle removes a convenience, never
+a capability: drafts still compose from templates, and mining falls back to
+deterministic splitting on the spot.
+
+Extraction carries its own consent flag (`settings.llm.extract`) nested inside
+the rewriter's. Rewriting sends one draft and the proof under it; extraction
+sends a whole document. A single switch would have let the smaller consent
+authorise the larger disclosure.
 
 The browser-held API key is a real, documented tradeoff, not an oversight; see
 the header of `src/adapters/llm.js`.
@@ -81,11 +117,16 @@ rather than aspirational.
 
 ## Testing
 
-Unit tests across eight files, covering the engine's actual claims rather
+Unit tests across nine files, covering the engine's actual claims rather
 than its surface:
 
 - **text** — Hebrew normalisation, prefix ambiguity, similarity symmetry,
   sentence splitting
+- **extract** — the verbatim gate: paraphrase, invented magnitude, stitched
+  span and truncation all rejected; re-wrapped lines, swapped maqaf, straight
+  quotes and dropped niqqud all forgiven; the offset map proved to round-trip;
+  the miner's fallback and its re-verification of stored spans; the adapter's
+  consent, parsing and transport failures
 - **scoring** — signal extraction in both languages, dimension bounds, decay
   ordering by kind, dedupe, mining, re-ranking on positioning change
 - **authority** — layer locking, the Liebig gate (including *"six times the

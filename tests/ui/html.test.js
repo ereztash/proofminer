@@ -4,6 +4,7 @@ import { translator } from '../../src/i18n/index.js';
 import heBundle from '../../src/i18n/he.js';
 import enBundle from '../../src/i18n/en.js';
 import { NOT_ME, firstLightView, onboardingView } from '../../src/ui/views/onboarding.js';
+import { mineView } from '../../src/ui/views/mine.js';
 import { emptyState } from '../../src/core/schema.js';
 
 describe('escaping', () => {
@@ -338,5 +339,51 @@ describe('the reveal does not promise more than it found', () => {
       firstLightView({ ...emptyState(), proofs }, t, { proofs, top3: proofs, demo: false }),
     );
     expect(markup).toContain(t('firstLight.threeTitle'));
+  });
+});
+
+describe('the extraction consent surface', () => {
+  const t = translator('he');
+  const withSource = (llm) => {
+    const state = emptyState();
+    state.sources = [
+      {
+        id: 's1',
+        name: 'cv',
+        text: 'טקסט מקור כלשהו שאפשר לחלץ ממנו ראיות בהמשך.',
+        demo: false,
+        addedAt: 0,
+        minedAt: null,
+        extracted: [],
+        extractedAt: null,
+      },
+    ];
+    state.settings.llm = { ...state.settings.llm, ...llm };
+    return state;
+  };
+
+  it('offers nothing to send anywhere until both consents are given', () => {
+    const off = toString_(mineView(withSource({}), t));
+    expect(off).not.toContain('data-act="extractSource"');
+    expect(off).toContain(t('mine.extractSetup'));
+
+    // The rewriting toggle alone must not authorise sending a whole document.
+    const rewriteOnly = toString_(
+      mineView(withSource({ enabled: true, apiKey: 'k', extract: false }), t),
+    );
+    expect(rewriteOnly).not.toContain('data-act="extractSource"');
+  });
+
+  it('offers it once extraction is explicitly consented to', () => {
+    const on = toString_(mineView(withSource({ enabled: true, apiKey: 'k', extract: true }), t));
+    expect(on).toContain('data-act="extractSource"');
+    expect(on).toContain(t('mine.extract'));
+  });
+
+  it('locks every row while one source is out at the model', () => {
+    const state = withSource({ enabled: true, apiKey: 'k', extract: true });
+    const markup = toString_(mineView(state, t, { extracting: 's1' }));
+    expect(markup).toContain(t('mine.extractRunning'));
+    expect(markup).toContain('disabled');
   });
 });

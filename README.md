@@ -48,6 +48,13 @@ measures a problem you brought with you; it does not sell you one.
 L1 is the **foundation**. L3–L6 are **built** standing. L2 is diagnostic — it
 reaches the index only by re-ranking the evidence in L1.
 
+Proof units are cut out of the documents you paste. By default that cut is
+deterministic — terminators, bullets, a length floor. Optionally, and behind its
+own consent, a model can choose the boundaries instead: it sees that a proof
+runs across two sentences and that a paragraph of pleasantries holds one buried
+outcome, which sentence splitting cannot. It only ever points at passages of
+your document; see the extraction guarantee below.
+
 ## The Liebig gate — what it does and does not prevent
 
 ```
@@ -115,6 +122,28 @@ is anti-hype cannot overstate its own integrity.
   invented job title made of ordinary words, or a claim stitched across two
   separately-true proofs. Those need a reader. The studio says so on screen
   rather than implying the check is a truth gate.
+- **Nothing enters your evidence base that you did not write.**
+  Proof units are always substrings of a document you supplied. That is free
+  when the deterministic splitter runs, and it is *enforced* when the optional
+  model-assisted extraction runs: the model is asked to point at passages, never
+  to write them, and every candidate must be located **verbatim** in the source.
+  What is stored is the document's own characters, sliced at the located
+  offsets — never the string the model returned. A paraphrase, a stitched claim,
+  an invented number and a hallucinated employer all fail the same way: they are
+  not in the text. Rejected candidates are counted and the count is shown.
+  The gate re-runs at mining time, so a hand-edited backup cannot inject a claim
+  either. The two edits made to a located span — removing a leading bullet,
+  collapsing internal whitespace — can only remove information.
+  **What it does not do** is judge whether the passage is *true*, only whether
+  it is *yours*. A sentence you wrote about yourself is still a sentence you
+  wrote about yourself, and the Liebig gate's limits above apply unchanged.
+- **The model never scores anything.** It has two jobs and a gate on each:
+  rewriting a draft you already own, and choosing where a claim begins and ends.
+  Boundaries are a judgement; worth is a measurement. Every span it proposes is
+  scored by the same nine dimensions, with the same weights, as a split
+  sentence. Turning it off, running out of credit or losing the network removes
+  a convenience and never a capability — mining falls back to deterministic
+  splitting on the spot.
 - **No score without inputs.** A layer with no data reports zero confidence and
   says what unlocks it — never a red zero. An unfilled positioning form costs
   nothing: positioning enters the foundation as a bounded multiplier on the
@@ -147,9 +176,17 @@ is anti-hype cannot overstate its own integrity.
   anything more. Seven correlations on a small sample is mostly noise, and the
   panel says that instead of asserting a finding.
 - **Your data never leaves your device** — no server, no account, no telemetry,
-  no external font, zero outbound requests. **Unless** you explicitly enable the
-  optional model rewriter, which sends the draft *and the evidence it cites* to
-  the provider you configured. That is stated at the point of the toggle.
+  no external font, zero outbound requests. **Unless** you explicitly enable one
+  of the two optional model features, each of which has its own switch because
+  each sends a different amount:
+  - the **rewriter** sends one draft *and the evidence it cites*;
+  - **extraction** sends *a whole source document* — the CV, the client email,
+    the thread.
+
+  The second is the larger disclosure, so it cannot be authorised by the first:
+  its switch is nested inside the rewriter's, defaults off, and the app asks
+  again at the moment a document is about to be sent. Both are stated at the
+  point of the toggle.
 
 ## Run locally
 

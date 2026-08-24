@@ -20,7 +20,7 @@ import { revealPicks } from '../engine/explain.js';
 import { parseAnalyticsPaste } from '../engine/analytics.js';
 import { activeWeights, calibrate, compound } from '../engine/feedback.js';
 import { provenanceFooter } from '../engine/drafts.js';
-import { refineDraft } from '../adapters/llm.js';
+import { MAX_SOURCE_CHARS, extractClaims, refineDraft } from '../adapters/llm.js';
 import { sortByDesc } from '../core/util.js';
 import { decayedScore } from '../engine/score.js';
 
@@ -75,6 +75,8 @@ const ui = {
   /** Artifact this studio session is editing, so save+publish is one record. */
   artifactId: null,
   refining: false,
+  /** Source id currently out at the model, so the row can say so and lock. */
+  extracting: null,
   toast: '',
 };
 
@@ -116,6 +118,7 @@ export function mountApp(root) {
     ui.angle = 'bare';
     ui.cta = 'none';
     ui.refining = false;
+    ui.extracting = null;
     ui.toast = '';
   }
 
@@ -450,6 +453,61 @@ export function mountApp(root) {
       }
     },
 
+    /**
+     * Hand one source to the model to mark up, then re-mine.
+     *
+     * The disclosure is restated here rather than left in Settings: this is the
+     * moment a whole document leaves the device, and it is a bigger moment than
+     * the one the rewriting toggle described. What comes back is already through
+     * the gate — `extractClaims` returns spans located in this source's own text
+     * — so what is stored is the user's characters, and the count of rejected
+     * candidates is reported rather than quietly dropped.
+     */
+    async extractSource({ id }) {
+      const source = state.sources.find((src) => src.id === id);
+      if (!source || ui.extracting) return;
+      if (!globalThis.confirm?.(t('mine.extractDisclosure'))) return;
+
+      ui.extracting = id;
+      render();
+      const result = await extractClaims({
+        settings: state.settings,
+        source,
+        locale: state.locale,
+        mode: state.profile.practiceMode,
+      });
+      ui.extracting = null;
+
+      if (!result.ok) {
+        toast(t('mine.extractFailed'));
+        return;
+      }
+      if (!result.spans.length) {
+        toast(t('mine.extractNone'));
+        return;
+      }
+
+      store.update((draft) => {
+        const target = draft.sources.find((src) => src.id === id);
+        if (!target) return;
+        target.extracted = result.spans;
+        target.extractedAt = realNow();
+        // Cleared here and re-stamped by the `remine()` on the next line. It
+        // matters only if that call never happens: `nextMove` reads `minedAt`
+        // to decide whether a source is waiting, and a source whose boundaries
+        // just changed is waiting until it has been mined at them.
+        target.minedAt = null;
+      });
+      remine();
+      // Both facts, when both are true. A truncation notice that swallowed the
+      // count would leave the user unable to tell a partial read from a rejected
+      // one, and those call for different next steps.
+      const report = t('mine.extractResult', result.spans.length, result.rejected.length);
+      toast(
+        result.truncated ? `${report} ${t('mine.extractTruncated', MAX_SOURCE_CHARS)}` : report,
+      );
+    },
+
     saveReception() {
       const artifactId = val('rc-artifact');
       if (!artifactId) return;
@@ -654,7 +712,7 @@ export function mountApp(root) {
 
     switch (ui.view) {
       case 'mine':
-        return mineView(state, t);
+        return mineView(state, t, { extracting: ui.extracting });
       case 'position':
         return positionView(state, t);
       case 'inventory':
@@ -873,6 +931,14 @@ export function mountApp(root) {
       store.update((draft) => {
         draft.settings.llm.enabled = enabled;
         if (!enabled) draft.settings.llm.apiKey = '';
+      });
+      render();
+    } else if (el.id === 'llm-extract') {
+      // Persisted immediately, like the switch above it and for the same
+      // reason: a consent the UI shows as granted must be the consent stored.
+      const extract = el.checked;
+      store.update((draft) => {
+        draft.settings.llm.extract = extract;
       });
       render();
     } else if (el.id === 'file') {

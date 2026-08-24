@@ -433,6 +433,24 @@ export default {
     sourcesCount: (n) => (n ? `${n} sources` : 'No sources yet'),
     run: 'Extract and rank evidence',
     remove: 'Remove',
+    extract: 'Let the model mark it up',
+    extractRedo: 'Mark up again',
+    extractRunning: 'Reading the document…',
+    extractHint:
+      'Deterministic splitting cuts sentence by sentence. A model can see that a proof runs across two lines, and that a whole paragraph is just politeness. It only marks passages of your document — it does not write, rephrase or rank anything.',
+    extractSetup: 'A model can mark up passages instead of the deterministic split. Turn it on in Settings.',
+    extractDisclosure:
+      'This sends the entire contents of this source to the provider you configured — not one line of it. Afterwards, only passages found word for word in your document are kept. Continue?',
+    extractState: (n) => (n === 1 ? '1 passage marked' : `${n} passages marked`),
+    extractResult: (accepted, rejected) =>
+      rejected
+        ? `${accepted} passages kept. ${rejected} rejected — not found in your document.`
+        : `${accepted} passages kept, every one of them found in your document.`,
+    extractNone:
+      'The model returned nothing that was found in this document. Deterministic splitting carries on as before.',
+    extractTruncated: (chars) =>
+      `The document is too long to read in one pass, and only the first ${chars.toLocaleString('en-GB')} characters were read — split it into separate sources to cover the rest.`,
+    extractFailed: 'Extraction failed. Nothing changed, and deterministic splitting still works.',
     demoBadge: 'Demo',
     demoWarning: 'This is a sample. It is marked as demo, excluded from your score and never used for learning.',
   },
@@ -656,6 +674,11 @@ export default {
     llmEnable: 'Enable rewriting',
     llmKey: 'API key',
     llmModel: 'Model',
+    llmExtract: 'Let the model mark up evidence in sources',
+    llmExtractBody:
+      'This is a separate consent, because what leaves the device is larger: rewriting sends one draft and the evidence under it, while marking up sends the whole document — the CV, the client email, the thread. In exchange, the model can recognise a proof that runs across several sentences, and skip what is only politeness or a job description.',
+    llmExtractNote:
+      'The model does not write evidence for you. It only points at passages, and a passage is kept only if it is found word for word in your document — what enters the inventory is the characters from that document, not what the model returned. A rephrasing, an invented number or a name that was never there all fail the same check. Ranking stays entirely with the engine.',
     llmNever: 'The model never scores anything. Its output passes the same check: a number ' +
       'absent from the evidence is blocked, a name absent from it is only flagged — and in ' +
       'Hebrew the name detection is weakest. The model can add an employer, a client or a ' +
@@ -665,6 +688,7 @@ export default {
 
   common: {
     close: 'Close',
+    viaModel: 'model-marked',
     cancel: 'Cancel',
     back: 'Back',
     of: 'of',

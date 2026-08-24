@@ -141,7 +141,7 @@ export function emptyState() {
     },
     settings: {
       /** Optional BYOK enrichment. Off by default; see adapters/llm.js. */
-      llm: { enabled: false, provider: 'anthropic', model: '', apiKey: '' },
+      llm: { enabled: false, provider: 'anthropic', model: '', apiKey: '', extract: false },
       reduceMotion: false,
     },
   };
@@ -155,12 +155,16 @@ export function emptyState() {
  * @property {boolean} demo  true for bundled sample material
  * @property {number} addedAt
  * @property {number|null} minedAt  last mining pass, null if never mined
+ * @property {string[]} extracted  spans model-assisted extraction proposed and the
+ *   gate accepted; empty when the source has only ever been split deterministically
+ * @property {number|null} extractedAt
  */
 
 /**
  * @typedef {object} ProofUnit
  * @property {string} id
  * @property {string} claim              the atomic evidence sentence
+ * @property {'split'|'model'} via        how the claim's boundaries were found
  * @property {string} sourceId
  * @property {string} sourceName
  * @property {typeof PROOF_KINDS[number]} kind
@@ -230,6 +234,14 @@ const safeId = (value, prefix) =>
   typeof value === 'string' && ID_SAFE.test(value) ? value : makeId(prefix);
 
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+/**
+ * Ceiling on stored extraction spans per source. Matches `MAX_SPANS` in
+ * `engine/extract.js`; duplicated rather than imported because `core/` does not
+ * depend on `engine/`, and a state validator that pulls in the measurement
+ * engine to validate an array length is the wrong trade.
+ */
+const MAX_EXTRACTED_SPANS = 40;
+
 const arr = (v) => (Array.isArray(v) ? v : []);
 const str = (v, fallback = '') => (typeof v === 'string' ? v : fallback);
 const num = (v, fallback = 0) => (Number.isFinite(v) ? v : fallback);
@@ -291,6 +303,12 @@ export function normalizeState(input) {
         provider: str(llm.provider, 'anthropic'),
         model: str(llm.model),
         apiKey: str(llm.apiKey),
+        /**
+         * Separate consent from `enabled`. Rewriting sends one draft and the
+         * proof under it; extraction sends a whole document. A single switch
+         * would have let the smaller consent authorise the larger disclosure.
+         */
+        extract: bool(llm.extract) && bool(llm.enabled),
       },
       reduceMotion: bool(settings.reduceMotion),
     },
@@ -386,6 +404,16 @@ function normalizeSource(s, id) {
     addedAt: num(s.addedAt, Date.now()),
     /** When this source was last run through the miner. */
     minedAt: Number.isFinite(s.minedAt) ? s.minedAt : null,
+    /**
+     * Accepted extraction spans. Coerced to strings and capped here; **verified
+     * against the source text in `mineSources`**, not here, so the check runs on
+     * every mining pass rather than only at import. Schema owns shape; the
+     * miner owns the guarantee.
+     */
+    extracted: arr(s.extracted)
+      .filter((span) => typeof span === 'string' && span.trim())
+      .slice(0, MAX_EXTRACTED_SPANS),
+    extractedAt: Number.isFinite(s.extractedAt) ? s.extractedAt : null,
   };
 }
 
@@ -408,6 +436,7 @@ function normalizeProof(p, id, toSource) {
     occurredAt: Number.isFinite(p.occurredAt) ? p.occurredAt : null,
     demo: bool(p.demo),
     origin: oneOf(p.origin, ['mined', 'compounded', 'manual'], 'mined'),
+    via: oneOf(p.via, ['split', 'model'], 'split'),
     pinned: bool(p.pinned),
     dismissed: bool(p.dismissed),
     createdAt: num(p.createdAt, Date.now()),

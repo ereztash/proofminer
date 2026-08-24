@@ -4,9 +4,11 @@
 
 import { html } from '../html.js';
 import { button, field, notice, section, textArea } from '../components.js';
+import { isExtractionConfigured } from '../../adapters/llm.js';
 
-export function mineView(state, t) {
+export function mineView(state, t, { extracting = null } = {}) {
   const hasDemo = state.sources.some((s) => s.demo);
+  const canExtract = isExtractionConfigured(state.settings);
 
   return html`<div class="stack">
     ${section(
@@ -47,15 +49,38 @@ export function mineView(state, t) {
                   <div>
                     <b>${source.name}</b>
                     ${source.demo ? html`<span class="tag tag--demo">${t('mine.demoBadge')}</span>` : ''}
+                    ${source.extracted.length
+                      ? html`<span class="tag">${t('mine.extractState', source.extracted.length)}</span>`
+                      : ''}
                     <p class="sources__preview">${source.text.slice(0, 160)}</p>
                   </div>
-                  ${button('removeSource', t('mine.remove'), {
-                    variant: 'ghost',
-                    payload: { id: source.id },
-                  })}
+                  <div class="row">
+                    ${canExtract
+                      ? button(
+                          'extractSource',
+                          extracting === source.id
+                            ? t('mine.extractRunning')
+                            : source.extracted.length
+                              ? t('mine.extractRedo')
+                              : t('mine.extract'),
+                          {
+                            variant: 'secondary',
+                            payload: { id: source.id },
+                            disabled: extracting !== null,
+                          },
+                        )
+                      : ''}
+                    ${button('removeSource', t('mine.remove'), {
+                      variant: 'ghost',
+                      payload: { id: source.id },
+                    })}
+                  </div>
                 </li>`,
               )}
             </ul>`
+          : ''}
+        ${state.sources.length
+          ? notice('info', canExtract ? t('mine.extractHint') : t('mine.extractSetup'))
           : ''}
         <div class="row row--end">
           ${button('mine', t('mine.run'), {

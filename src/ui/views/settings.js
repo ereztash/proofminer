@@ -4,6 +4,11 @@
  * The LLM section states the browser-key security caveat in the UI itself
  * rather than burying it in documentation, because the person entering the key
  * is the one who carries the risk.
+ *
+ * Extraction has its own switch nested inside the rewriting one, and its own
+ * disclosure, because it sends a whole document rather than a single draft. One
+ * toggle covering both would have let the smaller consent authorise the larger
+ * disclosure.
  */
 
 import { html } from '../html.js';
@@ -52,6 +57,15 @@ export function settingsView(state, t, { storageError }) {
           ? html`
               ${field('llm-key', t('settings.llmKey'), textInput('llm-key', llm.apiKey, { type: 'password' }))}
               ${field('llm-model', t('settings.llmModel'), textInput('llm-model', llm.model, { placeholder: 'claude-sonnet-5' }))}
+
+              <div class="divider"></div>
+
+              <p class="prose">${t('settings.llmExtractBody')}</p>
+              <label class="switch">
+                <input type="checkbox" id="llm-extract" ${llm.extract ? checkedAttr : ''} />
+                <span>${t('settings.llmExtract')}</span>
+              </label>
+              ${notice('info', t('settings.llmExtractNote'))}
             `
           : ''}
         ${notice('info', t('settings.llmNever'))}
