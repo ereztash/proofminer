@@ -28,10 +28,26 @@ jobs:
     name: Browser smoke against deployed app
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.deployment_status.state == 'success'
+    # Preview deployments are not reachable by this job. The project runs Vercel
+    # SSO protection in `all_except_custom_domains` mode, so every preview URL
+    # answers with the Vercel login page rather than the app, and all three
+    # specs fail against an `<h1>Log in to Vercel</h1>` no matter what the
+    # commit changed. Only the assigned production domain is public.
+    #
+    # Gated on *not preview* rather than on *is production*: if Vercel ever
+    # relabels the environment, the wrong guess is a redundant run against
+    # production, not a check that silently stops running.
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+      !contains(github.event.deployment_status.environment, 'preview'))
 
     env:
-      PROOFMINER_BASE_URL: ${{ github.event.inputs.base_url || github.event.deployment_status.environment_url || 'https://proofminer-gamma.vercel.app' }}
+      # Deliberately not `deployment_status.environment_url`: that is the
+      # immutable per-deployment URL, which SSO protects even for production.
+      # The public alias is the only address a headless browser can read.
+      PROOFMINER_BASE_URL: ${{ github.event.inputs.base_url || vars.PROOFMINER_BASE_URL || 'https://proofminer-gamma.vercel.app' }}
 
     steps:
       - name: Checkout

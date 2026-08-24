@@ -110,6 +110,18 @@ they came to escape.
    form cache — a box that empties itself when the user answers a question
    above it is the worst possible bug on this screen.
 
+   **What the paste box asks for is a product decision, not a placeholder.**
+   Asking for a CV gets a CV, and a CV is the worst available input: it is the
+   document the user has already edited, and they can already name its best
+   three lines. Nothing in it is a discovery. The screen therefore asks for the
+   material they never counted as evidence — client emails, a project thread, an
+   old proposal, meeting notes — and says plainly that messier and longer is
+   better. That is where the units they forgot they earned actually are, and it
+   is the input model-assisted extraction (`docs/METHOD.md`) pays off on:
+   sentence splitting cannot tell a buried result from four lines of
+   pleasantries, and it cannot see an outcome whose before-state sits in the
+   previous sentence.
+
 2. **Screen 1 — First Light.** After the first mine, a dedicated reveal state
    — *not* the dashboard. `"מצאנו 14 הוכחות במה שהדבקת."` Then the three they
    would never have published themselves, with the reason each one is stronger

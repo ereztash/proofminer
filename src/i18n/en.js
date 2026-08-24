@@ -70,10 +70,10 @@ export default {
     stepClaim: 'Choice claim',
     stepEvidence: 'Expected evidence',
     stepMaterial: 'Material to test',
-    firstStepTitle: 'Paste something that already exists',
+    firstStepTitle: 'Paste the material you never counted as evidence',
     firstStepBody:
-      'Paste the material that should support the claim: a CV, client thank-you email, project summary, recommendation, old post, work method or role description. Nothing needs rewriting.',
-    placeholder: 'Paste here. Messy is fine — exactly as you have it.',
+      'Raw material works best here: client emails, a thread about a project, an old proposal, meeting notes, a message you wrote to your team. A CV works too, but there you have already edited yourself, and you know your own best three lines. The unedited material is where the things you forgot you did are.',
+    placeholder: 'Paste here. The messier and longer, the better. Do not tidy it, do not rewrite it.',
     analyze: 'Find my evidence',
     orSample: 'I have nothing ready — show me on a sample',
   },
@@ -424,7 +424,8 @@ export default {
 
   mine: {
     title: 'Sources',
-    subtitle: 'Every document is a container. Every line that comes out of it is evidence in its own right.',
+    subtitle:
+      'Every document is a container. Raw material you never edited — emails, threads, old proposals — yields more here than a tidy document.',
     paste: 'Text',
     file: 'File',
     addSource: 'Add source',
