@@ -34,12 +34,12 @@ export default {
     //
     // It used to open "when a client is choosing between you and someone else,
     // which piece of evidence should you show?" — a question that presumes the
-    // visitor already frames their problem as evidence selection. Nobody in the
-    // corpus does. What they say, in four of five cases, is a version of "I
-    // can't explain exactly what I do", and three of them follow it with "and
-    // anyway what I do is basic, everybody works this way". The second sentence
-    // is this product's entire hook, stated by the people it is for, and it
-    // appeared nowhere on the screen.
+    // visitor already frames their problem as evidence selection. Almost nobody
+    // in this audience does. What they say is a version of "I can't explain
+    // exactly what I do", usually followed by "and anyway what I do is basic,
+    // everybody works this way". The second sentence is this product's entire
+    // hook, in the words of the people it is for, and it appeared nowhere on
+    // the screen.
     painTitle: 'אתה יודע לעשות את זה. להסביר את זה — סיפור אחר.',
     painBody:
       'אם המשפט "אני לא יודע להסביר מה בדיוק אני עושה" מוכר לך, ואחריו מגיע ' +
@@ -153,8 +153,8 @@ export default {
     thinTitle: 'מצאנו מעט מדי כדי להגיד לך משהו ודאי',
     // Both this and `emptyBody` used to be verdicts on what the user brought —
     // "what you pasted is mostly a description of roles". They are now the
-    // expected result of this stage, which is what turned the same experience
-    // from a complaint into reassurance for a client in the corpus. And the
+    // expected result of this stage, which is what turns the same experience
+    // from a complaint into reassurance. And the
     // instruction no longer leads with a number: seven of the eight evidence
     // routes do not need one (docs/METHOD.md, I3).
     thinBody:

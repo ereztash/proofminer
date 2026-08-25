@@ -24,7 +24,7 @@
  * So recall produces **retrieval tasks, not proof units**. The pivot is the
  * second question: *who was in the room*. A name is not evidence, but it is
  * the address of someone who can supply evidence — and one message to one
- * named person is, per the corpus, the move that actually gets stuck. Nothing
+ * named person is the move that actually gets stuck for this audience. Nothing
  * this module returns is scored, counted, or fed to any layer. It is a to-do
  * list with a person's name on each line, and the evidence enters later,
  * through the ordinary paste box, in the words of whoever wrote back.
