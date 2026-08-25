@@ -236,6 +236,57 @@ line and it contradicts the second refusal above: measure the gap between
 visits and you will eventually act on it. Relief is allowed to look like
 someone closing the tab.
 
+### The fork inside criterion 1
+
+Criterion 1 asks for three things at once: First Light inside ten minutes, at
+least one proof unit above `BAND_USABLE`, and material the person chose. The
+product's own copy says the first and the third collide.
+
+> **`firstLight.emptyBody`** — *A CV or a profile has already been edited, and
+> those lines usually fell out along the way.*
+
+Told to bring their own material, most people reach for the CV or the profile.
+That is the document this product states, in its own voice and on its own
+screen, will not hold anything checkable. So the likeliest first paste is the
+one already predicted to fail, and criterion 1 is in part a measurement of
+which file somebody happened to have open.
+
+**The honest recovery cannot beat the clock.** The way out of that screen is
+the recall room, and what it produces is an errand addressed to a person who
+has to answer it. That takes days. No arrangement of the interface fits it into
+ten minutes, because the missing thing is not on the screen — it is in somebody
+else's inbox. The route that is structurally right therefore fails criterion 1
+as written.
+
+**This is the falsifier's problem one level down, and it deserves the same
+treatment.** Someone who arrives, is told plainly that the document they
+brought holds nothing checkable, understands why, and leaves with a named
+person to ask has been served exactly as designed. Scoring that as a failure of
+criterion 1 files the product's best available behaviour as a miss. And the
+comfortable repair — telling people what to bring — deletes *from material they
+chose themselves*, which is the clause doing the real work: what someone
+reaches for unprompted is itself one of the findings this trial exists to
+collect.
+
+**Three ways out, one of which has to be chosen in writing.**
+
+| | Option | What it costs |
+|---|---|---|
+| A | Split it: *reaches First Light inside ten minutes* and *holds a proof above `BAND_USABLE`* scored separately, the second with no clock | Two numbers where there was one, and the second stays open past day 0 |
+| B | Tell them what to bring | Deletes "material they chose themselves", and stops collecting what people reach for on their own |
+| C | Scope the trial to people who already hold a document | The result no longer speaks for anyone who arrives empty-handed, and that limit has to travel with every conclusion drawn from it |
+
+**A is what this section recommends**, because it is the only one that keeps
+both clauses honest. The ten-minute clock is a claim about this product's
+onboarding; the band is a claim about the person's material. They were ever one
+line only because they usually arrive together, and splitting them does not
+weaken the criterion — it stops the easier half from concealing the harder one.
+
+It is a recommendation and not a decision. Whoever runs the trial makes it, and
+makes it **before the first person opens the link**, for the same reason the
+coding rule is written first: settled afterwards, this fork resolves to
+whichever reading the five people happened to satisfy.
+
 ### The falsifier
 
 **If three or more of the five turn out to be blocked by definition rather than
