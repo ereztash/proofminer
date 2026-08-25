@@ -55,7 +55,7 @@ const ARCHETYPE_WEIGHT = {
  * re-issued every fortnight. The threshold now asks each archetype for the
  * best that archetype can be, not for the best an OUTCOME can be.
  */
-const COVERAGE_CEILING = {
+export const COVERAGE_CEILING = {
   ORIGIN: 30,
   METHOD: 40,
   // Re-calibrated with the verification fix in `dimensions.js`, not loosened.
@@ -129,7 +129,7 @@ const MAGNITUDE_SAMPLE_MIN = 3;
  * is told to go and count things before they are told to go and ask a client
  * for a sentence — the one of the two they can actually do.
  */
-const MAGNITUDE_ONLY_DISCOUNT = 0.5;
+export const MAGNITUDE_ONLY_DISCOUNT = 0.5;
 
 /**
  * Share of the user's real evidence that carries a magnitude.
