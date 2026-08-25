@@ -76,28 +76,27 @@ identical objective situation as a qualified user. They are still out of scope.
 ### An open question about which gap this actually is
 
 The product measures a **visibility gap**: evidence held, standing not granted.
-A pass over the research corpus for how people describe their own blocker,
-in their own words, found something else. Four of the five describe it as an
-inability to *say* what they do — "I cannot explain exactly what I do", "it is
-hard for me to define", "I cannot put my finger on it". Not one describes
+Asked to describe their own blocker in their own words, people in this audience
+mostly describe something else — an inability to *say* what they do. "I cannot
+explain exactly what I do." "It is hard for me to define." Very few describe
 holding evidence that nobody sees.
 
-Three of the five then add the sentence this product exists to overturn: *what
-I do is basic, everybody works this way.* So the thesis is not contradicted —
-that belief is exactly what a catalogued evidence base disproves. What is in
-question is the **order**: the felt complaint is definition, and the discovery
-of uncounted evidence is the mechanism that answers it, not the symptom the
-person arrives with. Screen 0 has been rewritten accordingly; the deeper
-question has not been settled.
+Most of them then add the sentence this product exists to overturn: *what I do
+is basic, everybody works this way.* So the thesis is not contradicted — that
+belief is exactly what a catalogued evidence base disproves. What is in question
+is the **order**: the felt complaint is definition, and the discovery of
+uncounted evidence is the mechanism that answers it, not the symptom the person
+arrives with. Screen 0 is written accordingly; the deeper question is not
+settled.
 
-**The caveat is as important as the finding.** All five had already hired a
-consultant to work on precisely this. That is the opposite selection from
-someone who lands alone on a free tab, and it is a population that had already
-decided their problem was definition-shaped by the act of buying help for it.
-The corpus cannot close this. The five-person trial can, and until it does,
-nothing here should be treated as settling whether the ICP narrows to people
-whose gap really is visibility, or the product learns to measure a definition
-gap as well.
+**The selection caveat matters as much as the observation.** Anyone reached
+through a conversation had already decided to seek help with this, which is the
+opposite selection from someone who lands alone on a free tab — and deciding to
+seek help is itself an act that frames the problem as definition-shaped. No
+amount of talking to people who already asked can close it. The five-person
+trial can, and until it does, nothing here settles whether the ICP narrows to
+people whose gap really is visibility, or the product learns to measure a
+definition gap as well.
 
 ### What follows from an awareness-defined ICP
 
@@ -184,7 +183,7 @@ under its real name it is a good one.
 
 Convergence means: no agent holds a blocking objection. Part of it is now
 mechanical and runs in CI: every move id resolves to copy, the two bundles stay
-aligned, the guidance never takes a shape the corpus showed failing, and the
+aligned, the guidance never takes a shape known to fail readers, and the
 honesty-rule-8 invariants hold byte for byte. Part of it is still a discipline
 held by hand — notably the promise that every number shown to a user is
 derivable from `METHOD.md`, which is maintained by writing each constant into
@@ -270,10 +269,10 @@ stuck, that is what I need to see.* The silence is the instrument, and every
 question they ask that you do not answer is a finding. Ten minutes afterwards
 for criterion 2.
 
-This is the answer to the flaw that runs through the whole research corpus:
-those were facilitated conversations with an expert in the room, and this
-product is a person alone in a tab. Here you are in the room but not in the
-conversation, and they have been told so.
+This is the answer to the flaw that runs through every prior observation
+behind this product: they all came out of guided conversations with an expert
+in the room, and this product is a person alone in a tab. Here you are in the
+room but not in the conversation, and they have been told so.
 
 **Day 14 — 20 minutes.** Do not tell them in advance that it is about whether
 they published; criterion 3 is checked in public, not from memory. One question

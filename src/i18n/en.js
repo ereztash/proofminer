@@ -138,6 +138,12 @@ export default {
       'what changed, who confirmed it from outside. A CV or a profile has already ' +
       'been edited, and those lines usually fell out along the way. In a client ' +
       'email, a project thread or meeting notes they are still there.',
+    noDocsTitle: 'And if that document does not exist?',
+    noDocsBody:
+      'A lot of this work ended in a conversation and left no file behind. The ' +
+      'way to get one is to ask the people who were there. What comes back is a ' +
+      'document, and it enters exactly the way every other document does.',
+    noDocsAction: 'Ask someone who was there',
   },
 
   gap: {

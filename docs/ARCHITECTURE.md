@@ -158,8 +158,8 @@ than its surface:
 - **ui** — escaping including attribute context, i18n bundle alignment, and the
   banned-vocabulary check from `docs/UX.md`
 - **guidance** — the negative set: four shapes the copy may never take, each
-  generalised from a move that lost the room in the research corpus, written as
-  a property of our own strings so no client wording enters the repository
+  generalised from a move known to lose the room with this audience, written as
+  a property of our own strings so no third-party wording enters the repository
 - **regression** — one test per defect found by adversarial review: engine
   determinism, spelled-out magnitudes, decay-clock preservation, curation
   surviving truncation, dedupe cost, the L4 monotonicity, lock and

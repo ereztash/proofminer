@@ -280,6 +280,7 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
         <div class="cold__actions">
           ${button('goto', t('nav.mine'), { variant: 'primary', payload: { view: 'mine' } })}
         </div>
+        ${noDocsBridge(t)}
       </div>
     </div>`;
   }
@@ -303,8 +304,39 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       </ol>
 
       ${demo ? '' : expectedCard(state, primary, t)}
+      ${thin ? noDocsBridge(t) : ''}
     </div>
   </div>`;
+}
+
+/**
+ * The way out of the two dead ends on this screen.
+ *
+ * `emptyBody` and `thinBody` both close on the same instruction: bring more
+ * material — a client email, a project write-up, a reference. That is a
+ * complete answer for someone whose inbox holds one of those, and it is the
+ * paste box again for someone whose work ended in a room and left no file
+ * behind. The second person is the one this screen is hardest on, and the only
+ * door it offered them led straight back to where they had just come from.
+ *
+ * The recall route is the machinery that *produces* those three documents, and
+ * it was reachable only from screen 0, by a visitor who said up front that they
+ * had nothing at all to paste. This is that same visitor, one paste later —
+ * they simply did not know yet that the file they had was not the one that
+ * counts.
+ *
+ * Rendered under the primary action rather than in place of it: pasting more is
+ * still the faster route for whoever can, and this is the second door, not a
+ * correction of the first.
+ */
+function noDocsBridge(t) {
+  return html`<section class="cold__bridge">
+    <h2 class="cold__step">${t('firstLight.noDocsTitle')}</h2>
+    <p class="cold__body">${t('firstLight.noDocsBody')}</p>
+    <div class="cold__actions">
+      ${button('gotoRecall', t('firstLight.noDocsAction'), { variant: 'secondary' })}
+    </div>
+  </section>`;
 }
 
 /**

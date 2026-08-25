@@ -84,9 +84,9 @@ function gapCard(gap, foundation, built, index, lowConfidence, t) {
 /**
  * The return bridge: the user's own sentences, above the instruction.
  *
- * The move that produced the richest turns in the corpus was reading a person's
- * own words back to them, and the dashboard opened on a number with nothing of
- * theirs anywhere on it. These are the units they hold that nobody has seen —
+ * Reading a person's own words back to them is the single move that opens this
+ * conversation up most reliably, and the dashboard opened on a number with
+ * nothing of theirs anywhere on it. These are the units they hold that nobody has seen —
  * the Visibility Gap in their own handwriting, sitting directly above the thing
  * they are being told to do about it. Credit before critique (`docs/UX.md`).
  *
