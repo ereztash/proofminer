@@ -166,9 +166,13 @@ So the return bridge on the dashboard (`bridgeCard` in
 **every** visit rather than on a returning one. It is worth showing to someone
 who was here yesterday, which is exactly why it does not need a clock.
 
-## Definition of Done
+## Readiness — may it meet a person yet?
 
-The repository is done when five **orthogonal** review agents converge on it:
+This section used to be called "Definition of Done", and it is not one. Five
+review agents reading the same repository and agreeing is a statement about
+internal consistency; there is no user anywhere in it, and the whole of it can
+be satisfied by something nobody has ever opened. It is a **build gate**, and
+under its real name it is a good one.
 
 | Agent | Axis | Converges when |
 |---|---|---|
@@ -178,4 +182,140 @@ The repository is done when five **orthogonal** review agents converge on it:
 | Software Engineer | Is it built? | Tested, typed-at-the-edges, safe against injection, deterministic core, reproducible build |
 | Ethics / Anti-Hype | Does it corrupt? | Cannot fabricate evidence; cannot inflate standing; data stays with the user; claims about the product are true |
 
-Convergence means: no agent holds a blocking objection.
+Convergence means: no agent holds a blocking objection. Part of it is now
+mechanical and runs in CI: every move id resolves to copy, the two bundles stay
+aligned, the guidance never takes a shape the corpus showed failing, and the
+honesty-rule-8 invariants hold byte for byte. Part of it is still a discipline
+held by hand — notably the promise that every number shown to a user is
+derivable from `METHOD.md`, which is maintained by writing each constant into
+the appendix and has no test behind it.
+
+**Readiness is met when the pipeline is green and that discipline has been
+kept.** It is met today. That is permission to put this in front of somebody.
+It is not done.
+
+## Definition of Done — the app
+
+> **Five people who are not you, recruited by the qualifying question alone,
+> each reach First Light, recognise something of their own in it, and put one
+> grounded piece of it into the world within a fortnight.**
+
+Two rules make that a measurement rather than a hope, and both are consequences
+of things already written above.
+
+**It is measured in events this product cannot produce.** A definition of done
+that reads "the Authority Index rises" is the instrument grading itself — the
+Liebig gate's own failure mode, one level up. The product must not be able to
+declare itself finished by moving its own number. What it cannot produce: a
+message sent to a named person, a reply that came back, a conversion, a
+recognition, a post that exists in public.
+
+**It is measured by a person, because this product reports nothing.** There is
+no server, no account and no telemetry, so time-to-First-Light, whether anyone
+published, and whether anyone returned are all invisible to us by design. The
+instrument is a notebook and two conversations. Nothing in the trial justifies
+building an analytics surface to make the trial easier: that is precisely the
+over-building this section exists to stop.
+
+### The four criteria
+
+For each of the five, all four:
+
+| # | Criterion | How it is observed |
+|---|---|---|
+| 1 | Reaches First Light within **10 minutes** of opening the link, holding at least one proof unit above `BAND_USABLE`, from material they chose themselves | Watched, day 0 |
+| 2 | Points at a line and says a version of ***"I forgot about that"*** | Heard, day 0 |
+| 3 | One grounded artifact is **public within 14 days**, with no reminder from you | Verified in public, day 14 |
+| 4 | Asked *why you* at the end, answers with **a piece of evidence rather than an explanation** | Heard, day 14 |
+
+Criterion 2 is the one that cannot be traded away. It is the entire promise —
+*you already had this* — and if nobody says it, the product is a re-sorter of
+things people already knew about themselves, however well the arithmetic works.
+
+**A returning-visit criterion is deliberately absent.** It is the obvious fifth
+line and it contradicts the second refusal above: measure the gap between
+visits and you will eventually act on it. Relief is allowed to look like
+someone closing the tab.
+
+### The falsifier
+
+**If three or more of the five turn out to be blocked by definition rather than
+by visibility, the conclusion is not "fix the app".** It is that the product
+measures the wrong gap, and the fork recorded above — narrow the ICP, or learn
+to measure a definition gap — becomes the next decision. That is the outcome
+this trial exists to make possible; a definition of done with no result that
+would falsify it is a plan to feel finished.
+
+**The coding rule is written down before anyone runs.** What counts as
+definition-blocked, what counts as visibility-blocked, and what counts as
+neither, decided in advance and in writing. Deciding it after five
+conversations is not analysis, it is choosing the reading that is comfortable.
+
+### The protocol
+
+**Recruitment.** Five Hebrew-speaking people from the ICP, qualified by the
+screen-0 question and nothing else — no discovery call from you first. The
+cleanest available source is **people who booked a discovery call and did not
+buy**: they have the awareness, they are uncontaminated by the method, and a
+free thirty minutes is an easy yes. Past clients are contaminated and close
+friends will carry the tool for you. Whatever the source, this cannot be a
+sales motion — if it is, the data is worthless and the relationship is spent.
+
+**Day 0 — 45 minutes, watched, silent.** Eight minutes before they touch
+anything, one open question: *what is bothering you most about work right now?*
+Recorded, unguided; this is the material the falsifier is coded from. Then they
+run it while you watch and **do not intervene**, under a contract stated out
+loud in advance: *I will not answer questions while you use it; if you get
+stuck, that is what I need to see.* The silence is the instrument, and every
+question they ask that you do not answer is a finding. Ten minutes afterwards
+for criterion 2.
+
+This is the answer to the flaw that runs through the whole research corpus:
+those were facilitated conversations with an expert in the room, and this
+product is a person alone in a tab. Here you are in the room but not in the
+conversation, and they have been told so.
+
+**Day 14 — 20 minutes.** Do not tell them in advance that it is about whether
+they published; criterion 3 is checked in public, not from memory. One question
+for criterion 4, then anything they want to say.
+
+**Sequencing: two, then five.** The first two test the *protocol* — that the
+contract is clear, the timings work, the questions land — and can be anyone
+adjacent. Then the five. Do not run the five in parallel: if the first two hit
+the same wall at minute three, stop and fix it rather than spending the rest of
+a scarce sample proving the same thing.
+
+### Before the first person
+
+1. **Merge the work.** Production serves `main`. Until it does, the trial
+   measures an older app than the one being reasoned about here.
+2. **Send only the production URL.** Preview deployments sit behind Vercel SSO
+   and serve a login page; a participant who gets one concludes the tool is
+   broken, and you will never hear why.
+3. The recruiting message, the day-0 contract script, an observation sheet with
+   the four criteria and timestamps, the pre-registered coding rule, the day-14
+   script.
+4. **Build nothing.** If you want their proof units, a screenshot of First
+   Light. The JSON export exists but contains the client mail they pasted — do
+   not ask for it.
+
+### What the result means
+
+| Result | Reading | Next |
+|---|---|---|
+| **Green** — 4/5 on criteria 1, 2, 4 and 3/5 on criterion 3 | The mechanism works on somebody alone | Freeze features. The next question is distribution, not product |
+| **A wall** — the same failure in 3/5 | One thing is broken and you have seen it | Fix that, run three fresh people |
+| **The falsifier fires** — definition-blocked in 3/5 | The gap being measured is the wrong one | Stop building. Take the fork |
+
+**Five is enough to kill and not enough to bless.** Four of five hitting the
+same wall is a real wall. Three of five passing is not a sixty percent success
+rate — it is the absence of a wall, which is a much smaller claim. This
+instrument is built to falsify, and that is where its strength is.
+
+### Out of scope for this definition
+
+**Calibration (I2) and compounding (I1) are excluded.** Both assume repeat
+visits over time and there is not one observation of that anywhere. They are
+built, they work, and they are not part of what "done" means. The same goes for
+`track: 'job'` — half the stated ICP, no representation at all in anything
+observed so far.
