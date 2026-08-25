@@ -200,5 +200,6 @@ npm run check    # lint + tests + production build
 
 - [`docs/TELOS.md`](docs/TELOS.md) — why this exists, who it is for, definition of done
 - [`docs/METHOD.md`](docs/METHOD.md) — the full measurement specification
+- [`docs/MARKET.md`](docs/MARKET.md) — what the outside says, and the plan it does or does not justify
 - [`docs/UX.md`](docs/UX.md) — designing for the pain the user already feels
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — decisions and tradeoffs
