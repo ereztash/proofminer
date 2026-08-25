@@ -23,7 +23,7 @@ import { provenanceFooter } from '../engine/drafts.js';
 import { draftRetrievals } from '../engine/recall.js';
 import { MAX_SOURCE_CHARS, extractClaims, refineDraft } from '../adapters/llm.js';
 import { sortByDesc } from '../core/util.js';
-import { decayedScore } from '../engine/score.js';
+import { BAND_USABLE, decayedScore } from '../engine/score.js';
 
 import { NOT_ME, firstLightView, onboardingView } from './views/onboarding.js';
 import { RECALL_FIELDS } from './views/recall.js';
@@ -67,6 +67,14 @@ const ui = {
   expanded: new Set(),
   /** Text-field values that must survive a re-render. Cleared on submit. */
   formCache: {},
+  /**
+   * Whether the recall room was opened on purpose, by someone routed there
+   * from First Light. The card opens itself for a visitor with no sources at
+   * all; this is the other case — sources exist, they just yielded nothing —
+   * and without the flag that person lands on a collapsed `<details>` and has
+   * to find it.
+   */
+  recallOpen: false,
   /** Numbers extracted from a pasted analytics block, pre-filling the form. */
   parsedAnalytics: {},
   selectedProofId: null,
@@ -330,6 +338,21 @@ export function mountApp(root) {
       ui.view = 'mine';
     },
 
+    /**
+     * From either dead end on First Light into the recall room.
+     *
+     * `sawFirstLight` is deliberately left alone, the same way `coldRecall`
+     * leaves it. This person has not had the reveal — they have had the screen
+     * that says there is nothing yet to reveal, which is the opposite. When a
+     * retrieval comes back and gets mined, the reveal they are still owed fires
+     * for the first time.
+     */
+    gotoRecall() {
+      ui.recallOpen = true;
+      ui.view = 'mine';
+      ui.screen = 'app';
+    },
+
     coldSample() {
       const sample = sampleFor(state.locale);
       store.update((draft) => {
@@ -391,6 +414,9 @@ export function mountApp(root) {
       // Append forms must clear their cache, or `val()` falls back to the stale
       // value and a second click duplicates the pass.
       for (const key of RECALL_FIELDS) delete ui.formCache[key];
+      // The errands are the thing on the screen now, so the form that produced
+      // them folds away — including for the visitor who was routed here.
+      ui.recallOpen = false;
       toast(t('recall.built', retrievals.length, ignored + skipped));
     },
 
@@ -467,7 +493,19 @@ export function mountApp(root) {
       // on the first screen. Gated on *this* mine being the one that produced
       // their first evidence, so adding a fifth source never yanks a working
       // user out of the inventory and back to the opening reveal.
-      const hadNothing = !realProofs(state).length;
+      //
+      // "Had nothing" means what the screen meant by it, which is not "held no
+      // proof at all". Someone on the thin path was told in those words that
+      // there was too little here to say anything definite, and offered the
+      // errand; the sub-band rows behind that sentence are not evidence they
+      // have, they are the reason the sentence was shown. Reading them as
+      // evidence let the reveal be quietly cancelled by the very paste that had
+      // failed to earn it — so when Ronit's email finally arrived and produced
+      // the first proof that cleared the bar, the hook of the entire product
+      // was skipped and they landed on the inventory instead. The bar here is
+      // the same `BAND_USABLE` the screen drew, and the raw score is the one it
+      // printed.
+      const hadNothing = !realProofs(state).some((p) => p.score >= BAND_USABLE);
       remine();
       if (hadNothing && !store.get().profile.sawFirstLight && realProofs(store.get()).length) {
         ui.screen = 'firstLight';
@@ -882,7 +920,11 @@ export function mountApp(root) {
 
     switch (ui.view) {
       case 'mine':
-        return mineView(state, t, { extracting: ui.extracting, formCache: ui.formCache });
+        return mineView(state, t, {
+          extracting: ui.extracting,
+          formCache: ui.formCache,
+          recallOpen: ui.recallOpen,
+        });
       case 'position':
         return positionView(state, t);
       case 'inventory':

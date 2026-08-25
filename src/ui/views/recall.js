@@ -25,10 +25,15 @@ export const RECALL_FIELDS = ['recall-project', 'recall-room', 'recall-ending'];
  * Rendered open when there is nothing else on the screen — that visitor is
  * exactly who this is for — and collapsed once real sources exist, where it is
  * a second route in rather than the main event.
+ *
+ * `ui.recallOpen` is the third case, and it is a visitor who looks like the
+ * second and is really the first: sources exist, they yielded nothing, and
+ * First Light sent them here on purpose. Routing someone to a collapsed
+ * `<details>` and letting them hunt for it undoes the routing.
  */
 export function recallCard(state, t, ui = {}) {
   const cache = ui.formCache || {};
-  const expanded = state.sources.length === 0;
+  const expanded = state.sources.length === 0 || Boolean(ui.recallOpen);
 
   return html`<details class="card recall" ${expanded ? openAttr : ''}>
     <summary class="recall__summary">

@@ -170,6 +170,20 @@ export default {
       'שורות שאפשר לבדוק: מי, מתי, מה השתנה, מי אישר מבחוץ. קורות חיים ופרופיל ' +
       'כבר עברו עריכה, והשורות האלה בדרך כלל נשרו מהם בדרך. במייל מלקוח, ' +
       'בשרשור על פרויקט או בסיכום פגישה הן עדיין שם.',
+    // The way out of the two dead ends on this screen. Both bodies above close
+    // on the same instruction — bring a client email, a project write-up, a
+    // reference — which is a complete answer for someone whose inbox holds one,
+    // and is the paste box again for someone whose work ended in a room and
+    // left no file. So this names the second case out loud and points at the
+    // route that produces those three documents rather than assuming they
+    // already exist. The last clause is honesty rule 8: what comes back is a
+    // document, and it earns its way in the way every other document does.
+    noDocsTitle: 'ואם המסמך הזה לא קיים?',
+    noDocsBody:
+      'חלק גדול מהעבודה הזאת נגמר בשיחה ולא השאיר קובץ. הדרך להשיג אחד היא ' +
+      'לבקש אותו ממי שהיה שם. מה שיחזור משם הוא מסמך, והוא נכנס בדיוק כמו כל ' +
+      'מסמך אחר.',
+    noDocsAction: 'לבקש ממי שהיה שם',
   },
 
   gap: {

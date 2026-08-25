@@ -740,6 +740,13 @@ p {
   margin-block-start: var(--step);
 }
 
+/* A second door, not a continuation of the first — hence the rule above it. */
+.cold__bridge {
+  margin-block-start: calc(var(--step) * 2);
+  padding-block-start: calc(var(--step) * 1.25);
+  border-block-start: 1px solid var(--line);
+}
+
 .wizard {
   display: grid;
   gap: 0.85rem;
