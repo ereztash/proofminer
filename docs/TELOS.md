@@ -171,9 +171,15 @@ Everything above is written as integrity. Read commercially it says something
 sharper, and that is worth writing down before somebody tries to fix this
 product into a business.
 
-**As a standalone software product it is close to unsellable, and no amount of
-feature work changes that.** Not because it is badly built — because it is
-built, deliberately, against every mechanism that produces value in software.
+This section was first written from reasoning alone. It has since been checked
+against the market, and roughly half of it was wrong. What follows is the
+corrected version, with the evidence attached — because a document that
+forbids vanity metrics cannot make unsourced claims about its own worth.
+
+### As software, it is close to unsellable, and building more will not change it
+
+Not because it is badly built. Because it is built, deliberately, against every
+mechanism that produces value in software.
 
 | What software value wants | What this document refuses |
 |---|---|
@@ -182,81 +188,250 @@ built, deliberately, against every mechanism that produces value in software.
 | Measured return visits | *Relief is allowed to look like closing the tab* |
 | Something hard to copy | A public repository, and a bundle a competent developer can read in an afternoon |
 
-That table is not a list of gaps to close. **Every row is load-bearing**, and
-each is also why the thing is credible: a tool that cannot phone home is the
-only kind that can honestly ask somebody to paste a client email into it. Add a
-server and the pledge on screen 0 stops being a fact about the software and
-becomes a promise requiring trust. The refusals are the differentiation, and
-the market that would pay for the removed features is not the market this is
-for.
+The numbers are unambiguous. A working product with no users prices at
+**$500–$3,000** on the published pre-revenue ladder; a public permissive repo
+pushes that toward zero, because what a buyer of pre-revenue software purchases
+is the right not to rebuild, and that right is already free. Empire Flippers
+requires $2,000/month net profit over twelve months. Acquire.com's pre-revenue
+exception requires active customers. Neither would list it. Microns.io, the one
+marketplace specialising in pre-revenue, has moved ~$500K across 100+ deals —
+an average near $5,000.
 
-So the commercial question is not *how does the app charge*. It is **what the
-app is for, inside a practice that already exists.**
+**The first paying customer is worth more than every subsequent feature**, because
+it moves the asset from unlistable to listable, and micro-scale software trades
+at 24–40× *monthly* revenue.
 
-### The app is the demonstration, not the asset
+### The refusals also close the one proven route
 
-Ranked by what is actually hard to reproduce:
+This is the correction that matters most, and the first draft of this section
+missed it.
 
-1. **The method.** `METHOD.md` — the six layers and their weights, the Liebig
-   gate, the eight archetypes, the honesty rules. Hard to copy precisely
-   *because* it is opinionated: reproducing it means adopting every judgement
-   in it.
-2. **The verbatim gate.** The product cannot fabricate; every claim is sliced
-   from characters the user supplied. That is a trust asset, and the only
-   genuine moat here.
-3. **The app.** The cheapest of the three. It exists to demonstrate 1 and 2 to
-   one person at a time.
+Open source monetises through one reliable mechanism, and Plausible states it
+plainly: people are not paying for the code, they are paying **not to run it**.
+A local-only tool with no server has nothing to sell in that slot. The refusals
+are not merely uncommercial — they specifically foreclose the only open-source
+business model with a track record.
 
-A competitor can clone the app in a week. Reproducing the method means making
-the same hundred decisions, and reproducing the gate means giving up what every
-competitor in the category actually sells — the ability to write the sentence
-for you.
+What that looks like at the limit: core-js is downloaded ~43 million times a
+week and runs on three quarters of the top hundred websites. Its maintainer
+earned about **$57 a month**. Sixty per cent of open-source maintainers are paid
+nothing at all. **Downloads and stars convert to zero at any scale.**
 
-### The public repository is the claim, applied to its author
+### The shape is the problem, not the principles
 
-The repository is public, and that was treated as an exposure. It is the
-opposite. This product tells a person that authority comes from evidence they
-already hold and do not show, and that the move is to put a grounded piece of
-it where people can see it. **A public repository containing this file and
-`METHOD.md` is that move, made by whoever built it.**
+Refusal as a market position has a clear record, and it splits on one variable.
 
-Which is an argument for keeping it open. What was worth taking out was the
-client material that was never ours to publish, and that is already out.
+**It works when refusal is welded to something opened daily** — Obsidian, Kagi,
+Are.na all sustain real revenue on local-first, no-ads, no-algorithm positions.
+
+**It fails when refusal is the product.** Ello raised $5.5M on "you are not a
+product" and is dead. Cara went from 40,000 to 650,000 users in a week on
+anti-AI sentiment, ran up a $96,000 server bill, and funds itself on donations —
+enormous ideological demand, no willingness to pay.
+
+**This product is episodic.** Paste, see the gap, done. There is no recurring
+reason to open it, which is by design — the second refusal requires it. So on
+the one variable that separates the two lists, this sits with Cara and not with
+Obsidian, and no pricing decision changes that.
+
+### What the graveyard says
+
+Individual authority scoring has been tried, at scale, with money.
+
+**Klout** is the direct precedent: it scored a person's authority across layers
+and showed them the number. It sold for $200M in 2014 and was **shut down in
+2018** — the score was contested, gameable, and lost credibility. Kred and
+PeerIndex went the same way. Polywork raised $44.5M including an a16z Series B
+and closed in January 2025. Read.cv was acquired and wound down.
+
+The one exit in the category that worked, **Portfolium at $43M, sold to
+institutions rather than to individuals** — which is the pattern underneath all
+of it:
+
+> **Every commercial success in proof sells to whoever bears the risk of a false
+> claim.** Veremark raised $26M on stopping AI fakes in hiring — the employer
+> pays. Certn, $125M. UserEvidence, $21M — B2B marketing teams pay. This product
+> sells the input to the party with the least money at stake.
+
+That is not a reason to abandon the actor defined above. It is the reason this
+cannot be a software business aimed at them, and it should be read alongside the
+open question about which gap this is.
+
+### The strongest evidence against the anti-goal
+
+Recorded here rather than argued away, because a document with a falsifier for
+its product should hold one for its ethics too.
+
+NBER working paper 30886 ran a field experiment across roughly **500,000
+jobseekers**. Algorithmic writing assistance produced **8% more hires and 10%
+higher wages, with no measured drop in employer satisfaction.**
+
+For the hiring half of the stated ICP, "we will not write it for you" asks a
+person to accept a measurably worse outcome in exchange for a principle. That
+does not make the anti-goal wrong — the product's claim is about durable
+standing, not about one application — but it does mean **this is a values sale
+for that half of the audience, and it has to be priced and spoken as one.** If
+the trial recruits from the hiring track, expect this to be the wall.
+
+### The strongest evidence for
+
+The scarcity the product exists to exploit is real, measured, and worsening.
+
+Pangram scanned 1,002,627 posts: **over 40% of LinkedIn posts longer than 250
+words are fully AI-generated**, and LinkedIn produces about two thirds of all
+AI-flagged content while being one third of what was scanned. Originality.ai put
+it at 81.2% "likely AI" on posts over 100 words.
+
+And the preference is showing up in money rather than in surveys: on CGTrader,
+AI-generated 3D models were one in six uploads and earned **one dollar in every
+ninety** — 2.6% of sales.
+
+When the medium saturates, verifiable specificity is the only differentiator
+left, and that is exactly what a verbatim span is. **No product anywhere was
+found marketing verbatim extraction with an explicit refusal to write.** Read
+that carefully: it is an empty space, not a proven one.
+
+### What the method is actually worth
+
+The first draft of this section called the method the asset. That was half
+wrong.
+
+**A methodology cannot be copyrighted.** Six layers, eight archetypes and a
+capping rule are, as intellectual property, worth nothing — anyone may use them,
+and a published framework can now be reproduced by a language model in under a
+minute. What is ownable is the **name**, which is trademarkable, and the written
+expression. The barrier is reputational, not legal, and this document should not
+have implied otherwise.
+
+What *is* true, and is the encouraging half: **a documented, named diagnostic
+methodology is one of the things buyers pay a premium for when acquiring a
+consulting practice.** But it raises the multiple on transferable revenue; it
+does not substitute for it. A solo practice built on personal relationships is
+roughly 100% personal goodwill, which is legally the owner's property and not an
+asset of the business — in valuation terms it is a job.
+
+And the ladder that method-businesses climb runs in one direction only. EOS
+reached 738 implementers averaging $392,658 each — after **eighteen years and a
+bestselling book**. StoryBrand charges $10,000 a seat on the back of a *New York
+Times* bestseller. In every documented case the audience came first.
+**Certification harvests demand; it cannot create it.** With no audience and no
+published results, seats sold is zero.
 
 ### Where value is captured, and the rule that protects it
 
 The app is free and stays free. What it produces — somebody holding their own
-measured gap and one named next move — is a qualifying instrument for work that
-is already being sold, and it is a better one than a discovery call because the
-ambiguity is gone before the conversation starts.
+measured gap and one named next move — qualifies them for work that is already
+being sold, better than a discovery call does, because the ambiguity is gone
+before the conversation starts. The shape is well attested: a paid roadmap at
+roughly one sixteenth the price of the engagement it qualifies for; a free
+positioning diagnostic feeding a workshop priced in five and six figures.
 
-One rule makes that survivable:
+One rule makes it survivable, and it now has evidence behind it rather than only
+principle:
 
 > **The app never mentions the paid thing.**
 
 No "book a call", no upsell, no captured address, no footer. The moment First
 Light carries an offer, the anti-hype pledge on screen 0 is false, and the
-authenticity barrier the whole cold start exists to lower fires instead. Every
-conversion happens outside the tab, in a conversation somebody chose to have.
-This is the constraint most likely to be broken by accident, and breaking it
-costs the product the only thing it has.
+authenticity barrier the whole cold start exists to lower fires instead.
 
-**And none of it begins until the trial is over.** The Definition of Done below
+The obvious objection — that a tool capturing nothing generates nothing — was
+tested and does not hold. Refusing capture does not kill the funnel; **it changes
+which funnel this is in**, from lead capture (fast, measurable, low-trust) to
+demand creation (slow, unmeasurable, high-trust). And the second is where
+decisions of this kind are actually made: B2B buyers reach out roughly 70%
+through their process — eight months into eleven — and **84% of deals go to the
+first vendor contacted.** Across 1,028 buyers of professional services, what
+convinces someone you are an expert is a recommendation from a colleague (56.5%)
+and **"they made a complicated subject seem understandable" (38.1%)** — ahead of
+publications and certifications. Neither is an email address.
+
+There is also a hard reason capture would backfire here specifically. At a price
+of zero, people perceive *higher benefit*, not merely lower cost; any friction
+moves you off that point. And an email field visually contradicts the pledge to
+transmit nothing, whatever the technical truth. **Capture would cost usage and
+credibility at the same time.**
+
+**What the rule really costs is measurement, and that is fixed elsewhere.** With
+no capture there is no way to tell "working slowly and invisibly" apart from "not
+working" — the condition in which people kill a working asset or keep feeding a
+dead one. The instrument is one free-text question at intake — *what made you
+reach out?* — not a form in the tool. Self-reported attribution routinely finds
+what software attribution cannot: one published study found a 90% gap, with a
+channel buyers credited for 53% of revenue recorded by the software as zero.
+
+Two things follow for how this is judged. **The horizon is six to twelve months,
+not weeks.** And **the tool is not a channel** — it feeds recommendation and
+recall, and outreach still has to happen somewhere else. Roughly 70% of
+consultants get no leads at all from their website.
+
+**None of it begins until the trial is over.** The Definition of Done below
 requires that the trial not be a sales motion; running the two together spends
 the sample and the relationships and yields data worth nothing.
 
+### The public repository is the claim, applied to its author
+
+The repository is public, and that was treated as an exposure. It is the
+opposite. This product tells a person that authority comes from evidence they
+already hold and do not show, and that the move is to put a grounded piece of it
+where people can see it. **A public repository containing this file and
+`METHOD.md` is that move, made by whoever built it.**
+
+The pattern holds wherever it has been tried at length. Nielsen Norman Group
+published 1,139 free articles into 230 million page views and trained 44,283
+people. DORA gave away the report, the assessment and the book, and was acquired
+by Google Cloud inside three years without investors. And it lines up with the
+38.1% finding above: publishing the method *is* the demonstration.
+
+No case was found of a consultant whose paid demand measurably fell because they
+published their method. What was worth removing from this repository was the
+client material that was never ours to publish, and that is already out.
+
 ### The data asset that is allowed
 
-A bank of real client wordings is forbidden outright. That is a phrase library
-— the thing this product refuses to be — sitting one import away from
-`drafts.js`.
+A bank of real client wordings is forbidden outright. That is a phrase library —
+the thing this product refuses to be — sitting one import away from `drafts.js`.
 
 What is allowed, and compounds further than any wording would, is **aggregate
 structure recorded by hand**: which layer was the binding constraint, which
-archetype was missing, which play was chosen. No wordings, no telemetry,
-nothing gathered by the software. After thirty people that is a sentence about
-this market that nobody else can say — and it is itself evidence held rather
-than a claim asserted, which is the only kind this product respects.
+archetype was missing, which play was chosen. No wordings, no telemetry, nothing
+gathered by the software. After thirty people that is a sentence about this
+market nobody else can say — and it is evidence held rather than a claim
+asserted, which is the only kind this product respects.
+
+### The fork that is not taken
+
+The engine's core rule — expression may not exceed the evidence beneath it — is
+not a metaphor at organisational scale. It is a funded, regulated, productised
+category: pharmaceutical and consumer-goods claim substantiation, where private
+challenge fees alone run from $8,000 to $63,200 per case, and where **Veeva
+shipped this exact product in 2019** and now books over $3B a year.
+
+Three things follow, and all three say *not now*.
+
+- **The incumbent cannot be met head-on**, and the buyer — general counsel,
+  regulatory affairs — purchases liability transfer. A solo founder fails the
+  vendor-risk questionnaire before the demo.
+- **The adjacent markets are thinner than they look.** The EU Green Claims
+  Directive was effectively withdrawn in June 2025 and CSRD's scope was cut to
+  firms above 1,000 employees and €450M in February 2026, which removes the
+  entire European mid-market. Employer-brand substantiation has no regulator, no
+  penalty and no budget owner — it is not a market. Content provenance is
+  becoming free infrastructure, not a product.
+- **The algorithm is roughly a fifth of what such a buyer purchases.** The rest
+  is workflow, integrations, audit trail and a trust apparatus that does not
+  exist here.
+
+If it is ever taken, the entry is the cheap pre-review layer that sits *before*
+somebody else's system of record — telling an agency which claim has no linkable
+evidence and will bounce — because that is the only rung where being solo is not
+disqualifying. One dated opportunity is on the calendar regardless: EU Directive
+2024/825 applies from **27 September 2026** and bans unsubstantiated generic
+environmental claims. It is a compliance sprint, not a subscription.
+
+**This is recorded so it is not rediscovered enthusiastically in six months. It
+is a different product with the same core algorithm, and the trial below comes
+first.**
 
 ### What actually raises the value
 
@@ -264,11 +439,12 @@ Not a feature. **Five documented cases.**
 
 A product where five people published something they had forgotten they had is
 worth a large multiple of the same product with none, and the difference is not
-in the code. This is the thesis pointed at itself: value is evidence, the
-evidence is missing, and the instrument for producing it is specified directly
-below.
+in the code. Everything above converges on it: the certification ladder needs an
+audience and published results, the consulting multiple needs transferable
+revenue, and the first paying customer needs a reason to be the first.
 
-That is the whole of the commercial plan that can be honestly written today.
+This is the thesis pointed at itself: value is evidence, the evidence is missing,
+and the instrument for producing it is specified directly below.
 
 ## Readiness — may it meet a person yet?
 
