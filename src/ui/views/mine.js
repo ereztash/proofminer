@@ -5,8 +5,10 @@
 import { html } from '../html.js';
 import { button, field, notice, section, textArea } from '../components.js';
 import { isExtractionConfigured } from '../../adapters/llm.js';
+import { recallCard, retrievalList } from './recall.js';
 
-export function mineView(state, t, { extracting = null } = {}) {
+export function mineView(state, t, ui = {}) {
+  const { extracting = null } = ui;
   const hasDemo = state.sources.some((s) => s.demo);
   const canExtract = isExtractionConfigured(state.settings);
 
@@ -37,6 +39,8 @@ export function mineView(state, t, { extracting = null } = {}) {
         )}
       `,
     )}
+    ${recallCard(state, t, ui)}
+    ${retrievalList(state, t)}
     ${hasDemo ? notice('warn', t('mine.demoWarning')) : ''}
     ${section(
       t('mine.sourcesCount', state.sources.length),

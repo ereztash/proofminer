@@ -182,6 +182,8 @@ function coldStartBody(t, weeks, ui, situation) {
           ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
           ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
         </div>
+
+        ${recallExit(t)}
       </section>
     </div>
 
@@ -194,6 +196,31 @@ function coldStartBody(t, weeks, ui, situation) {
     </details>
 
   </div>`;
+}
+
+/**
+ * The third answer, and the one this screen had no reply to until now.
+ *
+ * "I have nothing to paste" was previously answered with *paste something
+ * anyway* or *look at our sample* — both of which tell someone whose work left
+ * no file behind that they are not who this was built for. The sample teaches
+ * how the ranking works; it measures nobody, and its own copy has been
+ * corrected to stop claiming otherwise.
+ *
+ * This routes to the recall route in `engine/recall.js`, which produces errands
+ * addressed to people the user names rather than evidence — because a memory
+ * typed into a box is the one input class the verbatim gate cannot vouch for.
+ *
+ * Set below the two primary actions and in the aside register on purpose. It is
+ * a genuine third route, not a nudge away from pasting: most people who think
+ * they have nothing do have something, and this must not talk them out of
+ * looking.
+ */
+function recallExit(t) {
+  return html`<p class="cold__aside">
+    ${t('onboarding.nothingToPaste')}
+    ${button('coldRecall', t('onboarding.orRecall'), { variant: 'ghost' })}
+  </p>`;
 }
 
 const situationOption = (value, current, label, hint, extra = '') => html`<label

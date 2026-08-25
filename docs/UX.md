@@ -122,6 +122,36 @@ they came to escape.
    pleasantries, and it cannot see an outcome whose before-state sits in the
    previous sentence.
 
+   **The third answer: "I have nothing to paste."** This is the commonest way
+   the product fails a real person, and for a long time screen 0 had two
+   replies to it — paste something anyway, or look at our sample — both of
+   which tell someone whose work left no file behind that they are not who this
+   was built for. (The sample's own copy said as much: *"I have nothing ready —
+   show me on a sample"*. It teaches how the ranking works and measures nobody,
+   so it now offers only that.)
+
+   The real answer is the recall route. Three questions — the last project, who
+   was in the room, what was said when it ended — and what comes out is a list
+   of **errands addressed to people the user just named**, not evidence. The
+   pivot is the second question: a name is not proof, but it is the address of
+   someone who can supply proof, and one message to one named person is a
+   smaller ask than finding a file that does not exist. `docs/METHOD.md`
+   honesty rule 8 is why it cannot be anything else — a memory typed into a box
+   passes the verbatim gate trivially, because it is its own source.
+
+   Two consequences for this screen. The recall panel **says in its first line
+   that nothing typed there is counted**, before the boxes, because a box that
+   looks like the paste box and behaves differently has to say which one it is
+   first. And it sits *below* the two primary actions, in the aside register:
+   most people who think they have nothing do have something, and this must not
+   talk them out of looking.
+
+   The fourth question the research proposed — *what do you do differently
+   since* — is deliberately not asked. It produces no recipient, and under rule
+   8 it cannot become evidence either, so it would be a fourth box whose answer
+   is written to disk and never read again. That is the exact defect
+   `profile.expectedEvidence` was just repaired for.
+
 2. **Screen 1 — First Light.** After the first mine, a dedicated reveal state
    — *not* the dashboard. `"מצאנו 14 הוכחות במה שהדבקת."` Then the three they
    would never have published themselves, with the reason each one is stronger
@@ -143,6 +173,12 @@ they came to escape.
    and pairs two scales that are nowhere defined against each other. The
    reasoning is kept next to the field in `core/schema.js` so the idea is
    refused once rather than re-proposed.
+
+   **First Light is postponed for the recall visitor, never skipped.** They had
+   nothing to reveal on arrival, so `sawFirstLight` stays false and the reveal
+   waits for the day their material lands and gets mined. The hook is the whole
+   product; being empty-handed on the first screen is not a reason to forfeit
+   it.
 
 3. **Screen 2+ — the dashboard**, unlocked only once L1 exists.
 

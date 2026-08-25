@@ -458,3 +458,114 @@ describe('what you expected, beside what was found', () => {
     }
   });
 });
+
+describe('the route for someone with no documents', () => {
+  const t = translator('he');
+  const source = {
+    id: 's1', name: 'cv', text: 'טקסט כלשהו', demo: false,
+    addedAt: 0, minedAt: 0, extracted: [], extractedAt: null,
+  };
+  const retrieval = {
+    id: 'rtv_1',
+    recipient: 'רונית לוי',
+    about: 'הטמעת תהליך התפעול',
+    recalled: 'רונית אמרה שזה התהליך היחיד ששרד אצלם שנה',
+    askedAt: null,
+    closedAt: null,
+    createdAt: 0,
+  };
+  const withState = (over = {}, ui = {}) =>
+    toString_(mineView({ ...emptyState(), ...over }, t, ui));
+
+  it('says in the box itself that nothing typed there is evidence', () => {
+    // The one thing this screen must never be read as is a second paste box.
+    for (const locale of ['he', 'en']) {
+      const copy = translator(locale)('recall.notEvidence');
+      expect(copy.length).toBeGreaterThan(60);
+      expect(copy).toMatch(/ראיה|evidence/);
+    }
+    expect(withState()).toContain(t('recall.notEvidence'));
+  });
+
+  it('opens itself for the visitor who has nothing, and folds away once they do', () => {
+    expect(withState()).toMatch(/<details class="card recall" open/);
+    expect(withState({ sources: [source] })).not.toMatch(/<details class="card recall" open/);
+  });
+
+  it('asks the one question that produces a recipient', () => {
+    const markup = withState();
+    expect(markup).toContain('id="recall-room"');
+    expect(markup).toContain('data-act="saveRecall"');
+  });
+
+  it('does not empty the recall boxes when the screen re-renders', () => {
+    // Deliberately a name the placeholder does not already contain: the first
+    // version of this test asserted 'רונית לוי', which the placeholder supplies
+    // on its own, so it passed against a control rendered permanently blank.
+    const markup = withState({}, { formCache: { 'recall-room': 'מיכל ברק' } });
+    expect(markup).toContain('מיכל ברק');
+  });
+
+  it('renders no task list at all when there are no tasks', () => {
+    expect(withState()).not.toContain(t('recall.tasksLead'));
+  });
+
+  it('puts the person’s name on the task, with something to do about it', () => {
+    const markup = withState({ retrievals: [retrieval] });
+    expect(markup).toContain('רונית לוי');
+    expect(markup).toContain(t('recall.askLine', retrieval.recipient, retrieval.about));
+    expect(markup).toContain('data-act="retrievalSent"');
+    expect(markup).toContain('data-act="retrievalArrived"');
+    expect(markup).toContain('data-act="retrievalDrop"');
+  });
+
+  it('labels the remembered words as the part that is not counted', () => {
+    const markup = withState({ retrievals: [retrieval] });
+    expect(markup).toContain(t('recall.memoryLabel'));
+    expect(markup).toContain(retrieval.recalled);
+  });
+
+  it('drops the send button once it has been sent', () => {
+    const sent = { ...retrieval, askedAt: 1 };
+    const markup = withState({ retrievals: [sent] });
+    expect(markup).not.toContain('data-act="retrievalSent"');
+    expect(markup).toContain(t('recall.sentTag'));
+  });
+
+  it('keeps what came back, folded away rather than deleted', () => {
+    const closed = { ...retrieval, closedAt: 1 };
+    const markup = withState({ retrievals: [closed] });
+    expect(markup).toContain(t('recall.closedCount', 1));
+    expect(markup).toContain(t('recall.allClosed'));
+  });
+
+  it('escapes a name that arrived from an imported backup', () => {
+    const evil = { ...retrieval, recipient: '<img src=x onerror=alert(1)>' };
+    const markup = withState({ retrievals: [evil] });
+    expect(markup).not.toContain('<img src=x');
+    expect(markup).toContain('&lt;img');
+  });
+});
+
+describe('the first screen finally has a third answer', () => {
+  const t = translator('he');
+  const state = emptyState();
+
+  it('offers the recall route to someone with nothing to paste', () => {
+    const markup = toString_(onboardingView(state, t, { situation: 'consultant' }));
+    expect(markup).toContain('data-act="coldRecall"');
+    expect(markup).toContain(t('onboarding.nothingToPaste'));
+  });
+
+  it('still puts no action on the exit page', () => {
+    expect(toString_(onboardingView(state, t, { situation: NOT_ME }))).not.toContain('data-act=');
+  });
+
+  it('stops the sample from claiming to answer "I have nothing"', () => {
+    // The sample teaches how the ranking works and measures nobody. Offering
+    // it as the reply to an empty-handed visitor was the dead end.
+    for (const bundle of [heBundle, enBundle]) {
+      expect(bundle.onboarding.orSample).not.toMatch(/אין לי כלום|nothing ready/);
+    }
+  });
+});

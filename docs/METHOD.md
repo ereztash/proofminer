@@ -47,6 +47,23 @@ product shows a user must be derivable from what is written here.
    actually produces, not against round numbers.
 7. **Demo data is marked in the data itself**, not only in the UI, and marked
    proof is excluded from calibration.
+8. **Recall is not evidence.** Rules 3 and 5 both check something the product
+   produced against something the user supplied. Neither has anything to say
+   about the supplied side, and there is one input class where that gap
+   matters: text the user types *now, from memory*, in a box the product put in
+   front of them. It passes the verbatim gate trivially — it is present word
+   for word in the source, because it **is** the source — so "the client said I
+   saved them four months" would enter the inventory and score well, carrying a
+   magnitude, an attribution and an outcome. That would make the Visibility Gap
+   a number the user can raise by writing a nicer sentence about themselves,
+   which is the category this product refuses to be.
+   So a memory-elicitation screen may not produce proof units. What the recall
+   route (`engine/recall.js`) produces instead is **retrieval tasks with a
+   named recipient**: a person who can supply the same fact in their own
+   words, in a document. Those records live outside every measured array, no
+   layer reads them, and the evidence enters later through the ordinary paste
+   box. The invariant is pinned in `tests/engine/recall.test.js`: the whole
+   authority computation is byte-identical with and without them.
 
 ## The six measurable layers
 
@@ -493,3 +510,4 @@ measurement, it is a prior — see honesty rule 5.
 | `MAX_WEIGHT_DRIFT` | 2.5 | points per dimension per calibration pass |
 | `COMPOUND_THRESHOLD` / `COMPOUND_MIN_ENGAGEMENT` / min impressions | 1.6 / 40 / 500 | compounding gates |
 | `POSITIONING_LIFT` | *removed* | positioning reaches the foundation only through `icpFit` and `commercialProximity` |
+| `MAX_RETRIEVALS` / `MAX_RECIPIENT_CHARS` | 6 / 60 | recall route: tasks created per pass, and the longest a line may be and still be read as a name. Neither reaches any score — see honesty rule 8 |

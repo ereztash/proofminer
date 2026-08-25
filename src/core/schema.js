@@ -152,6 +152,19 @@ export function emptyState() {
     conversions: [],
     /** @type {Recognition[]} */
     recognitions: [],
+    /**
+     * Retrieval tasks produced by the recall route (`engine/recall.js`).
+     *
+     * **Not evidence, and structurally kept apart from it.** These records
+     * hold what the user typed from memory, which is the one input class the
+     * verbatim gate cannot vouch for — it checks the model's output against
+     * the user's document, and here the user *is* the document. So they live
+     * in their own array, no layer reads them, and nothing here reaches the
+     * foundation, the gap, or archetype coverage. What they hold is a
+     * person's name and an errand.
+     * @type {Retrieval[]}
+     */
+    retrievals: [],
     /** archetype -> epoch ms the acquisition play was last surfaced. */
     playLog: {},
     calibration: {
@@ -246,6 +259,22 @@ export function emptyState() {
  */
 
 /**
+ * A request for evidence, addressed to a person the user named.
+ *
+ * `about` and `recalled` are the user's own words, carried so the task still
+ * makes sense weeks later. They are shown back and never measured.
+ *
+ * @typedef {object} Retrieval
+ * @property {string} id
+ * @property {string} recipient   the named person; a task without one is not a task
+ * @property {string} about       what the request concerns, in the user's words
+ * @property {string} recalled    what the user remembers being said, shown back to them
+ * @property {number|null} askedAt   when the user marked it sent
+ * @property {number|null} closedAt  when the material actually arrived
+ * @property {number} createdAt
+ */
+
+/**
  * Ids end up in DOM attribute values and CSS selectors, so they are restricted
  * to a safe alphabet on the way in rather than trusted on the way out. An
  * imported backup is attacker-controllable input: a shared file whose proof id
@@ -263,6 +292,12 @@ const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
  * engine to validate an array length is the wrong trade.
  */
 const MAX_EXTRACTED_SPANS = 40;
+/**
+ * Ceiling on a retrieval's recipient. Matches `MAX_RECIPIENT_CHARS` in
+ * `engine/recall.js`, duplicated for the same reason as above: `core/` does
+ * not depend on `engine/`.
+ */
+const MAX_RECIPIENT_CHARS = 60;
 
 const arr = (v) => (Array.isArray(v) ? v : []);
 const str = (v, fallback = '') => (typeof v === 'string' ? v : fallback);
@@ -308,6 +343,9 @@ export function normalizeState(input) {
       nonGoals: arr(positioning.nonGoals).filter((v) => typeof v === 'string'),
     },
     ...relatedRecords(input),
+    // Standalone: a retrieval points at a person, not at another record, so it
+    // takes no part in the reference rewrite below.
+    retrievals: arr(input.retrievals).map(normalizeRetrieval).filter(Boolean),
     playLog: isObj(input.playLog)
       ? Object.fromEntries(
           Object.entries(input.playLog).filter(([, v]) => Number.isFinite(v)),
@@ -511,6 +549,27 @@ function normalizeConversion(c, toArtifact) {
     artifactId: toArtifact(c.artifactId),
     note: str(c.note),
     at: num(c.at, Date.now()),
+  };
+}
+
+/**
+ * A retrieval with no recipient is dropped rather than repaired.
+ *
+ * The named person *is* the feature — it is what separates a task the user can
+ * send from a note-to-self about a memory. A record that lost its name is an
+ * errand addressed to nobody, and keeping it would put a permanent unfinishable
+ * line on a to-do list belonging to someone who is already stuck.
+ */
+function normalizeRetrieval(r) {
+  if (!isObj(r) || typeof r.recipient !== 'string' || !r.recipient.trim()) return null;
+  return {
+    id: safeId(r.id, 'rtv'),
+    recipient: r.recipient.trim().slice(0, MAX_RECIPIENT_CHARS),
+    about: str(r.about),
+    recalled: str(r.recalled),
+    askedAt: Number.isFinite(r.askedAt) ? r.askedAt : null,
+    closedAt: Number.isFinite(r.closedAt) ? r.closedAt : null,
+    createdAt: num(r.createdAt, Date.now()),
   };
 }
 

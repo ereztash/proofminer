@@ -23,7 +23,7 @@ construction, and directly testable without a renderer. Adding React would put
 a build-time dependency and a component lifecycle between the tests and the
 thing being tested, in exchange for conveniences this UI does not need. The
 whole runtime is zero-dependency; the only production asset is one JS bundle
-of roughly 69 kB gzipped.
+of roughly 73 kB gzipped.
 
 The cost is honest: the view layer is a hand-rolled `innerHTML` renderer with
 focus restoration. That is acceptable at this size and would not be at ten
@@ -117,7 +117,7 @@ rather than aspirational.
 
 ## Testing
 
-Unit tests across nine files, covering the engine's actual claims rather
+Unit tests across eleven files, covering the engine's actual claims rather
 than its surface:
 
 - **text** — Hebrew normalisation, prefix ambiguity, similarity symmetry,
@@ -135,6 +135,14 @@ than its surface:
 - **gaps** — the magnitude-free route for every archetype and its absence for
   `SCALE`, density sampling, and the proof that the demotion re-ranks without
   moving a threshold
+- **recall** — the name reader and its refusal to split a Hebrew conjunction,
+  task drafting and its duplicate rules, and the load-bearing invariant: the
+  whole authority computation, every layer, coverage and the plays are all
+  byte-identical with and without a retrieval carrying the strongest evidence
+  text in the fixtures
+- **recall-flow** — the only test that mounts the app and clicks through it,
+  because "typing your memory into this product cannot move your own score" is
+  a claim about the action table, not about a template
 - **feedback** — calibration shrinkage, the fixed-dimension guarantee,
   compounding thresholds and idempotence
 - **drafts** — the grounding validator across every angle × CTA × locale

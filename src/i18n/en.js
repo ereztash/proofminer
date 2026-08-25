@@ -75,7 +75,9 @@ export default {
       'Raw material works best here: client emails, a thread about a project, an old proposal, meeting notes, a message you wrote to your team. A CV works too, but there you have already edited yourself, and you know your own best three lines. The unedited material is where the things you forgot you did are.',
     placeholder: 'Paste here. The messier and longer, the better. Do not tidy it, do not rewrite it.',
     analyze: 'Find my evidence',
-    orSample: 'I have nothing ready — show me on a sample',
+    orSample: 'Show me on a sample first',
+    nothingToPaste: 'And if you genuinely have no document to paste?',
+    orRecall: 'Start from recall',
   },
 
   notForYou: {
@@ -396,12 +398,23 @@ export default {
   moves: {
     label: 'Next move',
     only: 'One move. Not a list.',
-    'move.addSource': { title: 'Paste a first source', why: 'Without raw material there is nothing to rank. Five minutes and the base exists.' },
+    'move.addSource': { title: 'Paste a first source', why: 'Without raw material there is nothing to rank. Five minutes and the base exists. And if you have no document, the sources page has a recall route that produces a list of people to ask instead.' },
+    'move.chaseRetrieval': {
+      title: 'Send the request',
+      why: ({ recipient } = {}) =>
+        recipient
+          ? `One message to ${recipient}. You have nothing to rank yet, and this is how it gets created \u2014 not another search for files that do not exist.`
+          : 'One message to one person already on your list. You have nothing to rank yet, and this is how it gets created.',
+    },
     'move.mine': { title: 'Run evidence extraction', why: 'The sources are already here. One click to see what is in them.' },
     'move.setAudience': { title: 'Define who you are talking to', why: 'Evidence is not strong in the abstract — it is strong for someone specific. Without this the ranking is partial.' },
     'move.acquireProof': { title: 'Get evidence, do not publish', why: 'You already appear larger than your evidence supports. Another post widens the wrong gap.' },
     'move.publishFirst': { title: 'Publish your strongest evidence', why: 'You have good material nobody has seen. That is exactly the gap.' },
-    'move.publishStaling': { title: 'Publish before it goes stale', why: (d) => `This piece has roughly ${d} days before it loses a significant part of its value.` },
+    'move.publishStaling': {
+      title: 'Publish before it goes stale',
+      why: ({ daysLeft = 0 } = {}) =>
+        `This piece has roughly ${daysLeft} days before it loses a significant part of its value.`,
+    },
     'move.logReception': { title: 'Log what happened to your post', why: 'Without these numbers the system cannot learn what works for you — and that is the whole difference.' },
     'move.closeGap': { title: 'Close the highest-value gap', why: 'This is the missing evidence type with the best effort-to-value ratio.' },
     'move.sharpenPositioning': { title: 'Sharpen your positioning', why: 'The current positioning does not yet separate you from others in your field.' },
@@ -486,6 +499,47 @@ export default {
     demoWarning: 'This is a sample. It is marked as demo, excluded from your score and never used for learning.',
   },
 
+  recall: {
+    title: 'When there is no document',
+    summaryHint: 'Three questions that produce requests, not evidence',
+    subtitle:
+      'Some of the work left no file behind. It happened in rooms, on calls, and in other people\u2019s inboxes. Three questions, and what comes out of them is a list of people to ask \u2014 not a score.',
+    notEvidence:
+      'Nothing you write here is counted as evidence or moves any number in this product. A sentence you compose now, from memory, is a statement rather than a document \u2014 and the gate that checks every proof unit word for word against a document you supplied has nothing here to check it against. What does come out: the name of someone who can write that sentence themselves.',
+    projectQuestion: 'The last project or piece of work you did',
+    projectPlaceholder: 'Rolling out the operations process at Alpha Logistics',
+    projectHint: 'No dates. Just enough that you will recognise it in a fortnight.',
+    roomQuestion: 'Who was in the room?',
+    roomPlaceholder: 'Ronit Levi\nDavid Cohen',
+    roomHint:
+      'One name per line. These are the people who can confirm what happened, and this is the one question you have to answer \u2014 without a recipient there is nobody to ask.',
+    endingQuestion: 'What was said when it ended?',
+    endingPlaceholder: 'Ronit said it was the only process that survived a full year there',
+    endingHint:
+      'From memory, roughly. It is not checked and not scored \u2014 it is what you will remind yourself of when you ask them to write it in their own words.',
+    build: 'Build the request list',
+    needRoom: 'With no name there is nobody to ask. Fill in at least one.',
+    noNames: 'No name found in those lines. One name per line.',
+    allAlreadyOpen: 'Everyone you named is already on the open list.',
+    built: (n, dropped) => {
+      const added = n === 1 ? 'One request added' : `${n} requests added`;
+      return dropped ? `${added}. ${dropped} lines did not become one.` : `${added}.`;
+    },
+    tasksTitle: (n) =>
+      n === 0 ? 'No open requests' : n === 1 ? 'One open request' : `${n} open requests`,
+    tasksLead:
+      'This is a to-do list, not an evidence base. Evidence enters when the answer arrives and you paste it into the box above.',
+    allClosed: 'Every request is closed. Paste what you were sent into the box above.',
+    closedCount: (n) => (n === 1 ? 'One closed request' : `${n} closed requests`),
+    sentTag: 'Sent',
+    askLine: (who, about) => `Ask ${who} to write a few sentences about what changed on ${about}.`,
+    askLineBare: (who) => `Ask ${who} to write a few sentences about what happened there, and in what words.`,
+    memoryLabel: 'What you remember, and what is not counted:',
+    markSent: 'Sent it',
+    markArrived: 'It arrived',
+    drop: 'Remove',
+    arrivedHint: 'Now paste what they sent you into the box above \u2014 that is where it enters as evidence.',
+  },
   position: {
     title: 'Positioning',
     subtitle: 'Every piece of evidence is ranked from here. Change this and the whole inventory re-ranks.',

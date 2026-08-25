@@ -78,7 +78,10 @@ function gapCard(gap, foundation, built, index, lowConfidence, t) {
  */
 function moveCard(move, t) {
   // Move ids contain dots, so the array path form is required here.
-  const why = t(['moves', move.id, 'why'], move.payload?.daysLeft ?? 0);
+  // The whole payload, not one field of it. This used to pass `daysLeft`
+  // positionally, so every later move that wanted to name something concrete —
+  // a person, a source — had no way to reach it and said "someone" instead.
+  const why = t(['moves', move.id, 'why'], move.payload ?? {});
 
   return html`<section class="move">
     <div class="move__head">

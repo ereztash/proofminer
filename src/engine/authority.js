@@ -12,6 +12,7 @@ import { clamp100, round } from '../core/util.js';
 import { computeLayers } from './layers.js';
 import { acquisitionPlays, stalingProofs } from './gaps.js';
 import { detectDrift, scorePositioning } from './positioning.js';
+import { nextRetrieval } from './recall.js';
 import { isDemoMode, realProofs } from './mine.js';
 import { BAND_USABLE, decayedScore } from './score.js';
 
@@ -26,6 +27,7 @@ import { BAND_USABLE, decayedScore } from './score.js';
  */
 export const MOVE_IDS = Object.freeze([
   'move.addSource',
+  'move.chaseRetrieval',
   'move.mine',
   'move.addRealSource',
   'move.setAudience',
@@ -233,7 +235,23 @@ export function nextMove(state, now = Date.now()) {
   //    case where sources exist but mining found nothing usable in them —
   //    otherwise the only instruction is "mine", forever, on empty input.
   if (!proofs.length && !(state.sources || []).some((s) => !Number.isFinite(s.minedAt))) {
-    return { id: 'move.addSource', layer: 'L1', effortMinutes: 5, view: 'mine' };
+    // Unless they have already been through recall, in which case there *is*
+    // something to do and it is not "paste a document": that is the instruction
+    // they could not follow, which is how they ended up here. A retrieval task
+    // names a person, and sending one message is a smaller ask than finding a
+    // file that does not exist. See `engine/recall.js`: none of this is
+    // evidence and none of it is scored — it is the errand that produces the
+    // evidence, and it stops being the headline the moment real material lands.
+    const retrieval = nextRetrieval(state);
+    return retrieval
+      ? {
+          id: 'move.chaseRetrieval',
+          layer: 'L1',
+          effortMinutes: 10,
+          view: 'mine',
+          payload: { recipient: retrieval.recipient },
+        }
+      : { id: 'move.addSource', layer: 'L1', effortMinutes: 5, view: 'mine' };
   }
 
   // 2. Sources exist with nothing mined from them yet. Re-checked on every

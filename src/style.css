@@ -1084,6 +1084,100 @@ p {
   margin-block-start: 0.25rem;
 }
 
+/* ---------- recall and retrieval tasks ---------- */
+
+/* The card is a <details>, so the head has to work as a summary row too. */
+.recall > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.recall__hint {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+}
+
+.recall > summary + .card__lead {
+  margin-block-start: 0.5rem;
+}
+
+.retrievals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.retrieval {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: 0.8rem 0.9rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.retrieval__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.retrieval__who {
+  font-size: 1rem;
+}
+
+.retrieval__ask {
+  max-inline-size: 62ch;
+}
+
+/*
+ * The user's own remembered words, set apart from the instruction above them
+ * so the two are never read as one claim. Muted and inset: this is the part
+ * that is not evidence, and it should not look like the part that is.
+ */
+.retrieval__memory {
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 0.7rem;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.retrieval__memoryLabel {
+  display: block;
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  margin-block-end: 0.15rem;
+}
+
+.retrieval--closed {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  color: var(--ink-soft);
+}
+
+.retrieval__about {
+  font-size: 0.88rem;
+  color: var(--ink-faint);
+}
+
+.retrievals__closed {
+  margin-block-start: 0.8rem;
+}
+
+.retrievals__closed > summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin-block-end: 0.5rem;
+}
+
 /* ---------- inventory ---------- */
 
 .inventory {
