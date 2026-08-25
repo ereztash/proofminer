@@ -518,6 +518,10 @@ For each of the five, all four:
 | 3 | One grounded artifact is **public within 14 days**, with no reminder from you | Verified in public, day 14 |
 | 4 | Asked *why you* at the end, answers with **a piece of evidence rather than an explanation** | Heard, day 14 |
 
+Criterion 3 carries one follow-up that is not itself a criterion: **whose words
+were published.** It costs one question and it is what tells the falsifier's
+second state from its third — see below.
+
 Criterion 2 is the one that cannot be traded away. It is the entire promise —
 *you already had this* — and if nobody says it, the product is a re-sorter of
 things people already knew about themselves, however well the arithmetic works.
@@ -591,6 +595,58 @@ would falsify it is a plan to feel finished.
 definition-blocked, what counts as visibility-blocked, and what counts as
 neither, decided in advance and in writing. Deciding it after five
 conversations is not analysis, it is choosing the reading that is comfortable.
+
+#### A third bucket, because the fork has three tines
+
+The falsifier above is written as a two-way question — definition or visibility
+— and a two-way instrument cannot see a third answer. There is one, and it was
+measured after the rest of this section was written.
+
+Across 520 real self-written pitches from solo professionals selling their
+expertise, **78% carried a magnitude and 3% carried anything anybody else had
+said.** Whatever else those people were blocked by, it was not an inability to
+name a number about their own work. The scarce thing was somebody else's word
+for it — and the commercially successful businesses in this neighbourhood all
+sell exactly that, the collection of third-party testimony, not the ranking of
+your own account.
+
+*(One caveat, kept in view: that is a population adjacent to this one — software
+freelancers writing in English — not the actor above. It is a reason to be able
+to see the answer, not a reason to expect it.)*
+
+So the coding rule has three states, not two:
+
+| State | What was observed |
+|---|---|
+| **Definition-blocked** | Cannot say what they did |
+| **Visibility-blocked** | Said it, holds evidence for it, has not shown it |
+| **Attestation-blocked** | Said it, holds their own account of it, holds nothing anybody else said |
+| *Neither* | Blocked by something else, or not blocked |
+
+And one question is added at day 14, for whoever published: **whose words were
+they — your claim, or something somebody else said about you?** That single
+answer separates the second state from the third after the fact, which no
+amount of re-reading a day-0 transcript can.
+
+**What it changes if the third state wins.** Not "fix the app" either. The
+product's mechanism would be aimed at the ranking problem while the actor's
+problem is the acquisition of testimony — the errand, not the inventory — and
+the recall route stops being a fallback and becomes the spine. **That is a
+hypothesis with a price, and it is not to be acted on before the trial**, which
+is precisely why the trial has to be able to see it.
+
+#### What the recall route does, observed rather than assumed
+
+The route out of an empty or thin First Light asks somebody to go and get a
+document that does not exist yet, from a person they name. It is the only part
+of this product that produces attestation rather than ranking, and it was built
+late, as a way out of a dead end.
+
+Two things are worth watching for each participant, and both cost nothing
+because the conversation is happening anyway: **did they take it**, and — if a
+retrieval came back — **was it what came back that moved them**, rather than
+anything the miner had already found. If the answer to the second is yes more
+than once, that is the third state confirming itself from inside the trial.
 
 ### The protocol
 

@@ -297,8 +297,58 @@ export function entityCoverage(text) {
  * says so rather than implying the check is complete — see
  * `entityCoverage()` below.
  */
+/**
+ * Common nouns that follow a workplace preposition and are not names.
+ *
+ * `אצל` and `עבור` introduce *anything*, so without this list "at the client"
+ * and "for the team" come back to a user as organisations they never named.
+ */
+const HE_COMMON_NOUNS = new Set([
+  'לקוח', 'לקוחה', 'לקוחות', 'צוות', 'צוותים', 'חברה', 'חברות', 'ארגון',
+  'ארגונים', 'מנהל', 'מנהלת', 'מנהלים', 'עובד', 'עובדת', 'עובדים', 'ספק',
+  'ספקים', 'מפעל', 'משרד', 'מחלקה', 'אגף', 'הנהלה', 'מעסיק', 'שותף',
+  'פרויקט', 'תהליך', 'מערכת', 'עסק', 'מיזם', 'גורם', 'גוף',
+]);
+
+/**
+ * Department words that sit between a role and a name and are not part of it.
+ *
+ * `סמנכ״ל תפעול בבטא תעשיות` was read as a person called *"תפעול בבטא"* — the
+ * department, the preposition, and half the company. The role pattern already
+ * skips a department written with the definite article (`מנהלת הרכש`); this
+ * covers the commoner form written without one.
+ */
+const HE_DEPARTMENTS = new Set([
+  'תפעול', 'כספים', 'שיווק', 'מכירות', 'פיתוח', 'טכנולוגיות', 'רכש', 'לוגיסטיקה',
+  'ייצור', 'איכות', 'הנדסה', 'מוצר', 'תוכן', 'משאבי', 'אנוש', 'טכנולוגיה',
+  'אסטרטגיה', 'חדשנות', 'דיגיטל', 'סחר', 'תפעולי', 'לקוחות', 'שירות',
+]);
+
+/**
+ * Organisations introduced by a trigger word.
+ *
+ * Two tokens now, not one: `בחברת אלפא לוגיסטיקה` used to yield only `אלפא`,
+ * losing the half that makes the name a name. And neither token may open with
+ * the definite article — without that guard `בחברת הביטוח` ("the insurance
+ * company") came back to the user as a named organisation.
+ */
 const HE_ORG_RE =
-  /(?<![א-ת])(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)(?![א-ת])\s+([א-ת\w'׳"״-]+)/gu;
+  /(?<![א-ת])(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)(?![א-ת])\s+((?![הו])[א-ת\w'׳"״-]{2,}(?:\s+(?![הו])[א-ת\w'׳"״-]{2,})?)/gu;
+
+/**
+ * `אצל X`, `עבור X`, `מול X` — a workplace named without a trigger word.
+ *
+ * These are standalone words, not prefixes, and that is the whole reason they
+ * are safe enough to use. **A bare `ב` prefix is deliberately absent.** It is
+ * how people most often name a workplace — `באלפא לוגיסטיקה` — and it is also
+ * the first letter of `בניתי`, `ביקש`, `בדקתי`. Tried, it reported *"ניתי
+ * תהליך"* to the user as a company. Telling somebody they named an
+ * organisation they never named is the anti-goal in `docs/TELOS.md` running
+ * backwards, so this misses that form instead, and `docs/METHOD.md` says the
+ * misses are disclosed rather than implied away.
+ */
+const HE_ORG_PREP_RE =
+  /(?<![א-ת])(?:אצל|עבור|מול)\s+((?![הו])[א-ת]{2,})\s+((?![הו])[א-ת]{2,})/gu;
 
 /**
  * Hebrew-language organisations and publications common enough in Israeli
@@ -449,8 +499,16 @@ export function extractSignals(text) {
           !GENERIC_ACRONYMS.has(name.toUpperCase()),
       ),
     ...[...raw.matchAll(HE_ORG_RE)].map((m) => m[1]),
+    ...[...raw.matchAll(HE_ORG_PREP_RE)]
+      .filter((m) => !HE_COMMON_NOUNS.has(m[1]))
+      .map((m) => `${m[1]} ${m[2]}`),
     ...[...raw.matchAll(HE_KNOWN_RE)].map((m) => m[1]),
-    ...HE_PERSON_RES.flatMap((re) => [...raw.matchAll(re)].map((m) => m[1])),
+    // A department word is not the start of somebody's name.
+    ...HE_PERSON_RES.flatMap((re) =>
+      [...raw.matchAll(re)]
+        .map((m) => m[1])
+        .filter((name) => !HE_DEPARTMENTS.has(name.split(/\s+/)[0])),
+    ),
   ].filter(Boolean);
 
   const digits = (raw.match(NUMBER_RE) || [])

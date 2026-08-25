@@ -11,12 +11,18 @@
  * **This is a floor on a known deficiency, not a target that has been met.**
  * The numbers below are the measured miss rates, pinned so they cannot quietly
  * get worse while something else is being improved. They are meant to come
- * down. Two of the three known causes are still open: Hebrew proper-noun
- * detection does not see a company name at all (`properNouns: []` where English
- * returns the entity), and the Hebrew `outcome` lexicon enumerates verb forms
- * so it misses idiom while English matches loosely enough to catch things by
- * accident. When either is fixed, these thresholds should be tightened in the
- * same commit.
+ * down, and were: Hebrew organisation detection has since been fixed for the
+ * forms that can be read safely, which moved the overall rate to 0.40 and the
+ * Hebrew rate to 0.50.
+ *
+ * Three known causes remain open. A workplace named with a bare `ב` prefix
+ * (`באלפא לוגיסטיקה`) is still invisible and deliberately so — see the comment
+ * on `HE_ORG_PREP_RE`, where reading it cost false positives worse than the
+ * miss. The Hebrew `outcome` lexicon enumerates verb forms and misses idiom
+ * while English matches loosely enough to catch things by accident. And `PEER`
+ * is not classified at all, in either language, for evidence written to its own
+ * recipe. When any is fixed, these thresholds should be tightened in the same
+ * commit.
  *
  * Every item is written for this test, to `METHOD.md`'s stated recipe, with no
  * magnitude anywhere. None of it is anybody's real words — the rule that
@@ -99,14 +105,17 @@ function misses() {
 describe('evidence the detectors cannot see', () => {
   it('does not miss more than it does today, overall', () => {
     const { all } = misses();
-    // Measured 2026-08-25. Lower this when a detector improves; never raise it.
-    expect(all.m / all.n).toBeLessThanOrEqual(0.5);
+    // Measured 2026-08-25 at 0.40, tightened from 0.45 when Hebrew
+    // organisation detection improved. Lower this when a detector improves;
+    // never raise it.
+    expect(all.m / all.n).toBeLessThanOrEqual(0.42);
   });
 
   it('does not miss more Hebrew than it does today', () => {
     const { he } = misses();
-    // The product is Hebrew-first and this is its worse half. Measured 2026-08-25.
-    expect(he.m / he.n).toBeLessThanOrEqual(0.65);
+    // The product is Hebrew-first and this is its worse half. Measured
+    // 2026-08-25 at 0.50, down from 0.60 with the organisation fix.
+    expect(he.m / he.n).toBeLessThanOrEqual(0.52);
   });
 
   it('is still worse in Hebrew than in English, which is the finding', () => {
