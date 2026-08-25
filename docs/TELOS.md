@@ -165,6 +165,111 @@ So the return bridge on the dashboard (`bridgeCard` in
 **every** visit rather than on a returning one. It is worth showing to someone
 who was here yesterday, which is exactly why it does not need a clock.
 
+## How this is worth money
+
+Everything above is written as integrity. Read commercially it says something
+sharper, and that is worth writing down before somebody tries to fix this
+product into a business.
+
+**As a standalone software product it is close to unsellable, and no amount of
+feature work changes that.** Not because it is badly built — because it is
+built, deliberately, against every mechanism that produces value in software.
+
+| What software value wants | What this document refuses |
+|---|---|
+| Accounts and retention | No server, no account, no telemetry |
+| Switching cost | Everything local; the user holds the data |
+| Measured return visits | *Relief is allowed to look like closing the tab* |
+| Something hard to copy | A public repository, and a bundle a competent developer can read in an afternoon |
+
+That table is not a list of gaps to close. **Every row is load-bearing**, and
+each is also why the thing is credible: a tool that cannot phone home is the
+only kind that can honestly ask somebody to paste a client email into it. Add a
+server and the pledge on screen 0 stops being a fact about the software and
+becomes a promise requiring trust. The refusals are the differentiation, and
+the market that would pay for the removed features is not the market this is
+for.
+
+So the commercial question is not *how does the app charge*. It is **what the
+app is for, inside a practice that already exists.**
+
+### The app is the demonstration, not the asset
+
+Ranked by what is actually hard to reproduce:
+
+1. **The method.** `METHOD.md` — the six layers and their weights, the Liebig
+   gate, the eight archetypes, the honesty rules. Hard to copy precisely
+   *because* it is opinionated: reproducing it means adopting every judgement
+   in it.
+2. **The verbatim gate.** The product cannot fabricate; every claim is sliced
+   from characters the user supplied. That is a trust asset, and the only
+   genuine moat here.
+3. **The app.** The cheapest of the three. It exists to demonstrate 1 and 2 to
+   one person at a time.
+
+A competitor can clone the app in a week. Reproducing the method means making
+the same hundred decisions, and reproducing the gate means giving up what every
+competitor in the category actually sells — the ability to write the sentence
+for you.
+
+### The public repository is the claim, applied to its author
+
+The repository is public, and that was treated as an exposure. It is the
+opposite. This product tells a person that authority comes from evidence they
+already hold and do not show, and that the move is to put a grounded piece of
+it where people can see it. **A public repository containing this file and
+`METHOD.md` is that move, made by whoever built it.**
+
+Which is an argument for keeping it open. What was worth taking out was the
+client material that was never ours to publish, and that is already out.
+
+### Where value is captured, and the rule that protects it
+
+The app is free and stays free. What it produces — somebody holding their own
+measured gap and one named next move — is a qualifying instrument for work that
+is already being sold, and it is a better one than a discovery call because the
+ambiguity is gone before the conversation starts.
+
+One rule makes that survivable:
+
+> **The app never mentions the paid thing.**
+
+No "book a call", no upsell, no captured address, no footer. The moment First
+Light carries an offer, the anti-hype pledge on screen 0 is false, and the
+authenticity barrier the whole cold start exists to lower fires instead. Every
+conversion happens outside the tab, in a conversation somebody chose to have.
+This is the constraint most likely to be broken by accident, and breaking it
+costs the product the only thing it has.
+
+**And none of it begins until the trial is over.** The Definition of Done below
+requires that the trial not be a sales motion; running the two together spends
+the sample and the relationships and yields data worth nothing.
+
+### The data asset that is allowed
+
+A bank of real client wordings is forbidden outright. That is a phrase library
+— the thing this product refuses to be — sitting one import away from
+`drafts.js`.
+
+What is allowed, and compounds further than any wording would, is **aggregate
+structure recorded by hand**: which layer was the binding constraint, which
+archetype was missing, which play was chosen. No wordings, no telemetry,
+nothing gathered by the software. After thirty people that is a sentence about
+this market that nobody else can say — and it is itself evidence held rather
+than a claim asserted, which is the only kind this product respects.
+
+### What actually raises the value
+
+Not a feature. **Five documented cases.**
+
+A product where five people published something they had forgotten they had is
+worth a large multiple of the same product with none, and the difference is not
+in the code. This is the thesis pointed at itself: value is evidence, the
+evidence is missing, and the instrument for producing it is specified directly
+below.
+
+That is the whole of the commercial plan that can be honestly written today.
+
 ## Readiness — may it meet a person yet?
 
 This section used to be called "Definition of Done", and it is not one. Five
@@ -176,10 +281,14 @@ under its real name it is a good one.
 | Agent | Axis | Converges when |
 |---|---|---|
 | Telos Architect | Does it serve the stated purpose? | The mechanism actually moves a person to authority; nothing in the build is feature-decoration |
-| Market / ICP Realist | Would the actor adopt and stay? | Time-to-first-value is minutes, the wedge is defensible, the honest failure modes are named |
+| Market / ICP Realist | Would the actor adopt? | Time-to-first-value is minutes, the wedge is defensible, the honest failure modes are named |
 | Measurement Methodologist | Are the numbers real? | Every score traces to observable inputs; confidence is reported; no vanity metric is laundered into standing |
 | Software Engineer | Is it built? | Tested, typed-at-the-edges, safe against injection, deterministic core, reproducible build |
 | Ethics / Anti-Hype | Does it corrupt? | Cannot fabricate evidence; cannot inflate standing; data stays with the user; claims about the product are true |
+
+*Adopt*, not *adopt and stay*. That axis used to ask about retention, which
+the second refusal forbids measuring — and an agent cannot hold a blocking
+objection on a question this product has decided not to ask.
 
 Convergence means: no agent holds a blocking objection. Part of it is now
 mechanical and runs in CI: every move id resolves to copy, the two bundles stay
