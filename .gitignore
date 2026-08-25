@@ -1,6 +1,8 @@
 node_modules/
 dist/
 coverage/
+# Playwright writes this when the production smoke is run by hand.
+test-results/
 .vite/
 .DS_Store
 *.local

@@ -17,7 +17,16 @@ test.describe('production smoke', () => {
   });
 
   test('expert/consultant fit gate reaches First Light with an allowed action level', async ({ page }) => {
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/ראיה|evidence/i);
+    // Screen 0 opens by naming the complaint people actually arrive with — "I
+    // cannot explain what I do" — rather than the product's own mechanism. This
+    // line asserted the mechanism, and went on asserting it after the copy was
+    // rewritten to the complaint, so the smoke went red against a screen that
+    // was right. `tests/ui/guidance.test.js` pins both halves of that rule over
+    // the bundles; pinning them here too is what catches the case those tests
+    // structurally cannot see, which is the bundle actually being served.
+    const opening = page.getByRole('heading', { level: 1 });
+    await expect(opening).toContainText(/להסביר|explain/i);
+    await expect(opening).not.toContainText(/ראיה|evidence/i);
 
     await chooseSituation(page, /מומחה|Expert/i);
     await expect(page.locator('#fit-confidence')).toBeVisible();
