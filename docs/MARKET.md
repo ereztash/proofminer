@@ -188,6 +188,14 @@ Item 5's third bucket exists because the temptation at coding time is to score
 an ambiguous transcript as visibility-blocked, which is the reading that
 confirms the product.
 
+**Items 1–5 are discharged, all of them in `TELOS.md`**: the liability finding
+and the vouching frame under *How this is worth money*; the ICP cut beside the
+open question about which gap this is; the intake question under the capture
+rule; the trigger-event question in the day-0 script; the coding rule and its
+third bucket in the falsifier. Item 6 is not a repository change and is still
+open. **Item 2 remains a decision the owner has not taken** — writing it down is
+not taking it.
+
 ## During the trial — what to observe
 
 The research produced claims about behaviour. The trial is the instrument that
@@ -207,6 +215,12 @@ whether it happens.** If two or more of the five repeated a number to somebody
 without being asked to, the directive is live and the trial has already shown
 what they quoted. If nobody did, the directive is dead and no code was written
 for it.
+
+**All four now sit in the day-0 and day-14 scripts in `TELOS.md`,** with the
+day-14 questions in a fixed order because three of them prime each other. An
+observation that lives only in a research note is not an observation — it is an
+intention that the person running the conversation will not have in front of
+them, and every one of these is unrecoverable the day after.
 
 ## After — changes with their trigger conditions
 

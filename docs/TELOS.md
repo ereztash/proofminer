@@ -667,14 +667,50 @@ stuck, that is what I need to see.* The silence is the instrument, and every
 question they ask that you do not answer is a finding. Ten minutes afterwards
 for criterion 2.
 
+**A second question, after those eight minutes and still before they touch
+anything:** *what happens in the next thirty days that makes this matter?* It
+goes second because the first eight have to stay unguided — that recording is
+what the falsifier is coded from — and it goes before the tool because
+afterwards they will answer it in the tool's vocabulary. What it tests is
+whether this pain has a date on it. Pain with no date is chronic, and chronic
+pain is unbudgeted; that is a fact about the price of everything downstream and
+it costs one question to learn.
+
+**Two more things are recorded without being asked.** Which track they chose on
+screen 0, `job` or `independent` — if the two populations fail differently that
+is the ICP decision answering itself, and nothing transmits it to us afterwards.
+And **whether they corrected the extraction unprompted**: *no, it was twenty-one
+days, not nineteen.* A correction is a far stronger signal than agreement — this
+product's own negative test set exists because agreement is not confirmation —
+since somebody who corrects a number has taken ownership of the evidence under
+it.
+
 This is the answer to the flaw that runs through every prior observation
 behind this product: they all came out of guided conversations with an expert
 in the room, and this product is a person alone in a tab. Here you are in the
 room but not in the conversation, and they have been told so.
 
 **Day 14 — 20 minutes.** Do not tell them in advance that it is about whether
-they published; criterion 3 is checked in public, not from memory. One question
-for criterion 4, then anything they want to say.
+they published; criterion 3 is checked in public, not from memory. Three
+questions, and **the order is load-bearing**:
+
+| | Question | Why in this position |
+|---|---|---|
+| 1 | *Have you said any of this out loud to anyone since?* | Every later question in this conversation primes it, and a primed answer measures nothing |
+| 2 | *Why you?* — criterion 4 | Wants a piece of evidence rather than an explanation; asking 3 first plants evidence in the frame |
+| 3 | For whoever published: *whose words were they — your claim, or something somebody else said about you?* | Separates visibility-blocked from attestation-blocked, which no amount of re-reading a day-0 transcript can |
+
+Then anything they want to say.
+
+**The first of the three is the disciplined form of the one product directive
+the market work produced.** What convinces somebody that a person is an expert
+is a colleague repeating something about them — from which the tempting move is
+to go and engineer the gap number for quotability. This settles it for the price
+of a question instead: if two or more of the five repeated a number to somebody
+without being asked to, the directive is live *and the trial has already
+collected what they quoted.* If nobody did, it is dead and no code was written
+for it. `MARKET.md` holds the rest of that plan; this is the part of it that
+happens at day 14 or not at all.
 
 **Sequencing: two, then five.** The first two test the *protocol* — that the
 contract is clear, the timings work, the questions land — and can be anyone
@@ -690,8 +726,8 @@ a scarce sample proving the same thing.
    and serve a login page; a participant who gets one concludes the tool is
    broken, and you will never hear why.
 3. The recruiting message, the day-0 contract script, an observation sheet with
-   the four criteria and timestamps, the pre-registered coding rule, the day-14
-   script.
+   the four criteria, the two day-0 codings and timestamps, the pre-registered
+   coding rule, the day-14 script with its three questions in order.
 4. **Build nothing.** If you want their proof units, a screenshot of First
    Light. The JSON export exists but contains the client mail they pasted — do
    not ask for it.
