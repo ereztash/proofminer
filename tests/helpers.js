@@ -19,6 +19,8 @@ export function minedSource(overrides = {}) {
     demo: false,
     addedAt: NOW,
     minedAt: NOW,
+    extracted: [],
+    extractedAt: null,
     ...overrides,
   };
 }

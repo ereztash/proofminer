@@ -182,6 +182,8 @@ function coldStartBody(t, weeks, ui, situation) {
           ${button('coldStart', t('onboarding.analyze'), { variant: 'primary' })}
           ${button('coldSample', t('onboarding.orSample'), { variant: 'ghost' })}
         </div>
+
+        ${recallExit(t)}
       </section>
     </div>
 
@@ -194,6 +196,31 @@ function coldStartBody(t, weeks, ui, situation) {
     </details>
 
   </div>`;
+}
+
+/**
+ * The third answer, and the one this screen had no reply to until now.
+ *
+ * "I have nothing to paste" was previously answered with *paste something
+ * anyway* or *look at our sample* — both of which tell someone whose work left
+ * no file behind that they are not who this was built for. The sample teaches
+ * how the ranking works; it measures nobody, and its own copy has been
+ * corrected to stop claiming otherwise.
+ *
+ * This routes to the recall route in `engine/recall.js`, which produces errands
+ * addressed to people the user names rather than evidence — because a memory
+ * typed into a box is the one input class the verbatim gate cannot vouch for.
+ *
+ * Set below the two primary actions and in the aside register on purpose. It is
+ * a genuine third route, not a nudge away from pasting: most people who think
+ * they have nothing do have something, and this must not talk them out of
+ * looking.
+ */
+function recallExit(t) {
+  return html`<p class="cold__aside">
+    ${t('onboarding.nothingToPaste')}
+    ${button('coldRecall', t('onboarding.orRecall'), { variant: 'ghost' })}
+  </p>`;
 }
 
 const situationOption = (value, current, label, hint, extra = '') => html`<label
@@ -274,8 +301,58 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
       <ol class="reveal">
         ${shown.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
       </ol>
+
+      ${demo ? '' : expectedCard(state, primary, t)}
     </div>
   </div>`;
+}
+
+/**
+ * What the user said would hold their claim, beside what actually scored
+ * highest.
+ *
+ * The onboarding collects `profile.expectedEvidence` and, until now, nothing
+ * ever read it. This is the only place the answer can pay the user back.
+ *
+ * Three constraints shape it, and all three are constraints against the
+ * obvious version of this feature:
+ *
+ * 1. **It runs after the three reveals, never before.** `docs/UX.md` requires
+ *    credit before critique, for someone who has spent months being told they
+ *    are not enough. The discoveries land first; this is a footnote to them.
+ * 2. **It compares evidence to evidence, and nothing else.** The neighbouring
+ *    idea — set `profile.fitConfidence` against L1's band — is not built and
+ *    should not be. See the note on that field in `core/schema.js`.
+ * 3. **It never says the user was wrong.** The comparison is token overlap,
+ *    which cannot tell a blind spot from a miner that did not pick the line
+ *    up. So the copy states the caveat rather than implying a verdict, and a
+ *    match is reported as confirmation — which is also credit.
+ *
+ * Renders nothing at all when the field is empty. An unanswered optional
+ * question must not produce a half-filled row.
+ */
+function expectedCard(state, primary, t) {
+  const expected = state.profile?.expectedEvidence?.trim() || '';
+  if (!expected || !primary) return '';
+  const aligned = overlapsClaim(primary.claim, expected);
+
+  return html`<section class="expected" aria-labelledby="expected-title">
+    <h2 class="expected__title" id="expected-title">${t('firstLight.expectedTitle')}</h2>
+    <dl class="expected__grid">
+      <div class="expected__cell">
+        <dt>${t('firstLight.expectedLabel')}</dt>
+        <dd>${expected}</dd>
+      </div>
+      <div class="expected__cell">
+        <dt>${t('firstLight.foundLabel')}</dt>
+        <dd>${primary.claim}</dd>
+      </div>
+    </dl>
+    <p class="expected__verdict">
+      ${aligned ? t('firstLight.expectedAligned') : t('firstLight.expectedDiffers')}
+    </p>
+    ${aligned ? '' : html`<p class="expected__caveat">${t('firstLight.expectedCaveat')}</p>`}
+  </section>`;
 }
 
 function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false } = {}) {

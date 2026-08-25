@@ -7,6 +7,7 @@
 
 import { makeId, sortByDesc } from '../core/util.js';
 import { splitSentences } from './text.js';
+import { acceptSpans } from './extract.js';
 import { extractSignals, inferArchetypes, inferKind, inferOccurredAt } from './signals.js';
 import { makeContext, scoreDimensions } from './dimensions.js';
 import { compositeScore, dedupeProofs } from './score.js';
@@ -33,6 +34,32 @@ export function analyzeClaim(claim, { positioning, weights = PRIOR_WEIGHTS, now 
     archetypes: inferArchetypes(signals),
     occurredAt: inferOccurredAt(signals, now),
   };
+}
+
+/**
+ * The claims one source contributes, and how they were found.
+ *
+ * A source that has been through model-assisted extraction carries the spans
+ * it produced; everything else is split deterministically. The spans are
+ * **re-verified on every pass** rather than trusted from storage: state can
+ * arrive from an exported file that someone edited, and the guarantee is that
+ * no text enters the inventory that is not present in a source document. What
+ * is stored is what the gate returned last time; what is used is what it
+ * returns now.
+ *
+ * If verification leaves nothing — an edited backup, or a source whose text the
+ * user replaced after extracting from it — the deterministic split runs instead.
+ * The model is never the difference between working and not working.
+ *
+ * @returns {{claims:string[], via:'model'|'split'}}
+ */
+function claimsFor(source) {
+  const stored = Array.isArray(source.extracted) ? source.extracted : [];
+  if (stored.length) {
+    const { spans } = acceptSpans(source.text, stored);
+    if (spans.length) return { claims: spans, via: 'model' };
+  }
+  return { claims: splitSentences(source.text), via: 'split' };
 }
 
 /**
@@ -70,7 +97,8 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
 
   const candidates = [];
   for (const source of state.sources || []) {
-    for (const sentence of splitSentences(source.text)) {
+    const { claims, via } = claimsFor(source);
+    for (const sentence of claims) {
       const trimmed = sentence.trim();
       if (preservedClaims.has(trimmed)) continue;
       const analysis = analyzeClaim(trimmed, { positioning: state.positioning, weights, now });
@@ -87,6 +115,10 @@ export function mineSources(state, { now = Date.now(), weights = PRIOR_WEIGHTS }
         occurredAt: analysis.occurredAt,
         demo: source.demo || analysis.signals.demo,
         origin: 'mined',
+        // Which pass found this unit. The words are the user's either way — the
+        // gate guarantees that — but where the boundaries came from is theirs
+        // to see, and the inventory says so on the unit.
+        via,
         pinned: prior?.pinned ?? false,
         dismissed: prior?.dismissed ?? false,
         createdAt: prior?.createdAt ?? now,

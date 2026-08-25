@@ -86,9 +86,31 @@ export function emptyState() {
       track: 'independent',
       /** Whether the user's work is framed mainly as consulting action or expert judgement. */
       practiceMode: 'consultant',
-      /** Self-reported confidence that they know why to choose them over an alternative. */
+      /**
+       * Self-reported confidence that they know why to choose them over an
+       * alternative.
+       *
+       * **Deliberately never displayed, and never set against a measured
+       * score.** The tempting feature — "you said 8, your evidence says 31" —
+       * fails three ways at once. It reverses the emotional direction of the
+       * product, which exists to tell someone the world undervalues them, not
+       * that they overvalue themselves (`docs/UX.md`: never scold, credit
+       * before critique). It is a category error wearing a finding's clothes:
+       * this is self-reported clarity about differentiation, L1's band is
+       * measured evidence quality, and the two scales are not defined against
+       * each other anywhere. And `docs/METHOD.md` opens by promising that every
+       * number the product shows is derivable from it — this one is not in it.
+       *
+       * It is kept because the question does work in the conversation where it
+       * is asked. Its only sanctioned use is calibrating register, never
+       * arithmetic.
+       */
       fitConfidence: 5,
-      /** The evidence they expect should support that choice, before the miner tests it. */
+      /**
+       * The evidence they expect should support that choice, before the miner
+       * tests it. Read in First Light, beside the unit that actually scored
+       * highest — see `expectedCard` in `ui/views/onboarding.js`.
+       */
       expectedEvidence: '',
       /** Weeks the user has been at this. Sets the urgency register. */
       weeksInMotion: 0,
@@ -130,6 +152,43 @@ export function emptyState() {
     conversions: [],
     /** @type {Recognition[]} */
     recognitions: [],
+    /**
+     * What the market actually wrote back, kept in the market's own words.
+     *
+     * **Stored and displayed, never counted.** The strongest thing this method
+     * produces comes out of friction with real recipients, and until now the
+     * measurement screen took only numbers — so the sentence a client actually
+     * used was the one artefact of the whole loop with nowhere to live.
+     *
+     * It is a notebook, not an input. `substantiveComments` sits four fields
+     * away and carries weight 6 in L4; `verification` is the highest-weighted
+     * dimension in the scorer. If a box captioned "what did they reply" fed
+     * either of them, typing *the client said I am the best* would buy a score,
+     * one screen away from the numbers it would move. So no layer, no
+     * dimension, no conversion, no drift check and no `nonGoals` entry reads
+     * this array, and nothing in it becomes a proof unit.
+     *
+     * **There is deliberately no author field.** A structured "who said it" is
+     * the hook the rejected version of this feature hangs on — replies sorted
+     * by speaker into an anti-ICP list, then fed to drift detection. The user
+     * who wants the name writes it inside the quotation, which is both more
+     * verbatim and load-bearing on nothing.
+     * @type {Reply[]}
+     */
+    replies: [],
+    /**
+     * Retrieval tasks produced by the recall route (`engine/recall.js`).
+     *
+     * **Not evidence, and structurally kept apart from it.** These records
+     * hold what the user typed from memory, which is the one input class the
+     * verbatim gate cannot vouch for — it checks the model's output against
+     * the user's document, and here the user *is* the document. So they live
+     * in their own array, no layer reads them, and nothing here reaches the
+     * foundation, the gap, or archetype coverage. What they hold is a
+     * person's name and an errand.
+     * @type {Retrieval[]}
+     */
+    retrievals: [],
     /** archetype -> epoch ms the acquisition play was last surfaced. */
     playLog: {},
     calibration: {
@@ -141,7 +200,7 @@ export function emptyState() {
     },
     settings: {
       /** Optional BYOK enrichment. Off by default; see adapters/llm.js. */
-      llm: { enabled: false, provider: 'anthropic', model: '', apiKey: '' },
+      llm: { enabled: false, provider: 'anthropic', model: '', apiKey: '', extract: false },
       reduceMotion: false,
     },
   };
@@ -155,12 +214,16 @@ export function emptyState() {
  * @property {boolean} demo  true for bundled sample material
  * @property {number} addedAt
  * @property {number|null} minedAt  last mining pass, null if never mined
+ * @property {string[]} extracted  spans model-assisted extraction proposed and the
+ *   gate accepted; empty when the source has only ever been split deterministically
+ * @property {number|null} extractedAt
  */
 
 /**
  * @typedef {object} ProofUnit
  * @property {string} id
  * @property {string} claim              the atomic evidence sentence
+ * @property {'split'|'model'} via        how the claim's boundaries were found
  * @property {string} sourceId
  * @property {string} sourceName
  * @property {typeof PROOF_KINDS[number]} kind
@@ -220,6 +283,35 @@ export function emptyState() {
  */
 
 /**
+ * Something a real recipient wrote back, in their words.
+ *
+ * `text` is preserved exactly as entered and rendered with its line breaks
+ * intact — a reply reflowed into one paragraph is no longer verbatim.
+ *
+ * @typedef {object} Reply
+ * @property {string} id
+ * @property {string|null} artifactId  what it answered; null once that is gone
+ * @property {string} text             the reply itself, unedited and unmeasured
+ * @property {number} at
+ */
+
+/**
+ * A request for evidence, addressed to a person the user named.
+ *
+ * `about` and `recalled` are the user's own words, carried so the task still
+ * makes sense weeks later. They are shown back and never measured.
+ *
+ * @typedef {object} Retrieval
+ * @property {string} id
+ * @property {string} recipient   the named person; a task without one is not a task
+ * @property {string} about       what the request concerns, in the user's words
+ * @property {string} recalled    what the user remembers being said, shown back to them
+ * @property {number|null} askedAt   when the user marked it sent
+ * @property {number|null} closedAt  when the material actually arrived
+ * @property {number} createdAt
+ */
+
+/**
  * Ids end up in DOM attribute values and CSS selectors, so they are restricted
  * to a safe alphabet on the way in rather than trusted on the way out. An
  * imported backup is attacker-controllable input: a shared file whose proof id
@@ -230,6 +322,20 @@ const safeId = (value, prefix) =>
   typeof value === 'string' && ID_SAFE.test(value) ? value : makeId(prefix);
 
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+/**
+ * Ceiling on stored extraction spans per source. Matches `MAX_SPANS` in
+ * `engine/extract.js`; duplicated rather than imported because `core/` does not
+ * depend on `engine/`, and a state validator that pulls in the measurement
+ * engine to validate an array length is the wrong trade.
+ */
+const MAX_EXTRACTED_SPANS = 40;
+/**
+ * Ceiling on a retrieval's recipient. Matches `MAX_RECIPIENT_CHARS` in
+ * `engine/recall.js`, duplicated for the same reason as above: `core/` does
+ * not depend on `engine/`.
+ */
+const MAX_RECIPIENT_CHARS = 60;
+
 const arr = (v) => (Array.isArray(v) ? v : []);
 const str = (v, fallback = '') => (typeof v === 'string' ? v : fallback);
 const num = (v, fallback = 0) => (Number.isFinite(v) ? v : fallback);
@@ -274,6 +380,9 @@ export function normalizeState(input) {
       nonGoals: arr(positioning.nonGoals).filter((v) => typeof v === 'string'),
     },
     ...relatedRecords(input),
+    // Standalone: a retrieval points at a person, not at another record, so it
+    // takes no part in the reference rewrite below.
+    retrievals: arr(input.retrievals).map(normalizeRetrieval).filter(Boolean),
     playLog: isObj(input.playLog)
       ? Object.fromEntries(
           Object.entries(input.playLog).filter(([, v]) => Number.isFinite(v)),
@@ -291,6 +400,12 @@ export function normalizeState(input) {
         provider: str(llm.provider, 'anthropic'),
         model: str(llm.model),
         apiKey: str(llm.apiKey),
+        /**
+         * Separate consent from `enabled`. Rewriting sends one draft and the
+         * proof under it; extraction sends a whole document. A single switch
+         * would have let the smaller consent authorise the larger disclosure.
+         */
+        extract: bool(llm.extract) && bool(llm.enabled),
       },
       reduceMotion: bool(settings.reduceMotion),
     },
@@ -337,6 +452,7 @@ function relatedRecords(input) {
     proofs,
     artifacts,
     receptions: arr(input.receptions).map((r) => normalizeReception(r, toArtifact)).filter(Boolean),
+    replies: arr(input.replies).map((r) => normalizeReply(r, toArtifact)).filter(Boolean),
     conversions: arr(input.conversions).map((c) => normalizeConversion(c, toArtifact)).filter(Boolean),
     recognitions: arr(input.recognitions).map(normalizeRecognition).filter(Boolean),
   };
@@ -386,6 +502,16 @@ function normalizeSource(s, id) {
     addedAt: num(s.addedAt, Date.now()),
     /** When this source was last run through the miner. */
     minedAt: Number.isFinite(s.minedAt) ? s.minedAt : null,
+    /**
+     * Accepted extraction spans. Coerced to strings and capped here; **verified
+     * against the source text in `mineSources`**, not here, so the check runs on
+     * every mining pass rather than only at import. Schema owns shape; the
+     * miner owns the guarantee.
+     */
+    extracted: arr(s.extracted)
+      .filter((span) => typeof span === 'string' && span.trim())
+      .slice(0, MAX_EXTRACTED_SPANS),
+    extractedAt: Number.isFinite(s.extractedAt) ? s.extractedAt : null,
   };
 }
 
@@ -408,6 +534,7 @@ function normalizeProof(p, id, toSource) {
     occurredAt: Number.isFinite(p.occurredAt) ? p.occurredAt : null,
     demo: bool(p.demo),
     origin: oneOf(p.origin, ['mined', 'compounded', 'manual'], 'mined'),
+    via: oneOf(p.via, ['split', 'model'], 'split'),
     pinned: bool(p.pinned),
     dismissed: bool(p.dismissed),
     createdAt: num(p.createdAt, Date.now()),
@@ -449,6 +576,26 @@ function normalizeReception(r, toArtifact) {
   };
 }
 
+/**
+ * A reply survives losing its artifact, unlike a reception.
+ *
+ * A reception whose artifact reference cannot be represented can never be
+ * scored, so it is dropped — keeping it would only hide it. A reply is never
+ * scored in the first place, the words are the whole record, so it degrades to
+ * unattributed instead of being deleted to tidy up our own graph. A reference
+ * that is merely dangling comes through unchanged, as it does everywhere else
+ * in this file; the view renders that as unattached too.
+ */
+function normalizeReply(r, toArtifact) {
+  if (!isObj(r) || typeof r.text !== 'string' || !r.text.trim()) return null;
+  return {
+    id: safeId(r.id, 'rpl'),
+    artifactId: toArtifact(r.artifactId),
+    text: r.text,
+    at: num(r.at, Date.now()),
+  };
+}
+
 function normalizeConversion(c, toArtifact) {
   if (!isObj(c) || !CONVERSION_TYPES.includes(c.type)) return null;
   return {
@@ -460,6 +607,27 @@ function normalizeConversion(c, toArtifact) {
     artifactId: toArtifact(c.artifactId),
     note: str(c.note),
     at: num(c.at, Date.now()),
+  };
+}
+
+/**
+ * A retrieval with no recipient is dropped rather than repaired.
+ *
+ * The named person *is* the feature — it is what separates a task the user can
+ * send from a note-to-self about a memory. A record that lost its name is an
+ * errand addressed to nobody, and keeping it would put a permanent unfinishable
+ * line on a to-do list belonging to someone who is already stuck.
+ */
+function normalizeRetrieval(r) {
+  if (!isObj(r) || typeof r.recipient !== 'string' || !r.recipient.trim()) return null;
+  return {
+    id: safeId(r.id, 'rtv'),
+    recipient: r.recipient.trim().slice(0, MAX_RECIPIENT_CHARS),
+    about: str(r.about),
+    recalled: str(r.recalled),
+    askedAt: Number.isFinite(r.askedAt) ? r.askedAt : null,
+    closedAt: Number.isFinite(r.closedAt) ? r.closedAt : null,
+    createdAt: num(r.createdAt, Date.now()),
   };
 }
 

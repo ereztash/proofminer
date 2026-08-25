@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { LIEBIG_GATE, computeAuthority, diagnose, nextMove } from '../../src/engine/authority.js';
+import {
+  LIEBIG_GATE,
+  bestUnpublished,
+  computeAuthority,
+  diagnose,
+  nextMove,
+  unpublishedProofs,
+} from '../../src/engine/authority.js';
 import { computeLayers, receptionScore } from '../../src/engine/layers.js';
 import { archetypeCoverage, acquisitionPlays } from '../../src/engine/gaps.js';
-import { scorePositioning } from '../../src/engine/positioning.js';
+import { FILLER_SHOWN, fillerWords, scorePositioning } from '../../src/engine/positioning.js';
 import { isDemoMode } from '../../src/engine/mine.js';
 import {
   NOW,
@@ -458,5 +465,114 @@ describe('positioning', () => {
 
   it('reports zero confidence when nothing is filled', () => {
     expect(scorePositioning({}).confidence).toBe(0);
+  });
+});
+
+describe('naming the filler instead of counting it', () => {
+  it('returns the word the user actually typed, not the stem that matched', () => {
+    // The patterns are stems: /אסטרטג/ matches inside אסטרטגי. Handing back the
+    // fragment would name a word nobody wrote.
+    expect(fillerWords('גישה אסטרטגית וחדשנית')).toEqual(['אסטרטגית', 'חדשנית']);
+    expect(fillerWords('a strategic, innovative approach')).toEqual([
+      'strategic',
+      'innovative',
+    ]);
+  });
+
+  it('returns a multi-word pattern whole', () => {
+    expect(fillerWords('אני מוביל דעה בתחום')).toEqual(['מוביל דעה']);
+    expect(fillerWords('results-driven and best-in-class')).toEqual([
+      'results-driven',
+      'best-in-class',
+    ]);
+  });
+
+  it('reads in the order the words appear, not the order of the pattern list', () => {
+    // FILLER lists אסטרטג before הוליסט; the text puts them the other way round.
+    expect(fillerWords('גישה הוליסטית ואסטרטגית')).toEqual(['הוליסטית', 'אסטרטגית']);
+  });
+
+  it('names the word itself, not the grammar glued to its front', () => {
+    // The vav in ואסטרטגי joins the previous word and the he in הפתרונות is an
+    // article. Neither is part of the word being named, and «ואסטרטגי» reads as
+    // a word nobody wrote. The first draft of this test asserted the opposite
+    // and was wrong about which half of the expansion does the work.
+    expect(fillerWords('מהיר ואסטרטגי')).toEqual(['אסטרטגי']);
+    expect(fillerWords('הפתרונות שלנו')).toEqual(['פתרונות']);
+    // But a word that really starts with one of those letters keeps it: the
+    // match begins at the word's first character, so there is nothing to strip.
+    expect(fillerWords('אנחנו מקצוענים')).toEqual(['מקצוענים']);
+  });
+
+  it('says nothing about text that carries none', () => {
+    expect(fillerWords('קיצרתי את זמן האספקה מ-19 יום ל-7 ימים')).toEqual([]);
+    expect(fillerWords('')).toEqual([]);
+    expect(fillerWords(undefined)).toEqual([]);
+  });
+
+  it('hands the words to the issue rather than a count', () => {
+    const result = scorePositioning({
+      audience: 'ארגונים',
+      transformation: 'פתרונות הוליסטיים',
+      claim: 'גישה אסטרטגית וחדשנית',
+      offer: '',
+    });
+    const issue = result.issues.find((i) => i.id === 'filler');
+    expect(issue).toBeTruthy();
+    const [words, more] = issue.vars;
+    expect(words).toContain('אסטרטגית');
+    expect(words).toContain('הוליסטיים');
+    expect(more).toBe(0);
+  });
+
+  it('counts the remainder rather than silently dropping it', () => {
+    const many = 'אסטרטגי הוליסטי חדשני מקצועני יצירתי מנוסה פורץ דרך';
+    const result = scorePositioning({ audience: many, transformation: '', claim: '', offer: '' });
+    const [words, more] = result.issues.find((i) => i.id === 'filler').vars;
+    expect(words).toHaveLength(FILLER_SHOWN);
+    expect(more).toBeGreaterThan(0);
+    expect(words.length + more).toBe(fillerWords(many).length);
+  });
+});
+
+describe('the evidence nobody has seen', () => {
+  const positioning = { audience: 'מנהלי תפעול', transformation: 'תהליך', claim: '', offer: '' };
+  const held = (claim, over = {}) => ({
+    ...proofFrom(claim, { positioning, now: NOW }),
+    ...over,
+  });
+
+  it('is real, unpublished, and strongest first', () => {
+    const strong = held(STRONG_HE, { id: 'p_strong' });
+    const weak = held('עבדתי בחברה גדולה.', { id: 'p_weak' });
+    const state = stateWith({ positioning, proofs: [weak, strong] });
+    expect(unpublishedProofs(state, NOW).map((p) => p.id)).toEqual(['p_strong', 'p_weak']);
+  });
+
+  it('drops what has already gone out, and bundled fixtures always', () => {
+    const published = held(STRONG_HE, { id: 'p_out' });
+    const demo = held(STRONG_HE, { id: 'p_demo', demo: true });
+    const mine = held('ליוויתי מנהלי תפעול והתהליך נשאר אצלם.', { id: 'p_mine' });
+    const state = stateWith({
+      positioning,
+      proofs: [published, demo, mine],
+      artifacts: [artifact({ id: 'a0', proofIds: ['p_out'] })],
+    });
+    expect(unpublishedProofs(state, NOW).map((p) => p.id)).toEqual(['p_mine']);
+  });
+
+  it('honours the limit the screen asks for', () => {
+    const proofs = ['אחת', 'שתיים', 'שלוש', 'ארבע'].map((n, i) =>
+      held(`ליוויתי מנהלי תפעול בחברה ${n}.`, { id: `p${i}` }),
+    );
+    expect(unpublishedProofs(stateWith({ positioning, proofs }), NOW, { limit: 3 })).toHaveLength(3);
+  });
+
+  it('still answers the question bestUnpublished was asking', () => {
+    const strong = held(STRONG_HE, { id: 'p_strong' });
+    const weak = held('עבדתי בחברה גדולה.', { id: 'p_weak' });
+    const state = stateWith({ positioning, proofs: [weak, strong] });
+    expect(bestUnpublished(state, NOW).id).toBe('p_strong');
+    expect(bestUnpublished(stateWith({}), NOW)).toBeNull();
   });
 });

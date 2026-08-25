@@ -11,7 +11,15 @@ import { bidi, html } from '../html.js';
 import { button, layerCard, notice, section } from '../components.js';
 import { LAYER_KEYS } from '../../engine/layers.js';
 
-export function dashboardView(state, t, { authority, move }) {
+/**
+ * How many of the user's own lines the return bridge carries.
+ *
+ * Three, not the whole inventory: this is a bridge back into the work, not a
+ * second inventory screen one scroll above the real one.
+ */
+export const BRIDGE_LINES = 3;
+
+export function dashboardView(state, t, { authority, move, held = [] }) {
   const { gap, foundation, built, index, diagnosis, lowConfidence, gated } = authority;
   // The onboarding asked how long they had been at this. It changes the
   // register of one line — quietly, without a countdown or a guilt mechanic.
@@ -20,6 +28,7 @@ export function dashboardView(state, t, { authority, move }) {
   return html`<div class="stack">
     ${urgency ? html`<p class="urgency">${t(['dashboard', 'urgency', urgency])}</p>` : ''}
     ${gapCard(gap, foundation, built, index, lowConfidence, t)}
+    ${bridgeCard(held, authority.demo, t)}
     ${moveCard(move, t)}
     ${diagnosisCard(diagnosis, gated, t)}
     ${section(
@@ -73,12 +82,45 @@ function gapCard(gap, foundation, built, index, lowConfidence, t) {
 }
 
 /**
+ * The return bridge: the user's own sentences, above the instruction.
+ *
+ * The move that produced the richest turns in the corpus was reading a person's
+ * own words back to them, and the dashboard opened on a number with nothing of
+ * theirs anywhere on it. These are the units they hold that nobody has seen —
+ * the Visibility Gap in their own handwriting, sitting directly above the thing
+ * they are being told to do about it. Credit before critique (`docs/UX.md`).
+ *
+ * **No clock, deliberately.** The version this replaces keyed off a
+ * `lastActiveAt` and a thirty-day threshold — "welcome back, here is what you
+ * were doing". Measuring absence is a re-engagement mechanic, and per
+ * `docs/TELOS.md` a month away may be exactly the relief this product exists to
+ * produce. So it renders on every visit, and the product never learns how long
+ * anyone was gone.
+ *
+ * Renders nothing on bundled fixtures: "what you already wrote" over eight
+ * sample sentences is the same lie First Light was repaired for.
+ */
+function bridgeCard(held, demo, t) {
+  if (demo || !held.length) return '';
+  return html`<section class="bridge" aria-labelledby="bridge-label">
+    <p class="bridge__label" id="bridge-label">${t('bridge.label', held.length)}</p>
+    <ul class="bridge__list">
+      ${held.map((proof) => html`<li class="bridge__line">${proof.claim}</li>`)}
+    </ul>
+    <p class="bridge__note">${t('bridge.note')}</p>
+  </section>`;
+}
+
+/**
  * The only element on the page styled as primary. If the user does nothing but
  * this card, repeatedly, that is the whole product working as intended.
  */
 function moveCard(move, t) {
   // Move ids contain dots, so the array path form is required here.
-  const why = t(['moves', move.id, 'why'], move.payload?.daysLeft ?? 0);
+  // The whole payload, not one field of it. This used to pass `daysLeft`
+  // positionally, so every later move that wanted to name something concrete —
+  // a person, a source — had no way to reach it and said "someone" instead.
+  const why = t(['moves', move.id, 'why'], move.payload ?? {});
 
   return html`<section class="move">
     <div class="move__head">

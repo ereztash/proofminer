@@ -14,18 +14,21 @@ import { translator } from '../i18n/index.js';
 import { html, renderInto } from './html.js';
 import { sampleFor } from '../data/sample.js';
 
-import { isDemoMode, mineSources, rescoreProofs } from '../engine/mine.js';
-import { computeAuthority, nextMove } from '../engine/authority.js';
+import { isDemoMode, mineSources, realProofs, rescoreProofs } from '../engine/mine.js';
+import { computeAuthority, nextMove, unpublishedProofs } from '../engine/authority.js';
 import { revealPicks } from '../engine/explain.js';
 import { parseAnalyticsPaste } from '../engine/analytics.js';
 import { activeWeights, calibrate, compound } from '../engine/feedback.js';
 import { provenanceFooter } from '../engine/drafts.js';
-import { refineDraft } from '../adapters/llm.js';
+import { draftRetrievals } from '../engine/recall.js';
+import { MAX_SOURCE_CHARS, extractClaims, refineDraft } from '../adapters/llm.js';
 import { sortByDesc } from '../core/util.js';
 import { decayedScore } from '../engine/score.js';
 
 import { NOT_ME, firstLightView, onboardingView } from './views/onboarding.js';
-import { dashboardView } from './views/dashboard.js';
+import { RECALL_FIELDS } from './views/recall.js';
+import { REPLY_FIELDS } from './views/replies.js';
+import { BRIDGE_LINES, dashboardView } from './views/dashboard.js';
 import { mineView } from './views/mine.js';
 import { positionView } from './views/position.js';
 import { inventoryView } from './views/inventory.js';
@@ -75,6 +78,8 @@ const ui = {
   /** Artifact this studio session is editing, so save+publish is one record. */
   artifactId: null,
   refining: false,
+  /** Source id currently out at the model, so the row can say so and lock. */
+  extracting: null,
   toast: '',
 };
 
@@ -116,6 +121,7 @@ export function mountApp(root) {
     ui.angle = 'bare';
     ui.cta = 'none';
     ui.refining = false;
+    ui.extracting = null;
     ui.toast = '';
   }
 
@@ -207,6 +213,63 @@ export function mountApp(root) {
     return true;
   }
 
+  /**
+   * Read and validate everything on screen 0 except the paste box.
+   *
+   * Shared by the two ways off that screen — with material and without it —
+   * because every question but the document is the same either way, and a
+   * second copy of this would drift from the first.
+   *
+   * The paste box is only rendered once the qualifying question is answered,
+   * so the situation branch is not reachable through the UI. It exists so an
+   * unanswered or declined qualification can never be recorded as a track —
+   * the defect was a default that answered it for the user.
+   *
+   * @returns {object|null} null once the visitor has been told what is missing
+   */
+  function readColdProfile() {
+    const situation = root.querySelector('input[name="situation"]:checked')?.value;
+    if (!situation || situation === NOT_ME) {
+      toast(t('onboarding.needSituation'));
+      return null;
+    }
+    // Asked, never required. In the corpus the move that lost the room every
+    // time was demanding a finished formulation as the price of proceeding —
+    // "I don't know how to even start answering that; when I have a thread it
+    // will be easier" — and what worked was dropping the demand and asking
+    // something lighter. This screen was doing the failed move as a hard gate,
+    // to a person whose whole presenting problem is that they cannot say it
+    // yet. The product's own thesis is that the material tells you the
+    // sentence, not the other way round.
+    const claim = val('fit-claim').trim();
+    const confidence = Number.parseInt(val('fit-confidence') || '5', 10);
+    const weeks = Number.parseInt(
+      root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
+      10,
+    );
+    return {
+      practiceMode: situation === 'expert' ? 'expert' : 'consultant',
+      fitConfidence: Number.isFinite(confidence) ? confidence : 5,
+      expectedEvidence: val('fit-evidence').trim(),
+      weeksInMotion: Number.isFinite(weeks) ? weeks : 0,
+      claim,
+    };
+  }
+
+  function applyColdProfile(draft, profile) {
+    draft.profile.track = 'independent';
+    draft.profile.practiceMode = profile.practiceMode;
+    draft.profile.fitConfidence = profile.fitConfidence;
+    draft.profile.expectedEvidence = profile.expectedEvidence;
+    draft.profile.weeksInMotion = profile.weeksInMotion;
+    draft.profile.onboarded = true;
+    draft.positioning.claim = profile.claim;
+    draft.positioning.offer =
+      profile.practiceMode === 'expert'
+        ? t('onboarding.modeExpertOffer')
+        : t('onboarding.modeConsultantOffer');
+  }
+
   const actions = {
     goto(payload) {
       // Record that an acquisition play was actually shown, so the guidance
@@ -223,45 +286,15 @@ export function mountApp(root) {
     },
 
     coldStart() {
+      const profile = readColdProfile();
+      if (!profile) return;
       const text = val('cold-paste').trim();
-      const situation = root.querySelector('input[name="situation"]:checked')?.value;
-      // The paste box is only rendered once the qualifying question is
-      // answered, so neither branch here is reachable through the UI. They
-      // exist so an unanswered or declined qualification can never be recorded
-      // as a track — the defect was a default that answered it for the user.
-      if (!situation || situation === NOT_ME) {
-        toast(t('onboarding.needSituation'));
-        return;
-      }
-      const practiceMode = situation === 'expert' ? 'expert' : 'consultant';
-      const confidence = Number.parseInt(val('fit-confidence') || '5', 10);
-      const claim = val('fit-claim').trim();
-      const expectedEvidence = val('fit-evidence').trim();
-      const track = 'independent';
-      const weeks = Number.parseInt(
-        root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
-        10,
-      );
-      if (!claim) {
-        toast(t('onboarding.needClaim'));
-        return;
-      }
       if (!text) {
         toast(t('onboarding.needPaste'));
         return;
       }
       store.update((draft) => {
-        draft.profile.track = track;
-        draft.profile.practiceMode = practiceMode;
-        draft.profile.fitConfidence = Number.isFinite(confidence) ? confidence : 5;
-        draft.profile.expectedEvidence = expectedEvidence;
-        draft.profile.weeksInMotion = Number.isFinite(weeks) ? weeks : 0;
-        draft.profile.onboarded = true;
-        draft.positioning.claim = claim;
-        draft.positioning.offer =
-          practiceMode === 'expert'
-            ? t('onboarding.modeExpertOffer')
-            : t('onboarding.modeConsultantOffer');
+        applyColdProfile(draft, profile);
         draft.sources.push({
           id: makeId('src'),
           name: state.locale === 'en' ? 'First source' : 'מקור ראשון',
@@ -272,6 +305,29 @@ export function mountApp(root) {
       });
       remine();
       ui.screen = 'firstLight';
+    },
+
+    /**
+     * "I do not have anything to paste."
+     *
+     * The commonest way this product fails a real person, and until now the
+     * screen had two answers for them: paste something anyway, or look at our
+     * sample. Both are ways of saying *you are not who we built this for* to
+     * someone whose work simply left no file behind.
+     *
+     * They are onboarded on exactly the answers they did give, and land on the
+     * recall route rather than on a dashboard of zeros. First Light is not
+     * skipped, only postponed — `sawFirstLight` stays false, so the reveal is
+     * still waiting for the day their material arrives and gets mined.
+     */
+    coldRecall() {
+      const profile = readColdProfile();
+      if (!profile) return;
+      store.update((draft) => {
+        applyColdProfile(draft, profile);
+      });
+      ui.screen = 'app';
+      ui.view = 'mine';
     },
 
     coldSample() {
@@ -296,6 +352,76 @@ export function mountApp(root) {
       });
       ui.screen = 'app';
       ui.view = 'dashboard';
+    },
+
+    /**
+     * Turn a recall pass into retrieval tasks.
+     *
+     * The room question is the only required one, and it is required for the
+     * reason the whole route exists: without a name there is no recipient, and
+     * without a recipient this is a diary entry. The other two answers travel
+     * on the task so it still means something in a fortnight; neither is ever
+     * measured. See `engine/recall.js`.
+     */
+    saveRecall() {
+      const answers = {
+        project: val('recall-project').trim(),
+        room: val('recall-room').trim(),
+        ending: val('recall-ending').trim(),
+      };
+      if (!answers.room) {
+        toast(t('recall.needRoom'));
+        return;
+      }
+      const { retrievals, found, ignored, skipped } = draftRetrievals(answers, {
+        now: realNow(),
+        existing: state.retrievals,
+      });
+      if (!retrievals.length) {
+        // Keyed on whether a name was read at all, not on whether anything was
+        // ignored: a box holding only punctuation reads zero names and ignores
+        // nothing, and telling that user "everyone you named is already on the
+        // list" is a false statement about an empty list.
+        toast(found ? t('recall.allAlreadyOpen') : t('recall.noNames'));
+        return;
+      }
+      store.update((draft) => {
+        draft.retrievals.push(...retrievals);
+      });
+      // Append forms must clear their cache, or `val()` falls back to the stale
+      // value and a second click duplicates the pass.
+      for (const key of RECALL_FIELDS) delete ui.formCache[key];
+      toast(t('recall.built', retrievals.length, ignored + skipped));
+    },
+
+    retrievalSent(payload) {
+      store.update((draft) => {
+        const task = draft.retrievals.find((r) => r.id === payload.id);
+        if (task) task.askedAt = realNow();
+      });
+    },
+
+    /**
+     * The material came back.
+     *
+     * Closing a task adds nothing to the evidence base — what arrived is a
+     * document, and it enters the way every other document does, through the
+     * paste box. So this marks the errand done and says where to put what they
+     * were sent; it never writes their reply into the inventory on their
+     * behalf.
+     */
+    retrievalArrived(payload) {
+      store.update((draft) => {
+        const task = draft.retrievals.find((r) => r.id === payload.id);
+        if (task) task.closedAt = realNow();
+      });
+      toast(t('recall.arrivedHint'));
+    },
+
+    retrievalDrop(payload) {
+      store.update((draft) => {
+        draft.retrievals = draft.retrievals.filter((r) => r.id !== payload.id);
+      });
     },
 
     addText() {
@@ -334,7 +460,19 @@ export function mountApp(root) {
     },
 
     mine() {
+      // First Light is the product's entire hook and it is shown once. A
+      // visitor who arrived with nothing to paste took the recall route and had
+      // no reveal to be given; the reveal is owed to them on the day their
+      // material finally lands, not written off because they were empty-handed
+      // on the first screen. Gated on *this* mine being the one that produced
+      // their first evidence, so adding a fifth source never yanks a working
+      // user out of the inventory and back to the opening reveal.
+      const hadNothing = !realProofs(state).length;
       remine();
+      if (hadNothing && !store.get().profile.sawFirstLight && realProofs(store.get()).length) {
+        ui.screen = 'firstLight';
+        return;
+      }
       ui.view = 'inventory';
     },
 
@@ -450,6 +588,61 @@ export function mountApp(root) {
       }
     },
 
+    /**
+     * Hand one source to the model to mark up, then re-mine.
+     *
+     * The disclosure is restated here rather than left in Settings: this is the
+     * moment a whole document leaves the device, and it is a bigger moment than
+     * the one the rewriting toggle described. What comes back is already through
+     * the gate — `extractClaims` returns spans located in this source's own text
+     * — so what is stored is the user's characters, and the count of rejected
+     * candidates is reported rather than quietly dropped.
+     */
+    async extractSource({ id }) {
+      const source = state.sources.find((src) => src.id === id);
+      if (!source || ui.extracting) return;
+      if (!globalThis.confirm?.(t('mine.extractDisclosure'))) return;
+
+      ui.extracting = id;
+      render();
+      const result = await extractClaims({
+        settings: state.settings,
+        source,
+        locale: state.locale,
+        mode: state.profile.practiceMode,
+      });
+      ui.extracting = null;
+
+      if (!result.ok) {
+        toast(t('mine.extractFailed'));
+        return;
+      }
+      if (!result.spans.length) {
+        toast(t('mine.extractNone'));
+        return;
+      }
+
+      store.update((draft) => {
+        const target = draft.sources.find((src) => src.id === id);
+        if (!target) return;
+        target.extracted = result.spans;
+        target.extractedAt = realNow();
+        // Cleared here and re-stamped by the `remine()` on the next line. It
+        // matters only if that call never happens: `nextMove` reads `minedAt`
+        // to decide whether a source is waiting, and a source whose boundaries
+        // just changed is waiting until it has been mined at them.
+        target.minedAt = null;
+      });
+      remine();
+      // Both facts, when both are true. A truncation notice that swallowed the
+      // count would leave the user unable to tell a partial read from a rejected
+      // one, and those call for different next steps.
+      const report = t('mine.extractResult', result.spans.length, result.rejected.length);
+      toast(
+        result.truncated ? `${report} ${t('mine.extractTruncated', MAX_SOURCE_CHARS)}` : report,
+      );
+    },
+
     saveReception() {
       const artifactId = val('rc-artifact');
       if (!artifactId) return;
@@ -547,6 +740,41 @@ export function mountApp(root) {
         draft.profile.noInboundAt = realNow();
       });
       toast(t('measure.noInboundSaved'));
+    },
+
+    /**
+     * Record what a real recipient wrote back, exactly as they wrote it.
+     *
+     * Nothing is normalised, trimmed out of the middle, or read by anything
+     * that computes a number — see the module comment in `ui/views/replies.js`
+     * and honesty rule 8. The only edit is the outer trim that stops an
+     * accidental empty submit, and it is applied to the emptiness test rather
+     * than to what gets stored.
+     */
+    saveReply() {
+      const text = val('rp-text');
+      if (!text.trim()) {
+        toast(t('replies.needText'));
+        return;
+      }
+      store.update((draft) => {
+        draft.replies.push({
+          id: makeId('rpl'),
+          // Whatever is on screen. An orphan is tolerated by the schema, but
+          // the form never creates one: the picker only lists published work.
+          artifactId: val('rp-artifact') || null,
+          text,
+          at: realNow(),
+        });
+      });
+      for (const key of REPLY_FIELDS) delete ui.formCache[key];
+      toast(t('replies.saved'));
+    },
+
+    removeReply(payload) {
+      store.update((draft) => {
+        draft.replies = draft.replies.filter((r) => r.id !== payload.id);
+      });
     },
 
     addRecognition() {
@@ -654,7 +882,7 @@ export function mountApp(root) {
 
     switch (ui.view) {
       case 'mine':
-        return mineView(state, t);
+        return mineView(state, t, { extracting: ui.extracting, formCache: ui.formCache });
       case 'position':
         return positionView(state, t);
       case 'inventory':
@@ -677,13 +905,16 @@ export function mountApp(root) {
           formCache: ui.formCache,
         });
       case 'measure':
-        return measureView(state, t, { parsed: ui.parsedAnalytics });
+        return measureView(state, t, { parsed: ui.parsedAnalytics, formCache: ui.formCache });
       case 'settings':
         return settingsView(state, t, { storageError: Boolean(store.persistError()) });
       default:
         return dashboardView(state, t, {
           authority: computeAuthority(state, nowTs),
           move: nextMove(state, nowTs),
+          // Computed here rather than in the view so it runs on the same
+          // injected clock as everything else on this screen.
+          held: unpublishedProofs(state, nowTs, { limit: BRIDGE_LINES }),
         });
     }
   }
@@ -873,6 +1104,14 @@ export function mountApp(root) {
       store.update((draft) => {
         draft.settings.llm.enabled = enabled;
         if (!enabled) draft.settings.llm.apiKey = '';
+      });
+      render();
+    } else if (el.id === 'llm-extract') {
+      // Persisted immediately, like the switch above it and for the same
+      // reason: a consent the UI shows as granted must be the consent stored.
+      const extract = el.checked;
+      store.update((draft) => {
+        draft.settings.llm.extract = extract;
       });
       render();
     } else if (el.id === 'file') {

@@ -74,7 +74,7 @@ export function positionView(state, t) {
           ? html`<ul class="issues">
               ${result.issues.map(
                 (issue) => html`<li class="issues__item issues__item--sev${issue.severity}">
-                  ${t(['position', 'issue', issue.id])}
+                  ${t(['position', 'issue', issue.id], ...(issue.vars || []))}
                 </li>`,
               )}
             </ul>`

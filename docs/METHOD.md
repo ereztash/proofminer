@@ -27,8 +27,17 @@ product shows a user must be derivable from what is written here.
    containing no number and no name, which is invented freely and passes.
    The UI states these limits rather than implying the check verifies truth.
 4. **Provenance is not optional.** Every generated artifact carries the IDs of
-   the proof units it is grounded in.
-5. **Priors are labelled as priors.** This applies to *every* constant in the
+   the proof units it is grounded in, and every proof unit records whether its
+   boundaries were found by deterministic splitting or by model-assisted
+   extraction.
+5. **No claim the user did not write.** Where rule 3 governs what a draft may
+   *say*, this governs what may *enter the inventory*. A proof unit's text is
+   always a substring of a source document the user supplied. Model-assisted
+   extraction chooses spans and never authors them; a candidate that is not
+   present verbatim in the source is discarded and counted, and the count is
+   shown. Unlike rule 3, this comparison is exact in both directions and has no
+   heuristic tier — which is why it blocks unconditionally.
+6. **Priors are labelled as priors.** This applies to *every* constant in the
    method, not only the nine dimension weights: the foundation/built splits,
    the Liebig gate width, the `DEVELOPED` and band thresholds, the layer
    composition mixes, the saturation half-points, the reception anchors and the
@@ -36,8 +45,34 @@ product shows a user must be derivable from what is written here.
    only ones a user's own data can move. The band boundaries are the one set
    calibrated against measurement — against the score distribution the engine
    actually produces, not against round numbers.
-6. **Demo data is marked in the data itself**, not only in the UI, and marked
+7. **Demo data is marked in the data itself**, not only in the UI, and marked
    proof is excluded from calibration.
+8. **Recall is not evidence.** Rules 3 and 5 both check something the product
+   produced against something the user supplied. Neither has anything to say
+   about the supplied side, and there is one input class where that gap
+   matters: text the user types *now, from memory*, in a box the product put in
+   front of them. It passes the verbatim gate trivially — it is present word
+   for word in the source, because it **is** the source — so "the client said I
+   saved them four months" would enter the inventory and score well, carrying a
+   magnitude, an attribution and an outcome. That would make the Visibility Gap
+   a number the user can raise by writing a nicer sentence about themselves,
+   which is the category this product refuses to be.
+   So **a box this product puts in front of the user, asking for prose, may not
+   feed any number.** Two exist, and both are held to it structurally rather
+   than by intention:
+   - The **recall route** (`engine/recall.js`) produces *retrieval tasks with a
+     named recipient* — a person who can supply the same fact in their own
+     words, in a document — never proof units.
+   - The **reply bank** (`ui/views/replies.js`) stores what a recipient wrote
+     back, verbatim, and feeds nothing: not L4's `substantiveComments`, not
+     `verification`, not conversions, not drift detection, not `nonGoals`.
+
+   Both live outside every measured array, no layer reads either, and the
+   evidence enters later through the ordinary paste box — a document the user
+   was *sent* is evidence; the same words retyped into a box we supplied are a
+   declaration, and nothing can tell them apart afterwards. The invariant is
+   pinned in `tests/engine/recall.test.js` and `tests/engine/replies.test.js`:
+   the whole authority computation is byte-identical with and without them.
 
 ## The six measurable layers
 
@@ -61,6 +96,37 @@ and `commercialProximity` dimensions.
 
 A source document is a *container*. The atomic object is a **proof unit**: one
 claim that can stand alone.
+
+### Where a proof unit's boundaries come from
+
+Two passes can decide where one claim ends and the next begins, and they are
+not equally good at it.
+
+The default is **deterministic splitting**: terminators, bullets, wrapped-line
+rejoining, a 30-character floor, and a contact-furniture filter. It is free,
+private, reproducible, and it cannot see that a proof runs across two
+sentences, that a paragraph of pleasantries contains one buried outcome, or
+that "responsible for the onboarding process" is a duty rather than evidence.
+
+The optional second pass is **model-assisted extraction** (`engine/extract.js`),
+off by default and behind its own consent. A model is asked to point at
+passages — never to write, summarise or characterise them — and every candidate
+must be located **verbatim** in the source document. What enters the inventory
+is the document's own characters, sliced at the located offsets, never the
+string the model returned. A paraphrase, a stitched claim, an invented number
+and a hallucinated employer all fail identically: they are not in the text.
+
+Two things are done to a located span, and neither can add information: a
+leading bullet is removed and internal whitespace is collapsed.
+
+The division is the point. **Boundaries are a judgement; worth is a
+measurement.** The model gets the judgement and never touches the measurement:
+every span it proposes is then scored by the same nine dimensions, with the
+same weights, as a split sentence — and honesty rule 5 above governs both.
+
+The gate runs at **mining time**, not only when the model answers, so spans
+that arrive in an imported state file are re-verified against their source on
+every pass. A hand-edited backup cannot inject a claim either.
 
 Each proof unit is scored on nine dimensions. Weights below are **priors** and
 sum to 100.
@@ -355,6 +421,47 @@ The engine computes coverage against the declared positioning and emits
 evidence, ranked by impact ÷ effort. This is the hand-holding mechanism: the
 product does not only rank what you have, it tells you what to go get.
 
+#### The route that carries no magnitude
+
+Some people cannot produce a number. Not "have not yet" — cannot: a designer
+whose unchosen concepts are never measured, a coach who refuses to let a price
+carry meaning. An instruction that opens *give me a figure* is, for them, the
+same instruction re-issued forever.
+
+Seven of the eight plays can be satisfied without one. Measured on
+best-practice evidence written with no magnitude at all, against each
+archetype's own bar (pinned in `tests/engine/gaps.test.js`):
+
+| | bar | without a magnitude | what carries it |
+|---|---|---|---|
+| `OUTCOME` | 45 | 54 | a stated before → after, in words |
+| `PEER` | 45 | 53 | name, role, place |
+| `VALIDATION` | 45 | 51 | an attributed quotation |
+| `FAILURE` | 42 | 47 | date and named party |
+| `METHOD` | 40 | 43 | dated, attributed, linked |
+| `ORIGIN` | 30 | 31 | year, place, what you saw |
+| `CREDENTIAL` | 42 | — | never required one; a year is a date |
+| `SCALE` | 45 | **none** | `hasScaleUnit` needs a digit beside the unit |
+
+`SCALE` is the exception and the copy says so rather than inventing a route:
+`inferArchetypes` reaches it only through `hasScaleUnit`, which requires an
+actual digit, so a magnitude-free claim is not classified as `SCALE` at all.
+
+**What this does not do is lower a bar.** Coverage thresholds, `BAND_USABLE`
+and the Liebig gate are untouched. Holding a claim still and removing its
+figure lowers its score — `specificity` and `outcome` reward magnitude and
+that is not adjusted — and `plays.*.without` states that cost instead of
+implying the two routes are equal. The narrower claim is the true one: a
+well-written claim with no number routinely outscores a terse one with a
+number, so the product only ever asserts the controlled comparison.
+
+The single ranking effect: when `magnitudeDensity` shows that **no** unit in an
+inventory of at least three carries a magnitude, the `SCALE` play's value is
+multiplied by `MAGNITUDE_ONLY_DISCOUNT`. Nothing else moves. `SCALE` sorts
+third for an independent user and second for a job seeker on cheapness alone,
+so without this the one play they cannot perform is offered before the ones
+they can.
+
 ### I4. L5 → L2 · Claim validation (drift detection)
 What actually converted is compared against the claim the user says they own.
 Divergence surfaces as positioning drift — the market is buying something other
@@ -406,7 +513,10 @@ measurement, it is a prior — see honesty rule 5.
 | `DECAY_FLOOR` | 0.35 | decay never removes more than 65% of a proof's value |
 | half-lives | credential 1460, experience 1095, outcome 730, media 540, event 365, traction 180 | days, by proof kind |
 | coverage thresholds | 45 default; ORIGIN 30, METHOD 40, CREDENTIAL 42, FAILURE 42 | measured from best-practice evidence per archetype |
+| `SPARSE_MAGNITUDE` / sample floor | 0.20 / 3 units | share of units carrying a magnitude below which the inventory reads as one the user cannot add numbers to |
+| `MAGNITUDE_ONLY_DISCOUNT` | 0.5 | applied to the `SCALE` play's rank value only, never to a threshold |
 | `MIN_OBSERVATIONS` / `SHRINKAGE_K` / `CONFIDENT_OBSERVATIONS` | 8 / 8 / 15 | calibration |
 | `MAX_WEIGHT_DRIFT` | 2.5 | points per dimension per calibration pass |
 | `COMPOUND_THRESHOLD` / `COMPOUND_MIN_ENGAGEMENT` / min impressions | 1.6 / 40 / 500 | compounding gates |
 | `POSITIONING_LIFT` | *removed* | positioning reaches the foundation only through `icpFit` and `commercialProximity` |
+| `MAX_RETRIEVALS` / `MAX_RECIPIENT_CHARS` | 6 / 60 | recall route: tasks created per pass, and the longest a line may be and still be read as a name. Neither reaches any score — see honesty rule 8 |

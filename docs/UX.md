@@ -64,6 +64,19 @@ than become "one of those people."
 the user a hook library and a posting streak. Users who feel Pain B strongly
 churn immediately, and they are the majority of this ICP.
 
+> **Flagged, not resolved.** That last sentence is the least supported claim in
+> this document. A pass over the research corpus for discomfort with
+> self-promotion — revulsion, boastfulness, sounding inflated — found **one
+> marginal instance across roughly 5,900 lines of client speech**, against four
+> clear instances of Pain A in the same material. That is not a refutation: the
+> five people in the corpus had already hired a consultant to work on exactly
+> this, so by construction they are the ones who did *not* churn, and someone
+> who feels Pain B hardest may be precisely the person who never appears in a
+> coaching transcript. But the pledge block on screen 0 exists to neutralise
+> Pain B before anyone pastes, and nothing observed so far says it needs
+> neutralising. Worth a direct question in the five-person trial rather than
+> another inference.
+
 This product resolves it structurally: **you are not being asked to promote
 yourself. You are being asked to stop hiding evidence.** The Liebig gate makes
 part of that mechanical: the system will not let visibility run ahead of
@@ -72,6 +85,37 @@ types, and the first screen says that too — see `README.md`, "what the gate
 does not prevent". The other half of the answer is the authorship readout in
 the studio, which measures how much of a draft the tool wrote rather than
 denying that it wrote any of it.
+
+## Two checks that keep the copy in column two
+
+Column two above is easy to write once and drift away from. Screen 0 did
+exactly that: it opened by asking *which piece of evidence should you show?* —
+a sentence entirely in column one — while this table's own third row already
+recorded what the reader actually says. Two standing checks now hold the line.
+
+**The register test (manual, and it cannot be automated).** *Could one of the
+five people in the research corpus have said this sentence out loud?* If not,
+it belongs in column one and it is in the wrong place. Every line on screen 0
+and in the "come back when" list was rewritten against this test; two of the
+four come-back entries failed it outright, being claims about the market rather
+than moments in anyone's week.
+
+**The negative test set (`tests/ui/guidance.test.js`).** The corpus's most
+useful asset is not its successes but the four moves that lost the room, each
+of which a product screen can reproduce without noticing:
+
+| The move that failed | How a screen reproduces it | Pinned by |
+|---|---|---|
+| Putting words in someone's mouth | Guidance that asserts what the user's material *is* | no string may assert what was pasted |
+| Treating agreement as confirmation | A screen that asks "does that sound right?" and stores the yes | no string asks the reader to confirm the product |
+| Demanding a finished definition first | A required field the user cannot fill yet | `needClaim` must not exist |
+| Not bounding what someone says | An open prompt where a narrow question belongs | the recall route's three questions |
+
+Nothing from the corpus is stored in that file. The transcripts are private
+client material, and `docs/TELOS.md` forbids a phrase library outright — a bank
+of real client wordings in this repository is exactly that, one import away
+from `drafts.js`. Each rule is written as a property of our own copy, with the
+failure it generalises named in a comment and no source text carried across.
 
 ## The hero metric is the pain, quantified
 
@@ -110,13 +154,118 @@ they came to escape.
    form cache — a box that empties itself when the user answers a question
    above it is the worst possible bug on this screen.
 
+   **The claim is asked and never required.** The screen asks what sentence the
+   user wants a client to believe — a question that does real work where it is
+   asked — and then used to *refuse to proceed* without an answer. That is the
+   move that failed most clearly in the corpus: demanding a formulation the
+   person cannot produce yet, from someone whose entire presenting problem is
+   that they cannot produce it yet. *"I do not know how to even start answering
+   that; when I have a thread it will be easier."* What worked was dropping the
+   demand and asking something lighter. It is also backwards on the product's
+   own thesis: the material is supposed to hand you the sentence, not the other
+   way round. The hint now says outright that it may be skipped.
+
+   **What the paste box asks for is a product decision, not a placeholder.**
+   Asking for a CV gets a CV, and a CV is the worst available input: it is the
+   document the user has already edited, and they can already name its best
+   three lines. Nothing in it is a discovery. The screen therefore asks for the
+   material they never counted as evidence — client emails, a project thread, an
+   old proposal, meeting notes — and says plainly that messier and longer is
+   better. That is where the units they forgot they earned actually are, and it
+   is the input model-assisted extraction (`docs/METHOD.md`) pays off on:
+   sentence splitting cannot tell a buried result from four lines of
+   pleasantries, and it cannot see an outcome whose before-state sits in the
+   previous sentence.
+
+   **The third answer: "I have nothing to paste."** This is the commonest way
+   the product fails a real person, and for a long time screen 0 had two
+   replies to it — paste something anyway, or look at our sample — both of
+   which tell someone whose work left no file behind that they are not who this
+   was built for. (The sample's own copy said as much: *"I have nothing ready —
+   show me on a sample"*. It teaches how the ranking works and measures nobody,
+   so it now offers only that.)
+
+   The real answer is the recall route. Three questions — the last project, who
+   was in the room, what was said when it ended — and what comes out is a list
+   of **errands addressed to people the user just named**, not evidence. The
+   pivot is the second question: a name is not proof, but it is the address of
+   someone who can supply proof, and one message to one named person is a
+   smaller ask than finding a file that does not exist. `docs/METHOD.md`
+   honesty rule 8 is why it cannot be anything else — a memory typed into a box
+   passes the verbatim gate trivially, because it is its own source.
+
+   Two consequences for this screen. The recall panel **says in its first line
+   that nothing typed there is counted**, before the boxes, because a box that
+   looks like the paste box and behaves differently has to say which one it is
+   first. And it sits *below* the two primary actions, in the aside register:
+   most people who think they have nothing do have something, and this must not
+   talk them out of looking.
+
+   The fourth question the research proposed — *what do you do differently
+   since* — is deliberately not asked. It produces no recipient, and under rule
+   8 it cannot become evidence either, so it would be a fourth box whose answer
+   is written to disk and never read again. That is the exact defect
+   `profile.expectedEvidence` was just repaired for.
+
 2. **Screen 1 — First Light.** After the first mine, a dedicated reveal state
    — *not* the dashboard. `"מצאנו 14 הוכחות במה שהדבקת."` Then the three they
    would never have published themselves, with the reason each one is stronger
    than they think. **This is the product's entire hook and it must land inside
    3 minutes of arrival.**
 
+   **After the three, and only after them: what you expected.** Onboarding asks
+   which single piece of evidence the user thinks holds their claim. First
+   Light shows that answer beside the unit that actually scored highest. A
+   match is reported as confirmation — that is credit, not a test they passed.
+   A divergence is reported as one line worth looking at, with the caveat that
+   the comparison is token overlap and cannot tell a blind spot from a miner
+   that missed the line. It renders nothing when the question went unanswered.
+
+   **The version deliberately not built** is the neighbouring one: setting the
+   self-reported `fitConfidence` against L1's measured band. "You said 8, your
+   evidence says 31" reverses the product's emotional direction — the gap
+   exists to say the world undervalues you, not that you overvalue yourself —
+   and pairs two scales that are nowhere defined against each other. The
+   reasoning is kept next to the field in `core/schema.js` so the idea is
+   refused once rather than re-proposed.
+
+   **First Light is postponed for the recall visitor, never skipped.** They had
+   nothing to reveal on arrival, so `sawFirstLight` stays false and the reveal
+   waits for the day their material lands and gets mined. The hook is the whole
+   product; being empty-handed on the first screen is not a reason to forfeit
+   it.
+
+   **The honest states name the stage, not the person.** When the first pass
+   finds nothing usable, or finds only weak lines, the screen says so as *the
+   expected result of a first pass over one document* — not as a verdict on
+   what the user brought. It used to read "the material you pasted is not
+   concrete enough" and "what you pasted mostly describes roles", which is a
+   judgement delivered within three minutes of arrival to someone in a shame
+   state. Stating a limitation in advance is what turned the identical
+   experience from a complaint into reassurance for a client in the corpus.
+   The advice underneath also no longer opens with *paste something with a
+   number in it*: seven of the eight evidence routes need no magnitude, and
+   this screen was contradicting the plays copy one click away.
+
+   (The neighbouring idea — putting the same expectation-setting on screen 0 —
+   is deliberately not built. It collides head-on with *the first screen
+   qualifies, it does not educate*: a pre-emptive explanation of a limitation
+   is selling the problem in the wrong direction.)
+
 3. **Screen 2+ — the dashboard**, unlocked only once L1 exists.
+
+## The dashboard opens on the gap, then on the user's own words
+
+Order: the Visibility Gap, then the **return bridge**, then the single Next
+Move. The bridge is up to three of the user's own unpublished sentences,
+verbatim — the gap in their handwriting, sitting directly above the thing they
+are being told to do about it. The move that produced the richest turns in the
+corpus was reading a person's own words back to them, and the dashboard had
+nothing of theirs anywhere on it.
+
+It carries **no clock** — see `docs/TELOS.md`, "it does not measure your
+absence" — and renders nothing on bundled fixtures, because "what you already
+wrote" over eight sample sentences is the lie First Light was repaired for.
 
 Layers L3–L6 stay visibly **locked, not failed**. A locked layer says
 *"unlocks when you publish your first grounded artifact"* — it never says `0`.
@@ -169,6 +318,48 @@ screen.
 - The signal extractor treats Hebrew as a first-class language: niqqud
   stripping, final-letter normalisation, prefix stripping (ו/ה/ב/ל/מ/ש/כ),
   Hebrew stopwords, Hebrew currency and date formats.
+
+## A finding names the thing it found
+
+The positioning screen used to report *"there are words here that everyone in
+your field uses"* — computed by counting regex matches and throwing the matches
+away. The user cannot act on that. They cannot even tell whether the product
+means `אסטרטגי` or `פתרונות`, and a finding they cannot locate reads as the
+product being clever at them.
+
+It now names the words, in the user's own spelling and inflection, and asks a
+question about them rather than passing sentence: *"how many people in your
+field could write exactly that about themselves?"* The words are what makes it
+answerable.
+
+This is the same defect the gap plays were repaired for (`docs/METHOD.md`, I3),
+and it generalises: **if the engine had to identify something in order to
+report it, the report says what it identified.** Where naming is impossible —
+the drift check, which compares distributions rather than strings — the copy
+says what it counted instead.
+
+## A box that takes prose says what it does with the prose
+
+There are now two places where the product asks for the user's own writing and
+then deliberately does nothing arithmetic with it: the recall panel on the
+sources screen, and the reply bank on the measurement screen. Both are the same
+UI hazard — they look exactly like the paste box, which *is* measured — so both
+follow the same three rules.
+
+**The boundary is stated above the box, not below it.** A person decides what
+to type before they read the caption underneath. The reply bank matters most
+here: it sits four fields below `substantiveComments`, which carries weight 6
+in L4, and a user could reasonably assume the two are the same act.
+
+**The honest route is named in the same breath.** "If those words arrived in an
+email, paste the email into sources — that is where it gets measured." A
+refusal with no alternative reads as the product being difficult; a refusal
+with a route reads as the product being careful.
+
+**Verbatim means verbatim.** The reply bank never truncates, never reflows, and
+renders with line breaks intact, while every other list on that screen shows a
+sixty-character preview. Truncating the market's exact sentence would break the
+only thing that field is for.
 
 ## Hand-holding: exactly one next move
 

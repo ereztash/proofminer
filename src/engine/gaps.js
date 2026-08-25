@@ -14,6 +14,7 @@ import { ARCHETYPES } from '../core/schema.js';
 import { clamp100, sortByDesc } from '../core/util.js';
 import { BAND_USABLE, HALF_LIFE_DAYS, daysUntilStale, decayedScore } from './score.js';
 import { realProofs } from './mine.js';
+import { extractSignals } from './signals.js';
 
 /**
  * How much each archetype matters, by track. A job seeker and an independent
@@ -82,6 +83,66 @@ const PLAYS = {
 };
 
 /**
+ * The one archetype no wording can reach without digits.
+ *
+ * `inferArchetypes` adds SCALE from `hasScaleUnit` alone, and `hasScaleUnit`
+ * requires an actual digit next to the unit. Every other archetype has a route
+ * that carries no magnitude at all — measured on best-practice evidence
+ * written without one (pinned in `tests/engine/gaps.test.js`):
+ *
+ *   OUTCOME 54 (bar 45, via a stated before/after) · PEER 53 · VALIDATION 51
+ *   FAILURE 47 (bar 42) · METHOD 43 (bar 40) · ORIGIN 31 (bar 30)
+ *   SCALE — not classified as SCALE at all
+ *
+ * So the product can honestly tell seven of eight plays how to be satisfied
+ * without a number. It cannot tell SCALE that, and pretending otherwise would
+ * be the same defect in the other direction.
+ */
+export const MAGNITUDE_ONLY = 'SCALE';
+
+/**
+ * At or below this share of units carrying a magnitude, the inventory reads as
+ * one this user cannot add numbers to.
+ */
+export const SPARSE_MAGNITUDE = 0.2;
+
+/** Below this many real units the share is noise, and no inference is drawn. */
+const MAGNITUDE_SAMPLE_MIN = 3;
+
+/**
+ * What the SCALE play's value is multiplied by in a magnitude-free inventory.
+ *
+ * Ranking only. Coverage thresholds, `BAND_USABLE` and the Liebig gate are
+ * untouched: this changes which instruction is offered first, never what
+ * counts as evidence. SCALE sorts third for an independent user and second for
+ * a job seeker on effort alone, so someone who has never written a number down
+ * is told to go and count things before they are told to go and ask a client
+ * for a sentence — the one of the two they can actually do.
+ */
+const MAGNITUDE_ONLY_DISCOUNT = 0.5;
+
+/**
+ * Share of the user's real evidence that carries a magnitude.
+ *
+ * Recomputed from the claim text rather than read off the unit, because
+ * proof units store their `breakdown` and not their signals — the same reason
+ * `rescoreProofs` re-extracts.
+ *
+ * @returns {{share:number, units:number, withMagnitude:number}|null}
+ *   null when the inventory is too small to mean anything.
+ */
+export function magnitudeDensity(state) {
+  const proofs = realProofs(state);
+  if (proofs.length < MAGNITUDE_SAMPLE_MIN) return null;
+  const withMagnitude = proofs.filter((p) => extractSignals(p.claim).numberCount > 0).length;
+  return {
+    share: withMagnitude / proofs.length,
+    units: proofs.length,
+    withMagnitude,
+  };
+}
+
+/**
  * Coverage of each archetype by the user's real (non-demo) evidence.
  *
  * Takes no clock: coverage is a question about what the user holds, and the
@@ -144,10 +205,22 @@ export function coverageScore(state) {
  */
 export function acquisitionPlays(state) {
   const coverage = archetypeCoverage(state);
+  const density = magnitudeDensity(state);
+  // Only demoted on evidence. With too few units to judge, or with magnitudes
+  // present, SCALE keeps its own value — the discount answers a demonstrated
+  // inability to write numbers down, never a guess at one.
+  const sparse = density !== null && density.share <= SPARSE_MAGNITUDE;
+
   const plays = coverage
     .filter((c) => !c.covered)
     .map((c) => {
       const play = PLAYS[c.archetype];
+      const magnitudeOnly = c.archetype === MAGNITUDE_ONLY;
+      const deprioritised = sparse && magnitudeOnly;
+      // Value = how much this archetype matters here, how strong the play
+      // is, and how cheap it is. Users in this state have limited energy;
+      // the cheapest high-impact move must sort first.
+      const base = (c.weight * play.impact) / play.effort;
       return {
         ...play,
         archetype: c.archetype,
@@ -156,10 +229,11 @@ export function acquisitionPlays(state) {
         threshold: c.threshold,
         /** True once the user has evidence of this type that is simply not strong enough. */
         shortOfBar: c.count > 0,
-        // Value = how much this archetype matters here, how strong the play
-        // is, and how cheap it is. Users in this state have limited energy;
-        // the cheapest high-impact move must sort first.
-        value: Number(((c.weight * play.impact) / play.effort).toFixed(3)),
+        /** This play cannot be satisfied without a digit; the copy says so. */
+        magnitudeOnly,
+        /** Sorted down because this inventory carries no magnitudes at all. */
+        deprioritised,
+        value: Number((base * (deprioritised ? MAGNITUDE_ONLY_DISCOUNT : 1)).toFixed(3)),
       };
     });
   return sortByDesc(plays, (p) => p.value);
