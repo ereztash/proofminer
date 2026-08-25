@@ -234,6 +234,29 @@ screen.
   stripping, final-letter normalisation, prefix stripping (ו/ה/ב/ל/מ/ש/כ),
   Hebrew stopwords, Hebrew currency and date formats.
 
+## A box that takes prose says what it does with the prose
+
+There are now two places where the product asks for the user's own writing and
+then deliberately does nothing arithmetic with it: the recall panel on the
+sources screen, and the reply bank on the measurement screen. Both are the same
+UI hazard — they look exactly like the paste box, which *is* measured — so both
+follow the same three rules.
+
+**The boundary is stated above the box, not below it.** A person decides what
+to type before they read the caption underneath. The reply bank matters most
+here: it sits four fields below `substantiveComments`, which carries weight 6
+in L4, and a user could reasonably assume the two are the same act.
+
+**The honest route is named in the same breath.** "If those words arrived in an
+email, paste the email into sources — that is where it gets measured." A
+refusal with no alternative reads as the product being difficult; a refusal
+with a route reads as the product being careful.
+
+**Verbatim means verbatim.** The reply bank never truncates, never reflows, and
+renders with line breaks intact, while every other list on that screen shows a
+sixty-character preview. Truncating the market's exact sentence would break the
+only thing that field is for.
+
 ## Hand-holding: exactly one next move
 
 Every screen answers *"what do I do now?"* with one action, never a menu.

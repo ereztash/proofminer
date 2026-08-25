@@ -1084,6 +1084,42 @@ p {
   margin-block-start: 0.25rem;
 }
 
+/* ---------- the reply bank ---------- */
+
+.replies {
+  list-style: none;
+  margin: var(--step) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.reply {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: 0.8rem 0.9rem;
+}
+
+/*
+ * `pre-wrap` is the feature, not a style choice. A pasted email reflowed into
+ * one paragraph is no longer the thing that was said, and this screen promises
+ * the words back exactly as they arrived.
+ */
+.reply__text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 0.7rem;
+  max-inline-size: 62ch;
+}
+
+.reply__about {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  margin-block-start: 0.5rem;
+}
+
 /* ---------- recall and retrieval tasks ---------- */
 
 /* The card is a <details>, so the head has to work as a summary row too. */

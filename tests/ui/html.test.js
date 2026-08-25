@@ -5,6 +5,7 @@ import heBundle from '../../src/i18n/he.js';
 import enBundle from '../../src/i18n/en.js';
 import { NOT_ME, firstLightView, onboardingView } from '../../src/ui/views/onboarding.js';
 import { mineView } from '../../src/ui/views/mine.js';
+import { measureView } from '../../src/ui/views/measure.js';
 import { emptyState } from '../../src/core/schema.js';
 
 describe('escaping', () => {
@@ -567,5 +568,81 @@ describe('the first screen finally has a third answer', () => {
     for (const bundle of [heBundle, enBundle]) {
       expect(bundle.onboarding.orSample).not.toMatch(/אין לי כלום|nothing ready/);
     }
+  });
+});
+
+describe('the words the market used', () => {
+  const t = translator('he');
+  const published = {
+    id: 'art_1', proofIds: [], channel: 'post', angle: 'direct',
+    body: 'מה שלמדתי מהטמעת תהליך תפעול', status: 'published',
+    publishedAt: 1, url: '', createdAt: 1,
+  };
+  const reply = (over = {}) => ({
+    id: 'rpl_1', artifactId: 'art_1', text: 'זה בדיוק מה שקרה אצלנו.', at: 100, ...over,
+  });
+  const render = (over = {}, ui = {}) =>
+    toString_(measureView({ ...emptyState(), artifacts: [published], ...over }, t, ui));
+
+  it('does not exist before there is anything to be a reply to', () => {
+    const markup = toString_(measureView({ ...emptyState() }, t, {}));
+    expect(markup).not.toContain('id="rp-text"');
+    expect(markup).not.toContain(t('replies.title'));
+  });
+
+  it('states the boundary before the box, in both locales', () => {
+    // It sits four fields below `substantiveComments`, which carries weight 6
+    // in L4. A user must not be able to read this as an input.
+    for (const locale of ['he', 'en']) {
+      const copy = translator(locale)('replies.notCounted');
+      expect(copy.length).toBeGreaterThan(60);
+      expect(copy).toMatch(/ראיה|evidence/);
+    }
+    const markup = render();
+    expect(markup.indexOf(t('replies.notCounted'))).toBeLessThan(markup.indexOf('id="rp-text"'));
+  });
+
+  it('gives back the whole reply, never a preview of it', () => {
+    // Every other list on this screen truncates — `body.slice(0, 60)` twice
+    // over. Truncating here would break the one thing the field promises.
+    const long = `${'א'.repeat(300)} סוף`;
+    const markup = render({ replies: [reply({ text: long })] });
+    expect(markup).toContain(long);
+  });
+
+  it('keeps the line breaks that came with it', () => {
+    const text = 'שלום,\n\nזה עבד.\n\nרונית';
+    const markup = render({ replies: [reply({ text })] });
+    expect(markup).toContain(text);
+    // The class carrying `white-space: pre-wrap`, without which the markup
+    // above renders as one paragraph and the promise is not kept.
+    expect(markup).toContain('reply__text');
+  });
+
+  it('names what each reply answered, and says so when that is gone', () => {
+    const attached = render({ replies: [reply()] });
+    expect(attached).toContain(t('replies.inAnswerTo', published.body));
+
+    const orphan = render({ replies: [reply({ artifactId: null })] });
+    expect(orphan).toContain(t('replies.unattached'));
+  });
+
+  it('puts the newest first, by timestamp rather than by array order', () => {
+    const markup = render({
+      replies: [reply({ id: 'a', text: 'ישן', at: 1 }), reply({ id: 'b', text: 'חדש', at: 9 })],
+    });
+    expect(markup.indexOf('חדש')).toBeLessThan(markup.indexOf('ישן'));
+  });
+
+  it('escapes a reply that arrived from an imported backup', () => {
+    const markup = render({ replies: [reply({ text: '<img src=x onerror=alert(1)>' })] });
+    expect(markup).not.toContain('<img src=x');
+    expect(markup).toContain('&lt;img');
+  });
+
+  it('does not empty the box when the screen re-renders', () => {
+    expect(render({}, { formCache: { 'rp-text': 'טיוטה שלא נשמרה' } })).toContain(
+      'טיוטה שלא נשמרה',
+    );
   });
 });

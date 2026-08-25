@@ -798,6 +798,29 @@ export default {
     compounded: (n) => `${n} ראיות חדשות נוצרו מפרסומים שעברו את הרף שלך.`,
   },
 
+  /**
+   * The reply bank. Every line has one job: stop this reading as an input.
+   * It sits four fields below `substantiveComments`, which carries weight 6
+   * in L4, so the boundary has to be stated before the box, not after it.
+   */
+  replies: {
+    title: 'מה ענו לך',
+    subtitle:
+      'המדידה למעלה סופרת. כאן נשמר מה שנאמר — במילים שנאמרו, בלי לסדר ובלי לקצר.',
+    notCounted:
+      'נשמר כלשונו ולא נספר בשום מספר: לא בקליטה, לא בהמרות, ולא כראיה. אם המילים האלה מחזיקות טענה והן הגיעו במייל — הדבק את המייל עצמו במקורות. שם זה נמדד.',
+    artifact: 'על מה ענו',
+    text: 'מה נאמר',
+    placeholder: 'הדבק או הקלד בדיוק את מה שכתבו. שורות נשמרות כמו שהן.',
+    hint: 'המילים המדויקות הן העניין. אל תנסח מחדש — הניסוח של השוק שווה כאן יותר משלך.',
+    save: 'שמור כלשונו',
+    saved: 'נשמר.',
+    needText: 'אין מה לשמור עדיין.',
+    inAnswerTo: (body) => `בתגובה ל: ${body}`,
+    unattached: 'הפרסום שזה ענה לו כבר לא קיים.',
+    remove: 'הסר',
+  },
+
   settings: {
     title: 'הגדרות',
     language: 'שפה',

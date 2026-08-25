@@ -10,6 +10,7 @@
 import { bidi, html } from '../html.js';
 import { button, field, notice, section, select, textArea, textInput } from '../components.js';
 import { CONVERSION_TYPES, RECOGNITION_TYPES } from '../../core/schema.js';
+import { repliesCard } from './replies.js';
 import {
   CONFIDENT_OBSERVATIONS,
   MIN_OBSERVATIONS,
@@ -17,7 +18,8 @@ import {
   calibrationDelta,
 } from '../../engine/feedback.js';
 
-export function measureView(state, t, { parsed = {} } = {}) {
+export function measureView(state, t, ui = {}) {
+  const { parsed = {} } = ui;
   const published = state.artifacts.filter((a) => a.status === 'published');
   const measuredIds = new Set(state.receptions.map((r) => r.artifactId));
   const pending = published.filter((a) => !measuredIds.has(a.id));
@@ -84,6 +86,7 @@ export function measureView(state, t, { parsed = {} } = {}) {
           `
         : html`<p class="prose">${t(['layers', 'lockedReason', 'nothing-published'])}</p>`,
     )}
+    ${repliesCard(state, t, ui)}
     ${section(
       t('measure.calibrationTitle'),
       '',

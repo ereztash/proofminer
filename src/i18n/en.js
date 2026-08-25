@@ -750,6 +750,24 @@ export default {
     compounded: (n) => `${n} new pieces of evidence were created from posts that beat your baseline.`,
   },
 
+  replies: {
+    title: 'What they wrote back',
+    subtitle:
+      'The measurement above counts. This keeps what was said \u2014 in the words it was said in, unedited and uncut.',
+    notCounted:
+      'Stored word for word and counted in no number: not in reception, not in conversions, and not as evidence. If these words hold a claim and they arrived in an email, paste the email itself into sources. That is where it gets measured.',
+    artifact: 'What they were answering',
+    text: 'What was said',
+    placeholder: 'Paste or type exactly what they wrote. Line breaks are kept.',
+    hint: 'The exact words are the point. Do not rephrase \u2014 the market\u2019s wording is worth more than yours here.',
+    save: 'Keep it verbatim',
+    saved: 'Saved.',
+    needText: 'Nothing to save yet.',
+    inAnswerTo: (body) => `In answer to: ${body}`,
+    unattached: 'The post this answered no longer exists.',
+    remove: 'Remove',
+  },
+
   settings: {
     title: 'Settings',
     language: 'Language',

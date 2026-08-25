@@ -27,6 +27,7 @@ import { decayedScore } from '../engine/score.js';
 
 import { NOT_ME, firstLightView, onboardingView } from './views/onboarding.js';
 import { RECALL_FIELDS } from './views/recall.js';
+import { REPLY_FIELDS } from './views/replies.js';
 import { dashboardView } from './views/dashboard.js';
 import { mineView } from './views/mine.js';
 import { positionView } from './views/position.js';
@@ -737,6 +738,41 @@ export function mountApp(root) {
       toast(t('measure.noInboundSaved'));
     },
 
+    /**
+     * Record what a real recipient wrote back, exactly as they wrote it.
+     *
+     * Nothing is normalised, trimmed out of the middle, or read by anything
+     * that computes a number — see the module comment in `ui/views/replies.js`
+     * and honesty rule 8. The only edit is the outer trim that stops an
+     * accidental empty submit, and it is applied to the emptiness test rather
+     * than to what gets stored.
+     */
+    saveReply() {
+      const text = val('rp-text');
+      if (!text.trim()) {
+        toast(t('replies.needText'));
+        return;
+      }
+      store.update((draft) => {
+        draft.replies.push({
+          id: makeId('rpl'),
+          // Whatever is on screen. An orphan is tolerated by the schema, but
+          // the form never creates one: the picker only lists published work.
+          artifactId: val('rp-artifact') || null,
+          text,
+          at: realNow(),
+        });
+      });
+      for (const key of REPLY_FIELDS) delete ui.formCache[key];
+      toast(t('replies.saved'));
+    },
+
+    removeReply(payload) {
+      store.update((draft) => {
+        draft.replies = draft.replies.filter((r) => r.id !== payload.id);
+      });
+    },
+
     addRecognition() {
       const by = val('rg-by').trim();
       const url = val('rg-url').trim();
@@ -865,7 +901,7 @@ export function mountApp(root) {
           formCache: ui.formCache,
         });
       case 'measure':
-        return measureView(state, t, { parsed: ui.parsedAnalytics });
+        return measureView(state, t, { parsed: ui.parsedAnalytics, formCache: ui.formCache });
       case 'settings':
         return settingsView(state, t, { storageError: Boolean(store.persistError()) });
       default:

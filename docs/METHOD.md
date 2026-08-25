@@ -57,13 +57,22 @@ product shows a user must be derivable from what is written here.
    magnitude, an attribution and an outcome. That would make the Visibility Gap
    a number the user can raise by writing a nicer sentence about themselves,
    which is the category this product refuses to be.
-   So a memory-elicitation screen may not produce proof units. What the recall
-   route (`engine/recall.js`) produces instead is **retrieval tasks with a
-   named recipient**: a person who can supply the same fact in their own
-   words, in a document. Those records live outside every measured array, no
-   layer reads them, and the evidence enters later through the ordinary paste
-   box. The invariant is pinned in `tests/engine/recall.test.js`: the whole
-   authority computation is byte-identical with and without them.
+   So **a box this product puts in front of the user, asking for prose, may not
+   feed any number.** Two exist, and both are held to it structurally rather
+   than by intention:
+   - The **recall route** (`engine/recall.js`) produces *retrieval tasks with a
+     named recipient* — a person who can supply the same fact in their own
+     words, in a document — never proof units.
+   - The **reply bank** (`ui/views/replies.js`) stores what a recipient wrote
+     back, verbatim, and feeds nothing: not L4's `substantiveComments`, not
+     `verification`, not conversions, not drift detection, not `nonGoals`.
+
+   Both live outside every measured array, no layer reads either, and the
+   evidence enters later through the ordinary paste box — a document the user
+   was *sent* is evidence; the same words retyped into a box we supplied are a
+   declaration, and nothing can tell them apart afterwards. The invariant is
+   pinned in `tests/engine/recall.test.js` and `tests/engine/replies.test.js`:
+   the whole authority computation is byte-identical with and without them.
 
 ## The six measurable layers
 

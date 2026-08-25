@@ -153,6 +153,30 @@ export function emptyState() {
     /** @type {Recognition[]} */
     recognitions: [],
     /**
+     * What the market actually wrote back, kept in the market's own words.
+     *
+     * **Stored and displayed, never counted.** The strongest thing this method
+     * produces comes out of friction with real recipients, and until now the
+     * measurement screen took only numbers — so the sentence a client actually
+     * used was the one artefact of the whole loop with nowhere to live.
+     *
+     * It is a notebook, not an input. `substantiveComments` sits four fields
+     * away and carries weight 6 in L4; `verification` is the highest-weighted
+     * dimension in the scorer. If a box captioned "what did they reply" fed
+     * either of them, typing *the client said I am the best* would buy a score,
+     * one screen away from the numbers it would move. So no layer, no
+     * dimension, no conversion, no drift check and no `nonGoals` entry reads
+     * this array, and nothing in it becomes a proof unit.
+     *
+     * **There is deliberately no author field.** A structured "who said it" is
+     * the hook the rejected version of this feature hangs on — replies sorted
+     * by speaker into an anti-ICP list, then fed to drift detection. The user
+     * who wants the name writes it inside the quotation, which is both more
+     * verbatim and load-bearing on nothing.
+     * @type {Reply[]}
+     */
+    replies: [],
+    /**
      * Retrieval tasks produced by the recall route (`engine/recall.js`).
      *
      * **Not evidence, and structurally kept apart from it.** These records
@@ -255,6 +279,19 @@ export function emptyState() {
  * @property {typeof RECOGNITION_TYPES[number]} type
  * @property {string} by
  * @property {string} url
+ * @property {number} at
+ */
+
+/**
+ * Something a real recipient wrote back, in their words.
+ *
+ * `text` is preserved exactly as entered and rendered with its line breaks
+ * intact — a reply reflowed into one paragraph is no longer verbatim.
+ *
+ * @typedef {object} Reply
+ * @property {string} id
+ * @property {string|null} artifactId  what it answered; null once that is gone
+ * @property {string} text             the reply itself, unedited and unmeasured
  * @property {number} at
  */
 
@@ -415,6 +452,7 @@ function relatedRecords(input) {
     proofs,
     artifacts,
     receptions: arr(input.receptions).map((r) => normalizeReception(r, toArtifact)).filter(Boolean),
+    replies: arr(input.replies).map((r) => normalizeReply(r, toArtifact)).filter(Boolean),
     conversions: arr(input.conversions).map((c) => normalizeConversion(c, toArtifact)).filter(Boolean),
     recognitions: arr(input.recognitions).map(normalizeRecognition).filter(Boolean),
   };
@@ -535,6 +573,26 @@ function normalizeReception(r, toArtifact) {
     saves: n(r.saves),
     shares: n(r.shares),
     capturedAt: num(r.capturedAt, Date.now()),
+  };
+}
+
+/**
+ * A reply survives losing its artifact, unlike a reception.
+ *
+ * A reception whose artifact reference cannot be represented can never be
+ * scored, so it is dropped — keeping it would only hide it. A reply is never
+ * scored in the first place, the words are the whole record, so it degrades to
+ * unattributed instead of being deleted to tidy up our own graph. A reference
+ * that is merely dangling comes through unchanged, as it does everywhere else
+ * in this file; the view renders that as unattached too.
+ */
+function normalizeReply(r, toArtifact) {
+  if (!isObj(r) || typeof r.text !== 'string' || !r.text.trim()) return null;
+  return {
+    id: safeId(r.id, 'rpl'),
+    artifactId: toArtifact(r.artifactId),
+    text: r.text,
+    at: num(r.at, Date.now()),
   };
 }
 

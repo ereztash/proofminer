@@ -1,8 +1,8 @@
 /**
  * The recall route, walked end to end through the real app.
  *
- * Every other UI test renders a view function with a hand-built state. This
- * one mounts `mountApp` and clicks buttons, because the claim PM-05 rests on is
+ * Every other UI test renders a view function with a hand-built state. This one
+ * mounts `mountApp` and clicks buttons, because the claim the route rests on is
  * not about a template: it is that a person who types their memory into this
  * product cannot move their own score by doing it. That has to be checked
  * against the actual action table and the actual store, since the way it would
@@ -13,30 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { mountApp } from '../../src/ui/app.js';
 import { computeAuthority } from '../../src/engine/authority.js';
 import { loadState } from '../../src/core/store.js';
-
-// jsdom ships no `CSS.escape`, and every field lookup in the app goes through
-// it. Browsers have had it since 2016; this is a test-environment gap.
-globalThis.CSS = globalThis.CSS || {
-  escape: (v) => String(v).replace(/[^\w-]/g, '\\$&'),
-};
-
-/** Persistence is debounced. The app flushes on `beforeunload`, so we do too. */
-const flush = () => window.dispatchEvent(new window.Event('beforeunload'));
-
-const click = (root, act, id) => {
-  const el = [...root.querySelectorAll(`[data-act="${act}"]`)].find(
-    (e) => !id || e.dataset.id === id,
-  );
-  if (!el) throw new Error(`no button for ${act}${id ? ` #${id}` : ''}`);
-  el.click();
-};
-
-const set = (root, id, value) => {
-  const el = root.querySelector(`#${id}`);
-  if (!el) throw new Error(`no field #${id}`);
-  el.value = value;
-  el.dispatchEvent(new window.Event('input', { bubbles: true }));
-};
+import { check, click, flush, set } from './mount.js';
 
 const persisted = () => {
   flush();
@@ -50,9 +27,7 @@ describe('someone who arrives with nothing to paste', () => {
     const root = document.querySelector('#app');
     mountApp(root);
 
-    const situation = root.querySelector('input[name="situation"][value="consultant"]');
-    situation.checked = true;
-    situation.dispatchEvent(new window.Event('change', { bubbles: true }));
+    check(root, 'input[name="situation"][value="consultant"]');
     set(root, 'fit-claim', 'אני יודע להפוך צוות מבולגן לתהליך עבודה שאפשר לנהל.');
 
     // The third answer. Before this existed the only replies to "I have no
@@ -85,10 +60,10 @@ describe('someone who arrives with nothing to paste', () => {
     expect(root.querySelector('#recall-room').value).toBe('');
 
     const first = state.retrievals[0].id;
-    click(root, 'retrievalSent', first);
+    click(root, 'retrievalSent', { id: first });
     expect(Number.isFinite(persisted().retrievals[0].askedAt)).toBe(true);
 
-    click(root, 'retrievalArrived', first);
+    click(root, 'retrievalArrived', { id: first });
     state = persisted();
     expect(Number.isFinite(state.retrievals[0].closedAt)).toBe(true);
     // Closing the errand adds nothing. What arrived is a document, and it
