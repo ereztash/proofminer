@@ -117,7 +117,7 @@ rather than aspirational.
 
 ## Testing
 
-Unit tests across fourteen files, covering the engine's actual claims rather
+Unit tests across fifteen files, covering the engine's actual claims rather
 than its surface:
 
 - **text** — Hebrew normalisation, prefix ambiguity, similarity symmetry,
@@ -157,6 +157,9 @@ than its surface:
 - **store** — corrupt input, legacy migration, storage failure, immutability
 - **ui** — escaping including attribute context, i18n bundle alignment, and the
   banned-vocabulary check from `docs/UX.md`
+- **guidance** — the negative set: four shapes the copy may never take, each
+  generalised from a move that lost the room in the research corpus, written as
+  a property of our own strings so no client wording enters the repository
 - **regression** — one test per defect found by adversarial review: engine
   determinism, spelled-out magnitudes, decay-clock preservation, curation
   surviving truncation, dedupe cost, the L4 monotonicity, lock and

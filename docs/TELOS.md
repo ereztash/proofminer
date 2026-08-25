@@ -73,6 +73,32 @@ problem-unaware.** The comfortable senior employee, the consultant whose
 pipeline is currently full, the person who is merely curious. They may have the
 identical objective situation as a qualified user. They are still out of scope.
 
+### An open question about which gap this actually is
+
+The product measures a **visibility gap**: evidence held, standing not granted.
+A pass over the research corpus for how people describe their own blocker,
+in their own words, found something else. Four of the five describe it as an
+inability to *say* what they do — "I cannot explain exactly what I do", "it is
+hard for me to define", "I cannot put my finger on it". Not one describes
+holding evidence that nobody sees.
+
+Three of the five then add the sentence this product exists to overturn: *what
+I do is basic, everybody works this way.* So the thesis is not contradicted —
+that belief is exactly what a catalogued evidence base disproves. What is in
+question is the **order**: the felt complaint is definition, and the discovery
+of uncounted evidence is the mechanism that answers it, not the symptom the
+person arrives with. Screen 0 has been rewritten accordingly; the deeper
+question has not been settled.
+
+**The caveat is as important as the finding.** All five had already hired a
+consultant to work on precisely this. That is the opposite selection from
+someone who lands alone on a free tab, and it is a population that had already
+decided their problem was definition-shaped by the act of buying help for it.
+The corpus cannot close this. The five-person trial can, and until it does,
+nothing here should be treated as settling whether the ICP narrows to people
+whose gap really is visibility, or the product learns to measure a definition
+gap as well.
+
 ### What follows from an awareness-defined ICP
 
 This is not a positioning nicety. It is a set of build constraints:

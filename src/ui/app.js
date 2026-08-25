@@ -233,11 +233,15 @@ export function mountApp(root) {
       toast(t('onboarding.needSituation'));
       return null;
     }
+    // Asked, never required. In the corpus the move that lost the room every
+    // time was demanding a finished formulation as the price of proceeding —
+    // "I don't know how to even start answering that; when I have a thread it
+    // will be easier" — and what worked was dropping the demand and asking
+    // something lighter. This screen was doing the failed move as a hard gate,
+    // to a person whose whole presenting problem is that they cannot say it
+    // yet. The product's own thesis is that the material tells you the
+    // sentence, not the other way round.
     const claim = val('fit-claim').trim();
-    if (!claim) {
-      toast(t('onboarding.needClaim'));
-      return null;
-    }
     const confidence = Number.parseInt(val('fit-confidence') || '5', 10);
     const weeks = Number.parseInt(
       root.querySelector('input[name="weeks"]:checked')?.value ?? '0',

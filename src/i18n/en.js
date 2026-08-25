@@ -22,9 +22,11 @@ export default {
   },
 
   onboarding: {
-    painTitle: 'When a client is choosing between you and someone else, which evidence should you show?',
+    painTitle: 'You know how to do it. Explaining it is another story.',
     painBody:
-      'ProofMiner is built for experts and consultants who know they have value, but do not know which trace from their work actually supports the claim right now.',
+      'If the sentence \u201CI cannot explain exactly what I do\u201D is familiar, and what follows it is ' +
+      '\u201Cand anyway it is fairly basic, everybody works this way\u201D \u2014 this is the tool. It will not write ' +
+      'that sentence for you. It reads the material you already have and shows what in it already stands on its own.',
     pledgeLead:
       'Everything stays on your machine — no server, no account. This tool will not invent achievements.',
     pledgeTitle: 'What else to know before you paste',
@@ -34,7 +36,6 @@ export default {
       'It will not let your visibility run ahead of your evidence, and it will tell you when that happens. What you type here it takes as given — it cannot verify that for you.',
     ],
     needSituation: 'Choose what fits you first.',
-    needClaim: 'Write the claim you want the client to believe first.',
     needPaste: 'Paste material we can test against the claim first.',
     situationQuestion: 'What best describes your work?',
     situationNote: 'This is not a market split. It only calibrates which kind of evidence we should look for first.',
@@ -54,12 +55,14 @@ export default {
     fitLow: 'I do not know what to show',
     fitHigh: 'I know exactly',
     claimQuestion: 'What sentence do you want the client to believe?',
-    claimHint: 'Not a slogan. A choice claim: why it is right to pick you for this project.',
+    claimHint:
+      'Not a slogan, and it does not have to come out right. If you have no wording for it, skip it. ' +
+      'That is exactly what the material is supposed to give you, not the other way round.',
     claimPlaceholder: 'Example: I can turn a scattered team into a process that can be managed.',
     evidenceQuestion: 'Which one piece of evidence do you think best supports that sentence?',
     evidenceHint: 'If you do not have a good answer, that is not failure. It is exactly the test.',
     evidencePlaceholder: 'Example: project summary, thank-you note, number, recommendation, method you wrote.',
-    notMe: 'I do not need to prove why to choose me right now.',
+    notMe: 'I can explain what I do, and I am not stuck on it.',
     notMeHint: 'A completely fair answer. Pick it and see what it means.',
     weeksQuestion: 'How long has this been bothering you?',
     weeksNotYet: 'Started recently',
@@ -81,17 +84,17 @@ export default {
   },
 
   notForYou: {
-    title: 'So right now there may not be enough friction to justify the tool.',
+    title: 'So right now this may not hurt enough to justify the tool.',
     body:
       'We will not try to convince you there is a problem. If it is clear why someone should choose you, and clear which evidence supports that in front of a real client, using this may mostly create extra work.',
     forWhom:
-      'This tool is built for experts and consultants who know they are good, but do not know which evidence to choose, which goal to attach it to, or when evidence that sounds strong does not actually support the claim.',
+      'This tool is built for someone who knows how to do the work, and cannot point at what inside it holds them up in front of a client.',
     comeBackTitle: 'Come back when one of these is true:',
     comeBack: [
-      'A client asks “why you?” and you answer with an explanation instead of evidence.',
-      'You have many materials, but it is unclear which one belongs to the current goal.',
-      'You compete with someone less precise, and they look more convincing because their evidence is simpler.',
-      'You want to publish something, but are not sure whether it builds trust or only looks like more content.',
+      'Someone asks what exactly you do, and you hear yourself explaining instead of showing.',
+      'You think of something you did and tell yourself \u201Cthat is basic, everyone does that\u201D.',
+      'You are sitting in front of an empty box waiting to have a thread to pull.',
+      'All the work arrives through people who already know you, and beyond that it is quiet.',
     ],
     changedMind: 'If you have changed your mind, the question above is still open.',
   },

@@ -30,9 +30,21 @@ export default {
   },
 
   onboarding: {
-    painTitle: 'כשלקוח מתלבט בינך לבין מישהו אחר, איזו ראיה נכון להראות לו?',
+    // Screen 0 in the client's language, not the product's.
+    //
+    // It used to open "when a client is choosing between you and someone else,
+    // which piece of evidence should you show?" — a question that presumes the
+    // visitor already frames their problem as evidence selection. Nobody in the
+    // corpus does. What they say, in four of five cases, is a version of "I
+    // can't explain exactly what I do", and three of them follow it with "and
+    // anyway what I do is basic, everybody works this way". The second sentence
+    // is this product's entire hook, stated by the people it is for, and it
+    // appeared nowhere on the screen.
+    painTitle: 'אתה יודע לעשות את זה. להסביר את זה — סיפור אחר.',
     painBody:
-      'ProofMiner נבנה למומחים ויועצים שכבר יודעים שיש להם ערך, אבל לא יודעים איזו עקבה מתוך כל מה שעשו באמת מחזיקה את הטענה עכשיו.',
+      'אם המשפט "אני לא יודע להסביר מה בדיוק אני עושה" מוכר לך, ואחריו מגיע ' +
+      '"וממילא זה די בייסיק, כולם עובדים ככה" — זה הכלי. הוא לא ינסח לך את זה ' +
+      'במקומך. הוא קורא את החומר שכבר יש לך ומראה מה בתוכו כבר עומד בפני עצמו.',
     pledgeLead:
       'הכל נשאר במחשב שלך — אין שרת ואין חשבון. המערכת לא תמציא לך הישגים.',
     pledgeTitle: 'מה עוד כדאי שתדע לפני שאתה מדביק',
@@ -42,7 +54,6 @@ export default {
       'המערכת לא תיתן לנראות שלך לרוץ קדימה מהראיות שלך, ותגיד לך כשזה קורה. מה שתקליד כאן היא תיקח כנתון — היא לא יכולה לאמת את זה במקומך.',
     ],
     needSituation: 'בחר קודם מה נכון לגביך.',
-    needClaim: 'כתוב קודם את הטענה שאתה רוצה שהלקוח יאמין בה.',
     needPaste: 'הדבק קודם חומר שאפשר לבדוק מול הטענה.',
     situationQuestion: 'מה מתאר טוב יותר את העבודה שלך?',
     situationNote: 'זו לא חלוקה לשווקים שונים. זה רק מכייל את סוג הראיה שנחפש קודם.',
@@ -62,12 +73,14 @@ export default {
     fitLow: 'לא ברור לי מה להראות',
     fitHigh: 'ברור לי בדיוק',
     claimQuestion: 'מה המשפט שאתה רוצה שהלקוח יאמין בו?',
-    claimHint: 'לא סיסמה. משפט בחירה: למה נכון לקחת אותך לפרויקט הזה.',
+    claimHint:
+      'לא סיסמה, ולא חייב לצאת מדויק. אם אין לך ניסוח — דלג. זה בדיוק מה שהחומר ' +
+      'אמור לתת לך, ולא להפך.',
     claimPlaceholder: 'למשל: אני יודע להפוך צוות מבולגן לתהליך עבודה שאפשר לנהל.',
     evidenceQuestion: 'איזו ראיה אחת לדעתך הכי מחזיקה את המשפט הזה?',
     evidenceHint: 'אם אין לך תשובה טובה, זה לא כישלון. זו בדיוק הבדיקה.',
     evidencePlaceholder: 'למשל: סיכום פרויקט, הודעת תודה, מספר, המלצה, תהליך שכתבת.',
-    notMe: 'אני לא צריך להוכיח למה לבחור בי כרגע.',
+    notMe: 'אני יודע להסביר מה אני עושה, ואני לא תקוע בזה.',
     notMeHint: 'תשובה לגיטימית לגמרי. תלחץ עליה ותראה מה זה אומר.',
     weeksQuestion: 'כמה זמן זה כבר מציק לך?',
     weeksNotYet: 'התחיל לאחרונה',
@@ -94,17 +107,22 @@ export default {
   },
 
   notForYou: {
-    title: 'אז כרגע אין כאן מספיק חיכוך כדי להצדיק את הכלי.',
+    title: 'אז כרגע זה לא כואב מספיק כדי להצדיק את הכלי.',
     body:
       'לא ננסה לשכנע אותך שיש בעיה. אם ברור לך למה לבחור בך, וברור לך איזו ראיה מחזיקה את זה מול לקוח אמיתי, השימוש כאן יהיה בעיקר עוד עבודה.',
     forWhom:
-      'הכלי הזה נבנה למומחים ויועצים שיודעים שהם טובים, אבל לא יודעים איזו ראיה לבחור, לאיזו מטרה לחבר אותה, או מתי ראיה שנשמעת חזקה בעצם לא מחזיקה את הטענה.',
+      'הכלי נבנה למי שיודע לעשות את העבודה, ולא יודע להצביע על מה בתוכה מחזיק אותו מול לקוח.',
     comeBackTitle: 'כדאי לחזור כשאחד מאלה נכון:',
+    // Four moments, each a de-identified paraphrase of something a real person
+    // said out loud. Two of the four this list used to carry were product
+    // theory — a competitor who "looks more convincing because their evidence
+    // is simpler", and content that "builds trust or just looks like more
+    // content". Nobody talks like that about themselves.
     comeBack: [
-      'כשלקוח שואל “למה דווקא אתה?” ואתה עונה בהסבר במקום בראיה.',
-      'כשיש לך הרבה חומרים, אבל לא ברור איזה מהם באמת שייך למטרה הנוכחית.',
-      'כשאתה מתחרה מול מישהו פחות מדויק, והוא נראה משכנע יותר כי הראיה שלו פשוטה יותר.',
-      'כשאתה רוצה לפרסם משהו, אבל לא בטוח אם הוא בונה אמון או רק נראה כמו עוד תוכן.',
+      'כשמישהו שואל מה בדיוק אתה עושה, ואתה שומע את עצמך מסביר במקום להראות.',
+      'כשאתה נזכר במשהו שעשית ואומר לעצמך "זה בייסיק, כולם עושים את זה".',
+      'כשאתה יושב מול תיבה ריקה ומחכה שיהיה לך חוט לתפוס בו.',
+      'כשכל העבודה מגיעה מאנשים שכבר מכירים אותך, ומעבר לזה שקט.',
     ],
     changedMind: 'אם שינית דעה, השאלה למעלה עדיין פתוחה.',
   },

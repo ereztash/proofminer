@@ -64,6 +64,19 @@ than become "one of those people."
 the user a hook library and a posting streak. Users who feel Pain B strongly
 churn immediately, and they are the majority of this ICP.
 
+> **Flagged, not resolved.** That last sentence is the least supported claim in
+> this document. A pass over the research corpus for discomfort with
+> self-promotion — revulsion, boastfulness, sounding inflated — found **one
+> marginal instance across roughly 5,900 lines of client speech**, against four
+> clear instances of Pain A in the same material. That is not a refutation: the
+> five people in the corpus had already hired a consultant to work on exactly
+> this, so by construction they are the ones who did *not* churn, and someone
+> who feels Pain B hardest may be precisely the person who never appears in a
+> coaching transcript. But the pledge block on screen 0 exists to neutralise
+> Pain B before anyone pastes, and nothing observed so far says it needs
+> neutralising. Worth a direct question in the five-person trial rather than
+> another inference.
+
 This product resolves it structurally: **you are not being asked to promote
 yourself. You are being asked to stop hiding evidence.** The Liebig gate makes
 part of that mechanical: the system will not let visibility run ahead of
@@ -72,6 +85,37 @@ types, and the first screen says that too — see `README.md`, "what the gate
 does not prevent". The other half of the answer is the authorship readout in
 the studio, which measures how much of a draft the tool wrote rather than
 denying that it wrote any of it.
+
+## Two checks that keep the copy in column two
+
+Column two above is easy to write once and drift away from. Screen 0 did
+exactly that: it opened by asking *which piece of evidence should you show?* —
+a sentence entirely in column one — while this table's own third row already
+recorded what the reader actually says. Two standing checks now hold the line.
+
+**The register test (manual, and it cannot be automated).** *Could one of the
+five people in the research corpus have said this sentence out loud?* If not,
+it belongs in column one and it is in the wrong place. Every line on screen 0
+and in the "come back when" list was rewritten against this test; two of the
+four come-back entries failed it outright, being claims about the market rather
+than moments in anyone's week.
+
+**The negative test set (`tests/ui/guidance.test.js`).** The corpus's most
+useful asset is not its successes but the four moves that lost the room, each
+of which a product screen can reproduce without noticing:
+
+| The move that failed | How a screen reproduces it | Pinned by |
+|---|---|---|
+| Putting words in someone's mouth | Guidance that asserts what the user's material *is* | no string may assert what was pasted |
+| Treating agreement as confirmation | A screen that asks "does that sound right?" and stores the yes | no string asks the reader to confirm the product |
+| Demanding a finished definition first | A required field the user cannot fill yet | `needClaim` must not exist |
+| Not bounding what someone says | An open prompt where a narrow question belongs | the recall route's three questions |
+
+Nothing from the corpus is stored in that file. The transcripts are private
+client material, and `docs/TELOS.md` forbids a phrase library outright — a bank
+of real client wordings in this repository is exactly that, one import away
+from `drafts.js`. Each rule is written as a property of our own copy, with the
+failure it generalises named in a comment and no source text carried across.
 
 ## The hero metric is the pain, quantified
 
@@ -109,6 +153,17 @@ they came to escape.
    qualifying question re-renders the screen, so the paste box renders from the
    form cache — a box that empties itself when the user answers a question
    above it is the worst possible bug on this screen.
+
+   **The claim is asked and never required.** The screen asks what sentence the
+   user wants a client to believe — a question that does real work where it is
+   asked — and then used to *refuse to proceed* without an answer. That is the
+   move that failed most clearly in the corpus: demanding a formulation the
+   person cannot produce yet, from someone whose entire presenting problem is
+   that they cannot produce it yet. *"I do not know how to even start answering
+   that; when I have a thread it will be easier."* What worked was dropping the
+   demand and asking something lighter. It is also backwards on the product's
+   own thesis: the material is supposed to hand you the sentence, not the other
+   way round. The hint now says outright that it may be skipped.
 
    **What the paste box asks for is a product decision, not a placeholder.**
    Asking for a CV gets a CV, and a CV is the worst available input: it is the
