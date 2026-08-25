@@ -50,7 +50,7 @@ const LEX = {
         // `נבחרתי` is dropped deliberately: being picked to run a project
         // internally is not somebody vouching for you publicly, and it was the
         // most common false positive in the Hebrew corpus.
-        'חוות דעת', 'דורגתי',
+        'חוות דעת', 'דורגתי', 'לקוח חוזר', 'לקוחה חוזרת', 'הפנה אלי', 'הפנו אלי',
       ],
     }),
     /**
@@ -72,7 +72,11 @@ const LEX = {
     generic: /יצירתי|סקרן|אסטרטגי|מקצועי מאוד|תותח|מנוסה מאוד|שנים של ניסיון|אוהב אנשים|חושב מחוץ לקופסה|רעב|נחוש|תשוקה|אכפתי|ראש גדול|בעל ניסיון רב|מוביל דעה|מומחה מוביל|מאמינ\S* ב|עבודת צוות|למידה מתמדת|גישה אישית|תשומת לב לפרטים|ראייה מערכתית|חשיבה מחוץ|אוריינטציה|יחסי אנוש|יכולת גבוהה|כישורים בין-?אישיים|מוטיבציה גבוהה|אחריות אישית|נכונות ללמוד|תודעת שירות|דינמי|פרואקטיבי/u,
     hedge: /אולי|נראה לי|אני מאמין ש|בערך|סוג של|כנראה|לפעמים|יכול להיות|בגדול|פחות או יותר/u,
     /** Named third-party context a sceptic could go and check. */
-    verifiable: /באתר|בכתבה|בעיתון|בגלובס|בכלכליסט|ב-?TheMarker|בפודקאסט|בכנס|בערוץ|בלינקדאין|קישור|לינק/u,
+    // Somebody else published or hosted this. Deliberately NOT a URL detector:
+    // `בלינקדאין`, `קישור` and `לינק` used to be here, and a link to your own
+    // profile is your own words at a different address. Bare links are
+    // `hasUrl`, and they are paid in falsifiability, not in verification.
+    verifiable: /באתר|בכתבה|בעיתון|בגלובס|בכלכליסט|ב-?TheMarker|בפודקאסט|בכנס|בערוץ/u,
     scale: heStems({
       closed: ['משתתפים', 'אנשים', 'עובדים', 'לקוחות', 'מנויים', 'צפיות', 'חברות',
         'ארגונים', 'סניפים', 'מדינות', 'צוותים', 'תלמידים', 'נרשמו'],
@@ -105,13 +109,13 @@ const LEX = {
     // was scored as external validation and printed on the reveal screen as
     // "someone external vouches for you", over a line the user wrote themselves.
     thirdParty:
-      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award/iu,
+      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b/iu,
     outcome: /increas|grew|grow|doubl|tripl|reduc|cut|sav(?:ed|ing)|shorten|improv|optimi[sz]|clos(?:ed)|deliver|launch|built|led|raised|recover|solved|prevent|scal(?:ed)|design(?:ed)?|develop(?:ed)?|implement(?:ed)?|automat(?:ed)?|manage(?:d)?|train(?:ed)?/iu,
     contrast: /before|after|within|from\s+\S+\s+to\s+\S+|instead of|compared to|since|as a result|thanks to|despite|used to/iu,
     credential: /degree|bachelor|master|mba|phd|certifi|licens|accredit|graduat|gpa|thesis|diploma/iu,
     generic: /creative|curious|strategic|passionate|driven|results-?oriented|team player|think outside the box|self-?starter|thought leader|guru|ninja|rockstar|highly experienced|years of experience|i believe in|continuous learning|attention to detail|strong communicator|interpersonal skills|hard-?working|detail-?oriented|proactive|dynamic|go-?getter/iu,
     hedge: /maybe|i think|i believe|kind of|sort of|probably|somewhat|roughly|more or less/iu,
-    verifiable: /https?:\/\/|www\.|linkedin\.com|on the site|in the article|link/iu,
+    verifiable: /on (?:the|their) site|in the article|in the press|published (?:in|on|by)/iu,
     scale: /participants|attendees|people|employees|clients|customers|subscribers|views|companies|organi[sz]ations|teams|students|countries|signups/iu,
     method: /method|methodology|process|model|framework|playbook|protocol|approach|system i built|tool i built|steps/iu,
     failure: /fail(?:ed|ure)|mistake|got it wrong|didn'?t work|learned the hard way|missed|shut down|lost/iu,

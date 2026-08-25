@@ -347,3 +347,70 @@ describe('a magnitude suffix needs its digits', () => {
     expect(extractSignals('חסכנו 3.2 מיליון ש"ח בשנה').hasCurrency).toBe(true);
   });
 });
+
+/**
+ * What a link is worth, and what counts as somebody else's word.
+ *
+ * These rules were not derived from fixtures. They come from running the
+ * scorer over 520 real self-written pitches — the "SEEKING WORK" posts from
+ * Hacker News's monthly freelancer threads, which are the closest public
+ * approximation of this product's actor writing their own positioning
+ * unprompted. Two defects showed up immediately and neither was reachable
+ * from hand-written test material, because every fixture in this repository
+ * was written by somebody who already knew what the scorer rewards.
+ *
+ * **No source text is stored here.** The same rule that governs the client
+ * corpus and `tests/ui/guidance.test.js` applies: these are real people's
+ * words about their own livelihoods, and a bank of them in a public
+ * repository is the phrase library `docs/TELOS.md` forbids. Every string
+ * below is written for the test.
+ */
+describe('a link is not a witness', () => {
+  const now = Date.parse('2026-08-25');
+  const dim = (claim, key) =>
+    analyzeClaim(claim, { positioning: {}, now }).breakdown[key];
+
+  it('pays nothing in verification for a link to your own material', () => {
+    // The defect: `verification` paid +14 for `hasUrl` and another +14 for
+    // `verifiableRef`, which was itself a URL detector — so a résumé on your
+    // own domain scored 50 on the dimension that asks whether somebody else
+    // vouched for you. 79% of the 520 real pitches were scored "verifiable"
+    // with no third party present anywhere in them.
+    const bare = 'Senior operations consultant. CV: https://example.com/cv.pdf';
+    const noLink = 'Senior operations consultant. CV available on request.';
+    expect(dim(bare, 'verification')).toBe(dim(noLink, 'verification'));
+  });
+
+  it('still pays falsifiability for it, because a sceptic could look', () => {
+    // The link is not worthless — it is evidence of checkability, which is a
+    // different question and has its own dimension.
+    const bare = 'Senior operations consultant. CV: https://example.com/cv.pdf';
+    const noLink = 'Senior operations consultant. CV available on request.';
+    expect(dim(bare, 'falsifiability')).toBeGreaterThan(dim(noLink, 'falsifiability'));
+  });
+
+  it('reads a named client as third-party evidence in English too', () => {
+    // The second defect: `en.thirdParty` was a press lexicon — featured in,
+    // quoted in, keynote, award — with no pattern for the commonest form of
+    // outside evidence there is, which is a person at a named company saying
+    // something about your work. The Hebrew lexicon already had `לקוח סיפר`
+    // and `המלצ`; English had nothing, so the two bundles disagreed about what
+    // counts as evidence.
+    const testimony =
+      'The COO at Alpha Logistics confirmed the process was the only one that survived a full year.';
+    const selfClaim =
+      'I designed a process at Alpha Logistics that survived a full year.';
+    expect(extractSignals(testimony).thirdParty).toBe(true);
+    expect(extractSignals(selfClaim).thirdParty).toBe(false);
+    expect(dim(testimony, 'verification')).toBeGreaterThan(dim(selfClaim, 'verification'));
+  });
+
+  it('keeps paying verification when somebody else published it', () => {
+    // The fix must not take the credit away from the case that deserves it.
+    // A named outlet is not a URL — it is an assertion that an editor put
+    // their name to this.
+    const published = 'בכתבה שפורסמה בכלכליסט ב-2026 צוטט סמנכ"ל הכספים של אלפא לוגיסטיקה.';
+    expect(extractSignals(published).verifiableRef).toBe(true);
+    expect(extractSignals(published).thirdParty).toBe(true);
+  });
+});
