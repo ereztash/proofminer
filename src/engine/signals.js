@@ -349,6 +349,26 @@ const HE_PERSON_RES = [
 const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
 
 /**
+ * The same thing in the order people actually write it.
+ *
+ * `ATTRIBUTED_QUOTE` above only matches quotation-then-name — the pull-quote
+ * order. Ordinary prose in both languages puts the attribution first: *the COO
+ * at Beta Industries said: "…"*. Measured against evidence written to
+ * `METHOD.md`'s own recipe for VALIDATION, the same sentence scored 38 in
+ * pull-quote order and 29 in the natural one, because the natural one earned no
+ * `thirdParty` at all. That is a miss on one of the strongest archetypes, in
+ * the form it is most likely to arrive in.
+ *
+ * The verb list is the guard. A quotation preceded by any noun would match a
+ * user quoting themselves, so an attribution verb has to be there — and it may
+ * not be first person, which is why the Hebrew stems allow only the third-person
+ * suffixes and stop at a letter boundary (`אמרתי` and `אמרנו` are the author
+ * speaking, and earn nothing), and why English refuses a bare `I said`.
+ */
+const QUOTE_AFTER_ATTRIBUTION =
+  /(?:(?:אמר|כתב|סיפר|ציין|מסר|העיד|השיב|הוסיף|סיכם)(?:ה|ו)?(?![א-ת])|(?<!\bI )\b(?:said|says|wrote|writes|told|added|noted|confirmed|described)\b)[^"״“”]{0,32}["״“][^"״“”]{20,}["״”]/iu;
+
+/**
  * Why there is no unquoted-attribution signal here.
  *
  * `attachSignature` in `text.js` folds a letter's trailing signature onto the
@@ -461,7 +481,8 @@ export function extractSignals(text) {
     hasProperNoun: properNouns.length > 0,
     // A quotation with a name attached is third-party validation even when the
     // sentence carries no cue word. An unquoted signature is not — see above.
-    thirdParty: any('thirdParty') || ATTRIBUTED_QUOTE.test(raw),
+    thirdParty:
+      any('thirdParty') || ATTRIBUTED_QUOTE.test(raw) || QUOTE_AFTER_ATTRIBUTION.test(raw),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

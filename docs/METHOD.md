@@ -438,10 +438,24 @@ archetype's own bar (pinned in `tests/engine/gaps.test.js`):
 | `PEER` | 45 | 53 | name, role, place |
 | `VALIDATION` | 45 | 51 | an attributed quotation |
 | `FAILURE` | 42 | 47 | date and named party |
-| `METHOD` | 40 | 43 | dated, attributed, linked |
+| `METHOD` | 40 | 40 | dated, attributed, linked |
 | `ORIGIN` | 30 | 31 | year, place, what you saw |
-| `CREDENTIAL` | 42 | — | never required one; a year is a date |
+| `CREDENTIAL` | 38 | 39 | never required one; a year is a date |
 | `SCALE` | 45 | **none** | `hasScaleUnit` needs a digit beside the unit |
+
+Two of those numbers moved when `verification` stopped paying for a bare URL.
+`METHOD`'s reference evidence carries a link, so it fell 43 to 40 and now sits
+exactly on its bar with no margin at all. `CREDENTIAL`'s bar fell 42 to 38 for
+the same reason — a re-calibration by the size of the double count, not a
+loosening; see the comment on `COVERAGE_CEILING` in `engine/gaps.js`.
+
+**These are one sentence per archetype, and that is thinner than it looks.**
+Written to the recipes in the last column but with different wording, roughly
+four in ten pieces of best-practice evidence still fall under their own bar, and
+almost six in ten in Hebrew against three in ten in English. The magnitude-free
+route is a real promise verified against a single example each; the gap between
+the promise and what the detectors actually see is measured, open, and larger
+in the product's first language.
 
 `SCALE` is the exception and the copy says so rather than inventing a route:
 `inferArchetypes` reaches it only through `hasScaleUnit`, which requires an
@@ -512,7 +526,7 @@ measurement, it is a prior — see honesty rule 5.
 | `LOW_CONFIDENCE` | 0.55 | index presented as an estimate below this |
 | `DECAY_FLOOR` | 0.35 | decay never removes more than 65% of a proof's value |
 | half-lives | credential 1460, experience 1095, outcome 730, media 540, event 365, traction 180 | days, by proof kind |
-| coverage thresholds | 45 default; ORIGIN 30, METHOD 40, CREDENTIAL 42, FAILURE 42 | measured from best-practice evidence per archetype |
+| coverage thresholds | 45 default; ORIGIN 30, METHOD 40, CREDENTIAL 38, FAILURE 42 | measured from best-practice evidence per archetype |
 | `SPARSE_MAGNITUDE` / sample floor | 0.20 / 3 units | share of units carrying a magnitude below which the inventory reads as one the user cannot add numbers to |
 | `MAGNITUDE_ONLY_DISCOUNT` | 0.5 | applied to the `SCALE` play's rank value only, never to a threshold |
 | `MIN_OBSERVATIONS` / `SHRINKAGE_K` / `CONFIDENT_OBSERVATIONS` | 8 / 8 / 15 | calibration |

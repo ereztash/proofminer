@@ -414,3 +414,53 @@ describe('a link is not a witness', () => {
     expect(extractSignals(published).thirdParty).toBe(true);
   });
 });
+
+/**
+ * Attribution in the order people write it.
+ *
+ * `ATTRIBUTED_QUOTE` matched only quotation-then-name — the pull-quote order —
+ * and ordinary prose in both languages puts the attribution first. Measured
+ * against evidence written to `METHOD.md`'s own recipe for VALIDATION, the same
+ * sentence scored 38 in pull-quote order and 29 in the natural one, because the
+ * natural one earned no `thirdParty` at all.
+ *
+ * The verb list is what keeps this honest: a quotation preceded by any noun
+ * would let a user quote themselves into third-party evidence, which is the
+ * failure `docs/TELOS.md` exists to prevent.
+ */
+describe('somebody else said it', () => {
+  it('reads attribution before the quotation, in both languages', () => {
+    expect(
+      extractSignals('המנכ"ל של בטא תעשיות אמר לי: "לא היינו עוברים את הרבעון בלי השינוי הזה".').thirdParty,
+    ).toBe(true);
+    expect(
+      extractSignals('מיכל ברק כתבה בסיכום: "זו הפעם הראשונה שהצוות יודע מה לעשות בלי לשאול אותי".').thirdParty,
+    ).toBe(true);
+    expect(
+      extractSignals('The CEO at Beta Industries told me: "we would not have made the quarter without this change".').thirdParty,
+    ).toBe(true);
+  });
+
+  it('still reads the pull-quote order it always did', () => {
+    expect(
+      extractSignals('"לא היינו עוברים את הרבעון בלי השינוי הזה" — המנכ"ל של בטא תעשיות.').thirdParty,
+    ).toBe(true);
+  });
+
+  it('refuses the author quoting themselves', () => {
+    // `אמרתי` and `אמרנו` are the author speaking, and the Hebrew stems stop at
+    // a letter boundary so they cannot reach the third-person forms. English
+    // refuses a bare "I said" the same way.
+    for (const selfQuote of [
+      'אמרתי להם: "התהליך הזה לא יחזיק מעמד יותר מחודשיים בלי בעלות".',
+      'אמרנו לצוות: "התהליך הזה לא יחזיק מעמד יותר מחודשיים בלי בעלות".',
+      'I said: "we would not have made the quarter without this change".',
+    ]) {
+      expect(extractSignals(selfQuote).thirdParty, selfQuote).toBe(false);
+    }
+  });
+
+  it('needs a quotation, not merely a name and a role', () => {
+    expect(extractSignals('רונית לוי, מנהלת התפעול של אלפא לוגיסטיקה.').thirdParty).toBe(false);
+  });
+});
