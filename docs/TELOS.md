@@ -176,6 +176,12 @@ against the market, and roughly half of it was wrong. What follows is the
 corrected version, with the evidence attached — because a document that
 forbids vanity metrics cannot make unsourced claims about its own worth.
 
+**`MARKET.md` holds the work underneath it**: what was searched, what could not
+be found, the two findings that appear only when separate lines of evidence are
+laid on top of each other, and the plan for turning any of it into a change to
+this repository — including which changes are not allowed to start yet, and what
+would falsify the whole reading.
+
 ### As software, it is close to unsellable, and building more will not change it
 
 Not because it is badly built. Because it is built, deliberately, against every
