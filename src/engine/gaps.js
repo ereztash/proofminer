@@ -58,7 +58,17 @@ const ARCHETYPE_WEIGHT = {
 const COVERAGE_CEILING = {
   ORIGIN: 30,
   METHOD: 40,
-  CREDENTIAL: 42,
+  // Re-calibrated with the verification fix in `dimensions.js`, not loosened.
+  // A bare URL used to be paid twice — once in `verification`, once in
+  // `falsifiability` — so every claim carrying a link sat a few points higher
+  // than the evidence in it justified. The reference credential (a degree, an
+  // institution, a year, a specialisation and a link) scored 43 against this
+  // bar of 42: a one-point margin, and the point came from the double count.
+  // With verification no longer paying for self-reference it scores 39, so the
+  // bar moves to 38 and the margin is the same one point it always was. A
+  // thinner line — a certification with no institution named — still scores in
+  // the mid-thirties and still does not cover.
+  CREDENTIAL: 38,
   FAILURE: 42,
 };
 

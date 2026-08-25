@@ -38,8 +38,25 @@ export const DIMENSIONS = [
       let v = 22;
       if (s.thirdParty) v += 40;
       if (s.verifiableRef) v += 14;
-      if (s.hasUrl) v += 14;
+      // **A bare link earns nothing here.** It used to earn +14 — on top of the
+      // +14 `verifiableRef` was giving for the same URL — so a link to your own
+      // CV on your own domain scored 50 on the dimension that asks whether
+      // somebody *else* vouched for you. Measured against 520 real freelancer
+      // pitches, 79% were scored "verifiable" with no third party present, and
+      // a bare résumé link outscored a sentence naming a client, a magnitude
+      // and a change. Self-reference counted as verification is the anti-goal
+      // in `docs/TELOS.md` running backwards.
+      //
+      // A URL says a sceptic *could* check, not that anyone *did*, so it is
+      // paid in `falsifiability` below and nowhere else. `verifiableRef` keeps
+      // its credit because it no longer matches bare URLs — it matches somebody
+      // else having published the thing.
       if (s.hasProperNoun) v += 12;
+      // A credential is somebody else's assertion about you — an institution
+      // put its name to it — and this dimension used to recognise only press
+      // coverage. It earns less than a testimonial, which speaks to a result
+      // delivered rather than a programme completed.
+      if (s.credential) v += 10;
       if (s.peer) v += 8;
       if (s.generic) v -= 18;
       return clamp100(v);
