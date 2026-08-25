@@ -131,7 +131,9 @@ than its surface:
   ordering by kind, dedupe, mining, re-ranking on positioning change
 - **authority** — layer locking, the Liebig gate (including *"six times the
   output, identical standing"*), all four diagnoses, next-move ordering, gap
-  ranking, positioning issues
+  ranking, positioning issues, the filler reader that names the user's own word
+  rather than the stem that matched it, and the unpublished-evidence list
+  behind the dashboard's return bridge
 - **gaps** — the magnitude-free route for every archetype and its absence for
   `SCALE`, density sampling, and the proof that the demotion re-ranks without
   moving a threshold

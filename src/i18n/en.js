@@ -121,14 +121,20 @@ export default {
     threeTitle: 'Three you would never have published yourself',
     thinTitle: 'Too little here to tell you anything definite',
     thinBody:
-      'What you pasted mostly describes roles rather than what came out of them. These are the ' +
-      'closest things to evidence in it, and they are still weak. Paste something with a number, ' +
-      'a date or somebody else\'s name in it: a project summary, a client email, a recommendation.',
+      'This too is the expected result of the stage, not a verdict on your work. ' +
+      'The first pass reads one document and ranks what it found in it; these are ' +
+      'the closest thing to evidence among them, and they do not clear the bar yet. ' +
+      'What lifts them is more material rather than better wording: a client email, ' +
+      'a project write-up, a reference. That is where who, when and what changed live.',
     why: 'Why this one',
     continue: 'Got it — show me the full picture',
     emptyTitle: 'The claim is not supported by evidence yet',
     emptyBody:
-      'This does not mean you have no value. It means the material you pasted is not concrete enough to justify why someone should choose you. Add something checkable: who, when, what changed, or who confirmed it externally.',
+      'This is the expected result of a first pass over an edited document, not a ' +
+      'diagnosis of you. The pass looks for lines that can be checked: who, when, ' +
+      'what changed, who confirmed it from outside. A CV or a profile has already ' +
+      'been edited, and those lines usually fell out along the way. In a client ' +
+      'email, a project thread or meeting notes they are still there.',
   },
 
   gap: {
@@ -142,6 +148,14 @@ export default {
       'This is the one direction this tool stops. Before publishing more, bring evidence.',
     estimate: 'Early estimate — not enough data yet',
     index: 'Composite index',
+  },
+
+  bridge: {
+    label: (n) =>
+      n === 1
+        ? 'One line you wrote that nobody has seen'
+        : `${n} lines you wrote that nobody has seen`,
+    note: 'Your words, exactly as you pasted them. Not a summary and not a rewrite.',
   },
 
   diagnosis: {
@@ -569,7 +583,9 @@ export default {
       'claim.missing': 'No central claim.',
       'claim.vague': 'The claim is too broad.',
       'offer.missing': 'Unclear what you offer.',
-      filler: 'These are words everyone in your field uses. They separate you from nobody.',
+      filler: (words = [], more = 0) =>
+        `\u201C${words.join('\u201D, \u201C')}\u201D${more ? ` and ${more} more` : ''} \u2014 how many people ` +
+        'in your field could write exactly that about themselves? If they all could, it does not separate you from any of them.',
       template: 'This is the "I help X do Y" template. It is familiar, so it is invisible.',
       'nonGoals.missing': 'You did not write what you are not. That is cheap differentiation.',
     },

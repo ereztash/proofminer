@@ -15,7 +15,7 @@ import { html, renderInto } from './html.js';
 import { sampleFor } from '../data/sample.js';
 
 import { isDemoMode, mineSources, realProofs, rescoreProofs } from '../engine/mine.js';
-import { computeAuthority, nextMove } from '../engine/authority.js';
+import { computeAuthority, nextMove, unpublishedProofs } from '../engine/authority.js';
 import { revealPicks } from '../engine/explain.js';
 import { parseAnalyticsPaste } from '../engine/analytics.js';
 import { activeWeights, calibrate, compound } from '../engine/feedback.js';
@@ -28,7 +28,7 @@ import { decayedScore } from '../engine/score.js';
 import { NOT_ME, firstLightView, onboardingView } from './views/onboarding.js';
 import { RECALL_FIELDS } from './views/recall.js';
 import { REPLY_FIELDS } from './views/replies.js';
-import { dashboardView } from './views/dashboard.js';
+import { BRIDGE_LINES, dashboardView } from './views/dashboard.js';
 import { mineView } from './views/mine.js';
 import { positionView } from './views/position.js';
 import { inventoryView } from './views/inventory.js';
@@ -908,6 +908,9 @@ export function mountApp(root) {
         return dashboardView(state, t, {
           authority: computeAuthority(state, nowTs),
           move: nextMove(state, nowTs),
+          // Computed here rather than in the view so it runs on the same
+          // injected clock as everything else on this screen.
+          held: unpublishedProofs(state, nowTs, { limit: BRIDGE_LINES }),
         });
     }
   }

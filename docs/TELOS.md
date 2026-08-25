@@ -123,6 +123,23 @@ aggressively on a thin evidence base does not get a rising score — they get a
 
 Every competitor in this category rewards volume. This one refuses to.
 
+### The second refusal: it does not measure your absence
+
+Nothing in the state records when the user was last here. There is no
+`lastActiveAt`, no streak, no "welcome back", and no screen that behaves
+differently because a month went by.
+
+This is the same constraint pointing at retention instead of at standing.
+The desired state change above is that a person stops feeling invisible — and
+for some of them the honest form of that is *closing the tab and going back to
+work*. A product that measures the gap between visits will eventually act on
+it, and acting on it means treating a legitimate outcome as a lapse.
+
+So the return bridge on the dashboard (`bridgeCard` in
+`ui/views/dashboard.js`) shows the user their own unpublished sentences on
+**every** visit rather than on a returning one. It is worth showing to someone
+who was here yesterday, which is exactly why it does not need a clock.
+
 ## Definition of Done
 
 The repository is done when five **orthogonal** review agents converge on it:

@@ -133,15 +133,25 @@ export default {
       'ברגע שתדביק חומר משלך היא יוצאת מהחישוב.',
     threeTitle: 'שלוש שלא היית מפרסם לבד',
     thinTitle: 'מצאנו מעט מדי כדי להגיד לך משהו ודאי',
+    // Both this and `emptyBody` used to be verdicts on what the user brought —
+    // "what you pasted is mostly a description of roles". They are now the
+    // expected result of this stage, which is what turned the same experience
+    // from a complaint into reassurance for a client in the corpus. And the
+    // instruction no longer leads with a number: seven of the eight evidence
+    // routes do not need one (docs/METHOD.md, I3).
     thinBody:
-      'מה שהדבקת הוא בעיקר תיאור של תפקידים, ולא של מה שיצא מהם. אלה השורות ' +
-      'הקרובות ביותר לראיה — והן עדיין חלשות. הדבק משהו שיש בו מספר, תאריך או ' +
-      'שם של מישהו אחר: סיכום פרויקט, מייל מלקוח, המלצה.',
+      'גם זו תוצאה צפויה של השלב, ולא פסק דין על העבודה שלך. המעבר הראשון קורא ' +
+      'מסמך אחד ומדרג את מה שהוא מצא בו; אלה השורות הקרובות ביותר לראיה מבין ' +
+      'אלה, והן עדיין לא חוצות את הרף. מה שמעלה אותן הוא עוד חומר ולא ניסוח ' +
+      'טוב יותר: מייל מלקוח, סיכום פרויקט, המלצה. שם יושבים מי, מתי ומה השתנה.',
     why: 'למה דווקא זו',
     continue: 'הבנתי — תראה לי את התמונה המלאה',
     emptyTitle: 'הטענה עדיין לא מוחזקת על ידי ראיה',
     emptyBody:
-      'זה לא אומר שאין לך ערך. זה אומר שהחומר שהדבקת לא מספיק קונקרטי כדי להצדיק למה לבחור בך. הוסף משהו שאפשר לבדוק: מי, מתי, מה השתנה, או מי אישר את זה מבחוץ.',
+      'זו התוצאה הצפויה של מעבר ראשון על מסמך ערוך, ולא אבחנה עליך. המעבר מחפש ' +
+      'שורות שאפשר לבדוק: מי, מתי, מה השתנה, מי אישר מבחוץ. קורות חיים ופרופיל ' +
+      'כבר עברו עריכה, והשורות האלה בדרך כלל נשרו מהם בדרך. במייל מלקוח, ' +
+      'בשרשור על פרויקט או בסיכום פגישה הן עדיין שם.',
   },
 
   gap: {
@@ -155,6 +165,16 @@ export default {
       'זה הכיוון היחיד שהמערכת עוצרת. לפני שמפרסמים עוד — צריך להביא ראיות.',
     estimate: 'הערכה מוקדמת — עוד אין מספיק נתונים',
     index: 'מדד מסכם',
+  },
+
+  /**
+   * The return bridge. No clock: see `bridgeCard` in `ui/views/dashboard.js`
+   * for why the product never learns how long anyone was away.
+   */
+  bridge: {
+    label: (n) =>
+      n === 1 ? 'שורה אחת שכתבת, ואף אחד לא ראה' : `${n} שורות שכתבת, ואף אחד לא ראה`,
+    note: 'המילים שלך, בדיוק כפי שהדבקת אותן. לא סיכום ולא ניסוח מחדש.',
   },
 
   diagnosis: {
@@ -612,7 +632,12 @@ export default {
       'claim.missing': 'אין טענה מרכזית.',
       'claim.vague': 'הטענה רחבה מדי.',
       'offer.missing': 'לא ברור מה אתה מציע.',
-      filler: 'יש כאן מילים שכל אחד בתחום שלך משתמש בהן. הן לא מפרידות אותך מאיש.',
+      // Names the words. It used to count them and throw them away — "there are
+      // words here everyone uses", without saying which — which is a verdict
+      // nobody can act on.
+      filler: (words = [], more = 0) =>
+        `«${words.join('», «')}»${more ? ` ועוד ${more}` : ''} — כמה אנשים בתחום שלך ` +
+        'יכולים לכתוב את זה על עצמם בדיוק כמוך? אם כולם יכולים, זה לא מפריד אותך מאיש.',
       template: 'זה תבנית "אני עוזר ל-X ל-Y". היא מוכרת ולכן שקופה.',
       'nonGoals.missing': 'לא כתבת מה אתה לא. זו דרך זולה לבידול.',
     },

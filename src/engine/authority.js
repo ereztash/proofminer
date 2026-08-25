@@ -533,19 +533,27 @@ function recentlyAttempted(state, play, now) {
 }
 
 /**
- * Highest-value proof unit that has not been published yet.
+ * Real evidence the user holds that has never been published, strongest first.
  *
- * Demo units are excluded unconditionally — the single primary action on the
- * dashboard must never read "publish your strongest evidence" pointing at
- * bundled fiction.
+ * This *is* the Visibility Gap, enumerated: the units that exist and that
+ * nobody has seen. Demo units are excluded unconditionally — the single primary
+ * action on the dashboard must never read "publish your strongest evidence"
+ * pointing at bundled fiction, and the dashboard must never show the user
+ * bundled sentences under "what you already wrote".
  */
-export function bestUnpublished(state, now = Date.now()) {
+export function unpublishedProofs(state, now = Date.now(), { limit = Infinity } = {}) {
   const published = new Set(
     (state.artifacts || []).flatMap((a) => a.proofIds),
   );
-  const candidates = realProofs(state).filter((p) => !published.has(p.id) && !p.demo);
-  if (!candidates.length) return null;
-  return candidates
+  return realProofs(state)
+    .filter((p) => !published.has(p.id) && !p.demo)
     .map((p) => ({ p, s: decayedScore(p, now) }))
-    .sort((a, b) => b.s - a.s)[0].p;
+    .sort((a, b) => b.s - a.s)
+    .slice(0, limit)
+    .map((entry) => entry.p);
+}
+
+/** Highest-value proof unit that has not been published yet. */
+export function bestUnpublished(state, now = Date.now()) {
+  return unpublishedProofs(state, now, { limit: 1 })[0] ?? null;
 }

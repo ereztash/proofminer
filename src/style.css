@@ -1084,6 +1084,44 @@ p {
   margin-block-start: 0.25rem;
 }
 
+/* ---------- the return bridge ---------- */
+
+/*
+ * Quieter than the hero above it and than the move below it. It is context,
+ * not an instruction and not a number — the one thing on this screen that is
+ * the user's own writing.
+ */
+.bridge {
+  border-inline-start: 3px solid var(--accent);
+  padding-inline-start: 0.9rem;
+  margin-block: calc(var(--step) * -0.25) 0;
+}
+
+.bridge__label {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.bridge__list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.bridge__line {
+  max-inline-size: 68ch;
+  overflow-wrap: anywhere;
+}
+
+.bridge__note {
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  margin-block-start: 0.5rem;
+}
+
 /* ---------- the reply bank ---------- */
 
 .replies {

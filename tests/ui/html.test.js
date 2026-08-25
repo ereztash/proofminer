@@ -6,6 +6,9 @@ import enBundle from '../../src/i18n/en.js';
 import { NOT_ME, firstLightView, onboardingView } from '../../src/ui/views/onboarding.js';
 import { mineView } from '../../src/ui/views/mine.js';
 import { measureView } from '../../src/ui/views/measure.js';
+import { dashboardView } from '../../src/ui/views/dashboard.js';
+import { positionView } from '../../src/ui/views/position.js';
+import { computeLayers } from '../../src/engine/layers.js';
 import { emptyState } from '../../src/core/schema.js';
 
 describe('escaping', () => {
@@ -644,5 +647,120 @@ describe('the words the market used', () => {
     expect(render({}, { formCache: { 'rp-text': 'טיוטה שלא נשמרה' } })).toContain(
       'טיוטה שלא נשמרה',
     );
+  });
+});
+
+describe('the filler issue names the words', () => {
+  const t = translator('he');
+
+  it('puts the user’s own words on the screen, not a count of them', () => {
+    // It used to say "there are words here everyone in your field uses" and
+    // never say which — a verdict nobody can act on.
+    const state = {
+      ...emptyState(),
+      positioning: {
+        audience: 'ארגונים',
+        transformation: 'פתרונות הוליסטיים',
+        claim: 'גישה אסטרטגית וחדשנית',
+        offer: '',
+        nonGoals: [],
+      },
+    };
+    const markup = toString_(positionView(state, t));
+    expect(markup).toContain('אסטרטגית');
+    expect(markup).toContain('הוליסטיים');
+  });
+
+  it('asks a question about the word rather than passing sentence on it', () => {
+    for (const locale of ['he', 'en']) {
+      const line = translator(locale)(['position', 'issue', 'filler'], ['אסטרטגי'], 0);
+      expect(line).toContain('אסטרטגי');
+      expect(line).toContain('?');
+    }
+  });
+
+  it('survives being resolved with no arguments', () => {
+    // The structural-alignment and banned-vocabulary sweeps call every key
+    // bare; a function string that throws there takes the whole suite with it.
+    for (const locale of ['he', 'en']) {
+      expect(() => translator(locale)(['position', 'issue', 'filler'])).not.toThrow();
+    }
+  });
+});
+
+describe('the return bridge', () => {
+  const t = translator('he');
+  // Real layers rather than a hand-built stub: the dashboard renders all six,
+  // and faking them only proved that the fake was wrong.
+  const authority = {
+    gap: 12, foundation: 40, built: 28, index: 33, diagnosis: 'BURIED',
+    lowConfidence: false, gated: false, demo: false,
+    layers: computeLayers(emptyState(), 0),
+  };
+  const move = { id: 'move.publishFirst', layer: 'L3', effortMinutes: 12, view: 'studio' };
+  const line = (claim) => ({ id: 'p1', claim, score: 61, breakdown: {}, archetypes: [] });
+  const render = (held, over = {}) =>
+    toString_(
+      dashboardView({ ...emptyState() }, t, {
+        authority: { ...authority, ...over },
+        move,
+        held,
+      }),
+    );
+
+  it('shows the user’s own sentence, above the instruction', () => {
+    const claim = 'ב-2025 קיצרתי אצל אלפא לוגיסטיקה את זמן האספקה מ-19 יום ל-7 ימים.';
+    const markup = render([line(claim)]);
+    expect(markup).toContain(claim);
+    // Credit before critique: their words come before the thing to go and do.
+    expect(markup.indexOf('class="bridge"')).toBeLessThan(markup.indexOf('class="move"'));
+    // And after the headline number, which docs/UX.md puts first.
+    expect(markup.indexOf('class="hero')).toBeLessThan(markup.indexOf('class="bridge"'));
+  });
+
+  it('renders nothing at all when there is nothing of theirs to show', () => {
+    expect(render([])).not.toContain('class="bridge"');
+  });
+
+  it('never puts bundled fixtures under “what you already wrote”', () => {
+    expect(render([line('שורה מהדוגמה')], { demo: true })).not.toContain('class="bridge"');
+  });
+
+  it('does not wait for an absence it never measures', () => {
+    // The version this replaces keyed off a lastActiveAt and a 30-day gap.
+    // Measuring absence is a re-engagement mechanic, and per docs/TELOS.md a
+    // month away may be the relief this product exists to produce.
+    expect(render([line('שורה שלי')])).toContain('class="bridge"');
+    expect(Object.keys(emptyState().profile)).not.toContain('lastActiveAt');
+  });
+
+  it('escapes a claim that arrived from an imported backup', () => {
+    const markup = render([line('<img src=x onerror=alert(1)>')]);
+    expect(markup).not.toContain('<img src=x');
+    expect(markup).toContain('&lt;img');
+  });
+});
+
+describe('First Light names the stage, not the person', () => {
+  it('reads as the expected result of a first pass, not a verdict on the material', () => {
+    for (const locale of ['he', 'en']) {
+      const tt = translator(locale);
+      for (const key of ['firstLight.emptyBody', 'firstLight.thinBody']) {
+        const copy = tt(key);
+        expect(copy, `${locale} ${key}`).toMatch(/צפויה|צפוי|expected/);
+        // The sentences these replaced: "the material you pasted is not
+        // concrete enough" and "what you pasted mostly describes roles".
+        expect(copy, `${locale} ${key}`).not.toMatch(/לא מספיק קונקרטי|not concrete enough/);
+        expect(copy, `${locale} ${key}`).not.toMatch(/מה שהדבקת הוא|What you pasted mostly/);
+      }
+    }
+  });
+
+  it('no longer opens the instruction with a number', () => {
+    // Seven of the eight evidence routes need no magnitude (docs/METHOD.md I3).
+    // Leading the thin-result advice with one contradicts the plays copy.
+    for (const locale of ['he', 'en']) {
+      expect(translator(locale)('firstLight.thinBody')).not.toMatch(/מספר|number/);
+    }
   });
 });

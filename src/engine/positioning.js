@@ -26,7 +26,75 @@ const FILLER = [
 const HELP_TEMPLATE = /(?:אני\s+)?(?:עוזר|מסייע|מלווה)\s+ל?\S+\s+(?:ל|להשיג|לייצר)/u;
 const HELP_TEMPLATE_EN = /i help \w+ (?:to )?\w+/iu;
 
-const countFiller = (text) => FILLER.filter((re) => re.test(text)).length;
+/** What counts as part of a word when a stem match is expanded back out. */
+const WORD_CHAR = /[\p{L}\p{N}'\u2019-]/u;
+
+/**
+ * How many matched words the issue names before it starts counting instead.
+ * Four short fields rarely reach this; a pasted paragraph can.
+ */
+export const FILLER_SHOWN = 5;
+
+/**
+ * The filler words actually present, in the user's own spelling.
+ *
+ * The patterns are stems — `/אסטרטג/` matches inside `אסטרטגי` — so a raw match
+ * would hand back a fragment the user never typed. Each hit is expanded back
+ * out to the whole word it sits in, and multi-word patterns (`מוביל דעה`,
+ * `results-driven`) expand from both ends of the phrase.
+ *
+ * This exists because the issue used to *count* the matches and throw them
+ * away: the copy said "there are words here everyone in your field uses" and
+ * never said which. That is an instruction nobody can carry out — the same
+ * defect the gap plays were repaired for.
+ *
+ * @returns {string[]} in the order they appear in the text, deduped
+ */
+export function fillerWords(text) {
+  const source = String(text || '');
+  const hits = [];
+  const seen = new Set();
+
+  for (const re of FILLER) {
+    const match = re.exec(source);
+    if (!match) continue;
+    const word = expandToWord(source, match.index, match.index + match[0].length);
+    const key = word.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    hits.push({ word, at: match.index });
+  }
+
+  return hits.sort((a, b) => a.at - b.at).map((hit) => hit.word);
+}
+
+/**
+ * One-letter Hebrew grammar prefixes, dropped when they sit *before* the match.
+ *
+ * The two expansions do different jobs. Rightward catches the inflection the
+ * user actually typed — `אסטרטגית`, `אסטרטגיים` — which is the whole point.
+ * Leftward would otherwise drag in the grammar glued to the front: the vav in
+ * `ואסטרטגי` is a conjunction joining the previous word, and the he in
+ * `הפתרונות` is an article. Neither is part of the word being named, and
+ * `«ואסטרטגי»` reads as a word nobody wrote.
+ *
+ * Only characters *before the match* are candidates, so a word that genuinely
+ * begins with one of these letters keeps it — the match starts at the word's
+ * first character and there is nothing to the left to strip. `מקצוענים` comes
+ * back whole.
+ */
+const HEBREW_PREFIX = /[והבכלשמ]/u;
+
+function expandToWord(source, start, end) {
+  let from = start;
+  let to = end;
+  while (from > 0 && WORD_CHAR.test(source[from - 1])) from -= 1;
+  while (to < source.length && WORD_CHAR.test(source[to])) to += 1;
+  while (from < start && HEBREW_PREFIX.test(source[from])) from += 1;
+  return source.slice(from, to);
+}
+
+const countFiller = (text) => fillerWords(text).length;
 
 /**
  * Specificity of a free-text field: rewards concrete nouns and numbers,
@@ -153,7 +221,9 @@ export function defensibilityScore(claim, recognitions = []) {
  */
 function positioningIssues({ audience, transformation, claim, offer, components, p }) {
   const issues = [];
-  const push = (id, field, severity) => issues.push({ id, field, severity });
+  /** `vars` reach the copy, so an issue can name the thing it is about. */
+  const push = (id, field, severity, vars = []) =>
+    issues.push({ id, field, severity, vars });
 
   if (!audience) push('audience.missing', 'audience', 3);
   else if (components.audience < 45) push('audience.vague', 'audience', 2);
@@ -167,7 +237,15 @@ function positioningIssues({ audience, transformation, claim, offer, components,
   if (!offer) push('offer.missing', 'offer', 1);
 
   const all = [audience, transformation, claim, offer].join(' ');
-  if (countFiller(all) > 0) push('filler', 'claim', 3);
+  // Named, not counted. The words travel with the issue so the screen can put
+  // the question on the word itself rather than assert that one exists.
+  const filler = fillerWords(all);
+  if (filler.length) {
+    push('filler', 'claim', 3, [
+      filler.slice(0, FILLER_SHOWN),
+      Math.max(0, filler.length - FILLER_SHOWN),
+    ]);
+  }
   if (HELP_TEMPLATE.test(all) || HELP_TEMPLATE_EN.test(all)) push('template', 'claim', 2);
   if (!Array.isArray(p.nonGoals) || !p.nonGoals.length) push('nonGoals.missing', 'nonGoals', 1);
 

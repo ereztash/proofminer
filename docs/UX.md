@@ -180,7 +180,37 @@ they came to escape.
    product; being empty-handed on the first screen is not a reason to forfeit
    it.
 
+   **The honest states name the stage, not the person.** When the first pass
+   finds nothing usable, or finds only weak lines, the screen says so as *the
+   expected result of a first pass over one document* — not as a verdict on
+   what the user brought. It used to read "the material you pasted is not
+   concrete enough" and "what you pasted mostly describes roles", which is a
+   judgement delivered within three minutes of arrival to someone in a shame
+   state. Stating a limitation in advance is what turned the identical
+   experience from a complaint into reassurance for a client in the corpus.
+   The advice underneath also no longer opens with *paste something with a
+   number in it*: seven of the eight evidence routes need no magnitude, and
+   this screen was contradicting the plays copy one click away.
+
+   (The neighbouring idea — putting the same expectation-setting on screen 0 —
+   is deliberately not built. It collides head-on with *the first screen
+   qualifies, it does not educate*: a pre-emptive explanation of a limitation
+   is selling the problem in the wrong direction.)
+
 3. **Screen 2+ — the dashboard**, unlocked only once L1 exists.
+
+## The dashboard opens on the gap, then on the user's own words
+
+Order: the Visibility Gap, then the **return bridge**, then the single Next
+Move. The bridge is up to three of the user's own unpublished sentences,
+verbatim — the gap in their handwriting, sitting directly above the thing they
+are being told to do about it. The move that produced the richest turns in the
+corpus was reading a person's own words back to them, and the dashboard had
+nothing of theirs anywhere on it.
+
+It carries **no clock** — see `docs/TELOS.md`, "it does not measure your
+absence" — and renders nothing on bundled fixtures, because "what you already
+wrote" over eight sample sentences is the lie First Light was repaired for.
 
 Layers L3–L6 stay visibly **locked, not failed**. A locked layer says
 *"unlocks when you publish your first grounded artifact"* — it never says `0`.
@@ -233,6 +263,25 @@ screen.
 - The signal extractor treats Hebrew as a first-class language: niqqud
   stripping, final-letter normalisation, prefix stripping (ו/ה/ב/ל/מ/ש/כ),
   Hebrew stopwords, Hebrew currency and date formats.
+
+## A finding names the thing it found
+
+The positioning screen used to report *"there are words here that everyone in
+your field uses"* — computed by counting regex matches and throwing the matches
+away. The user cannot act on that. They cannot even tell whether the product
+means `אסטרטגי` or `פתרונות`, and a finding they cannot locate reads as the
+product being clever at them.
+
+It now names the words, in the user's own spelling and inflection, and asks a
+question about them rather than passing sentence: *"how many people in your
+field could write exactly that about themselves?"* The words are what makes it
+answerable.
+
+This is the same defect the gap plays were repaired for (`docs/METHOD.md`, I3),
+and it generalises: **if the engine had to identify something in order to
+report it, the report says what it identified.** Where naming is impossible —
+the drift check, which compares distributions rather than strings — the copy
+says what it counted instead.
 
 ## A box that takes prose says what it does with the prose
 
