@@ -529,3 +529,39 @@ describe('finding a name in a language without capitals', () => {
     expect(nouns('מיכל ברק, מנהלת הרכש בגמא קמעונאות, הפנתה אלי.')).toContain('מיכל ברק');
   });
 });
+
+/**
+ * Citation, in the direction that matters.
+ *
+ * `en.thirdParty` carried `cited in` and nothing for `cited my work`, so a
+ * colleague naming you at a conference — evidence — scored as a self-claim. The
+ * added forms are all directional: somebody citing *me*, never me citing them.
+ */
+describe('being cited is not the same as citing', () => {
+  it('reads somebody naming your work as third-party evidence', () => {
+    for (const line of [
+      'David Levi cited my work at the logistics conference.',
+      'She mentioned our process in her talk.',
+      'The report credited me with the redesign.',
+    ]) {
+      expect(extractSignals(line).thirdParty, line).toBe(true);
+    }
+  });
+
+  it('does not read you citing other people as evidence about you', () => {
+    for (const line of [
+      'I cited three sources in the write-up.',
+      'We referenced the standard throughout.',
+      'I credited the team in the summary.',
+    ]) {
+      expect(extractSignals(line).thirdParty, line).toBe(false);
+    }
+  });
+
+  it('reads a peer relation stated in the feminine', () => {
+    // `עמית` was in the lexicon and `עמיתה` was not, so half the ways this is
+    // written reached no archetype at all.
+    expect(extractSignals('מיכל ברק, עמיתה בתחום ומנהלת הרכש, הפנתה אלי.').peer).toBe(true);
+    expect(extractSignals('רונית לוי, שותפה שלי בפרויקט, הזכירה את העבודה.').peer).toBe(true);
+  });
+});

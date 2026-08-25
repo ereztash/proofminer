@@ -95,7 +95,9 @@ const LEX = {
     }),
     /** Peer-level recognition rather than client-level. */
     peer: heStems({
-      closed: ['עמית', 'עמיתים', 'מנטור', 'שותף'],
+      // Feminine forms were absent, so `עמיתה בתחום` — half the ways this is
+      // actually written — reached no archetype at all.
+      closed: ['עמית', 'עמיתה', 'עמיתים', 'עמיתות', 'מנטור', 'מנטורית', 'שותף', 'שותפה'],
       open: ['קולג', 'מומחה אחר', 'בתחום שלי', 'חבר לתעשייה', 'ממליץ', 'המלצה מקצועית'],
     }),
     currency: /(?:₪|ש["״']?ח|שקל|שח|אלף|מיליון|מיליארד)/u,
@@ -109,7 +111,7 @@ const LEX = {
     // was scored as external validation and printed on the reveal screen as
     // "someone external vouches for you", over a line the user wrote themselves.
     thirdParty:
-      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b/iu,
+      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b|\b(?:cited|mentioned|referenced|credited)\s+(?:me|us|my|our)\b/iu,
     outcome: /increas|grew|grow|doubl|tripl|reduc|cut|sav(?:ed|ing)|shorten|improv|optimi[sz]|clos(?:ed)|deliver|launch|built|led|raised|recover|solved|prevent|scal(?:ed)|design(?:ed)?|develop(?:ed)?|implement(?:ed)?|automat(?:ed)?|manage(?:d)?|train(?:ed)?/iu,
     contrast: /before|after|within|from\s+\S+\s+to\s+\S+|instead of|compared to|since|as a result|thanks to|despite|used to/iu,
     credential: /degree|bachelor|master|mba|phd|certifi|licens|accredit|graduat|gpa|thesis|diploma/iu,
