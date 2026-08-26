@@ -36,12 +36,12 @@ exists.**
 | 2 | User value and workflow completion | 15 | **9** |
 | 3 | Evidence and measurement validity | 20 | **12** |
 | 4 | Differentiation and substitutability | 10 | **7** |
-| 5 | UX and accessibility | 10 | **8** |
+| 5 | UX and accessibility | 10 | **9** |
 | 6 | Privacy and security | 10 | **9** |
 | 7 | Reliability and test quality | 10 | **7** |
 | 8 | Deployment and observability | 5 | **2** |
 | 9 | Architecture and maintainability | 5 | **4** |
-| | **Total** | **100** | **64** |
+| | **Total** | **100** | **65** |
 
 ### 1 · Problem and ICP precision — 6/15
 
@@ -120,7 +120,7 @@ Reviewer C's point, and it stands.
 
 **Raises it.** Evidence that the refusals change behaviour, which needs a user.
 
-### 5 · UX and accessibility — 8/10
+### 5 · UX and accessibility — 9/10
 
 **Evidence, measured in Chromium this session at three viewports.** No horizontal
 overflow at 1280, 390 or 320. Zero interactive controls without an accessible
@@ -130,12 +130,20 @@ correct. One `aria-live` region, kept outside the re-rendered tree. A `main`
 landmark now on every screen — it was **absent from the two screens every
 first-time user sees** until this session.
 
-**Risk.** No screen-reader walkthrough. No measured colour contrast. No
-`prefers-reduced-motion` check. Keyboard *reachability* was sampled; end-to-end
-keyboard task completion was not.
+**Contrast, measured in both colour schemes and fixed.** Five text styles on
+First Light were below WCAG AA — `.proof-card__eyebrow`, `.score__band`, the
+definition terms and `.expected__caveat`, at **3.03–4.44:1 against a 4.5
+requirement**, all of them between 11 and 13px, all of them using one token.
+`--ink-faint` was reset in both schemes, and set twice for light: the first
+attempt cleared `--surface` at 4.70 and still read 4.28 inside a tinted cell. **A
+token has to be set for the worst background it sits on.** Now **0 failures in
+both schemes on both screens**, with `tests/ui/contrast.test.js` as the tripwire
+and the browser as the instrument.
 
-**Raises it.** A screen-reader pass and a contrast audit — both doable here, both
-not done.
+**Risk.** No screen-reader walkthrough. No `prefers-reduced-motion` check.
+Keyboard *reachability* was sampled; end-to-end keyboard task completion was not.
+
+**Raises it.** A screen-reader pass — doable here, not done.
 
 ### 6 · Privacy and security — 9/10
 
