@@ -728,6 +728,21 @@ p {
   font-size: 1.05rem;
 }
 
+/*
+ * What the number on this screen is, stated where the number is. Quieter than
+ * the body copy above it and louder than a footnote: somebody who skims past
+ * it has still had it in front of them at the moment the score appeared.
+ */
+.cold__note {
+  color: var(--ink-soft);
+  margin-block-start: 0.6rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 0.7rem;
+  opacity: 0.9;
+}
+
 .cold__step {
   font-size: 1.2rem;
   margin-block: calc(var(--step) * 1.5) 0.35rem;

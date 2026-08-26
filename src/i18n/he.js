@@ -145,6 +145,15 @@ export default {
     title: (n) => `מצאנו ${n} ראיות במה שהדבקת.`,
     subtitle:
       'אלה לא רעיונות לתוכן. אלה דברים שכבר קרו, שאתה מחזיק ואף אחד לא רואה.',
+    // The first screen where a number and an action level are put in front of
+    // somebody. A measurement shown without saying what it measured reads as a
+    // verdict on whether the thing is true, and this one measures nothing of
+    // the kind: it reads the text you supplied and ranks how checkable it is.
+    // The pledge on screen 0 already says the product takes your input as
+    // given; it says it before there is any result to mistake for a ruling.
+    scoreScope:
+      'מה שמדוד כאן הוא כמה השורות שהדבקת ניתנות לבדיקה — מי, מתי, מה השתנה, ' +
+      'מי אישר מבחוץ. לא אם הן נכונות. את זה הכלי לא יכול לבדוק, ולא מתיימר.',
     demoTitle: (n) => `בדוגמה שלנו יש ${n} ראיות.`,
     demoSubtitle:
       'זו דוגמה שהבאנו, לא משהו שלך. היא כאן רק כדי להראות איך הדירוג עובד — ' +

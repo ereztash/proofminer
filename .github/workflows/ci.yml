@@ -41,3 +41,14 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      # A deployment that cannot name its own commit makes "this commit passed
+      # its smoke test" unverifiable. Cheap to assert here, and it fails loudly
+      # if the build-identity plugin is ever dropped.
+      - name: Build carries its commit
+        run: |
+          grep -q 'name="proofminer-commit"' dist/index.html \
+            || { echo "dist/index.html carries no proofminer-commit meta"; exit 1; }
+          grep -q 'content="'"$GITHUB_SHA"'"' dist/index.html \
+            || { echo "proofminer-commit does not match GITHUB_SHA ($GITHUB_SHA)"; \
+                 grep -o 'proofminer-commit" content="[^"]*"' dist/index.html; exit 1; }

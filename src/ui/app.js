@@ -962,7 +962,13 @@ export function mountApp(root) {
   }
 
   function chrome(inner) {
-    if (ui.screen !== 'app') return inner;
+    // Onboarding and First Light carry no header or nav — there is nowhere to
+    // navigate to yet — but they were also returning no landmark at all, so
+    // the two screens every first-time user sees had no `main` for a screen
+    // reader to jump to. The chrome differs; the landmark does not.
+    if (ui.screen !== 'app') {
+      return html`<main id="main" class="main main--bare" tabindex="-1">${inner}</main>`;
+    }
     return html`
       <a class="skip" href="#main">${t('nav.skip')}</a>
       <header class="topbar">
