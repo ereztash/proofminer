@@ -461,11 +461,52 @@ loosening; see the comment on `COVERAGE_CEILING` in `engine/gaps.js`.
 
 **These are one sentence per archetype, and that is thinner than it looks.**
 Written to the recipes in the last column but with different wording, roughly
-four in ten pieces of best-practice evidence still fall under their own bar, and
-almost six in ten in Hebrew against three in ten in English. The magnitude-free
-route is a real promise verified against a single example each; the gap between
-the promise and what the detectors actually see is measured, open, and larger
-in the product's first language.
+three and a half in ten pieces of best-practice evidence still fall under their
+own bar, and five in ten in Hebrew against two in ten in English. The
+magnitude-free route is a real promise verified against a single example each;
+the gap between the promise and what the detectors actually see is measured,
+open, and larger in the product's first language.
+
+### What the Hebrew organisation detector finds, measured from outside
+
+The rates above are measured against sentences written for this repository, and
+that is their limit: whoever writes a fixture already knows what the detector
+looks for. So the Hebrew organisation detector was also measured against
+**427 organisations that Hebrew Wikipedia marks as organisations** — its own
+links, its own entity infoboxes, none of it written by anybody here, all of it
+in the `ב`-prefixed form that is how Hebrew names a workplace.
+
+**It found 34%.** Splitting the misses by what each one would need:
+
+| | What was missing | Share |
+|---|---|---|
+| A | A trigger word already on the list, carrying a `ב`: `בבית הספר`, `בבנק` | 9% |
+| B | A type word absent entirely: `ערוץ`, `בית החולים`, `מכללה`, `מכון`, `סמינר` | 18% |
+| C | A bare `ב` straight onto the name: `בניקלודיאון` | 38% |
+
+A and B are now read, which took the measured rate to **46%**. A third
+distinction came out of the same data and is the reason the gain was larger
+than A and B alone: some type words are *not* part of the name — nobody is
+called `חברת` — while others are, and `בערוץ הראשון` answered with `הראשון`
+both loses half the name and trips the definite-article guard. The two are
+matched separately now.
+
+**C is still refused.** Reading a bare `ב` on an arbitrary word means guessing
+whether the letter is a preposition or the first letter of `בניתי`; it was
+tried and reported a company called *"ניתי תהליך"*. On a word from a closed
+list there is no guess to make, which is why A was safe and C is not. Filing
+them together as one problem was the mistake that hid A.
+
+Four fabrications were caught on the way and are pinned as tests: an
+organisation called *"בוסטון את"*, a bank called *"בנק הפועלים חמש"*, a
+broadcaster called *"ערוץ 10 בשנת"*, and a school called *"בית הספר כל בוקר"*.
+
+**None of this moved the rates in the paragraph above, and that is the finding
+worth keeping.** Every Hebrew fixture in this repository writes a workplace as
+`באלפא לוגיסטיקה` — case C, the one failure its author already knew about — so
+the suite reads 0.50 in Hebrew before the change and 0.50 after it. A green
+suite is evidence that a detector does what its author expected, and nothing
+more.
 
 `SCALE` is the exception and the copy says so rather than inventing a route:
 `inferArchetypes` reaches it only through `hasScaleUnit`, which requires an
