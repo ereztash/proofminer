@@ -19,6 +19,16 @@ export default defineConfig({
           include: ['tests/ui/**/*.test.js', 'tests/engine/regression.test.js'],
         },
       },
+      {
+        // Tests of the test harness itself — nothing here imports `src/`. Its
+        // own project so that a rule about what CI may claim cannot be mistaken
+        // for a rule about what the product does.
+        test: {
+          name: 'harness',
+          environment: 'node',
+          include: ['tests/harness/**/*.test.js'],
+        },
+      },
     ],
   },
 });

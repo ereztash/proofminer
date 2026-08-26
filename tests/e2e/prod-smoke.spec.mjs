@@ -1,6 +1,7 @@
 /* global process, console */
 
 import { expect, test } from '@playwright/test';
+import { classifyDeployment, parseCommitList } from './deployment-identity.mjs';
 
 const BASE_URL = process.env.PROOFMINER_BASE_URL;
 
@@ -14,6 +15,14 @@ const BASE_URL = process.env.PROOFMINER_BASE_URL;
  * manual run against an arbitrary URL.
  */
 const EXPECT_COMMIT = process.env.PROOFMINER_EXPECT_COMMIT?.trim();
+
+/**
+ * The commits that could legitimately have replaced it — everything on the
+ * default branch that is strictly newer, computed by the workflow with git.
+ * Empty on a manual run, and empty if the git step failed, which is the safe
+ * direction: without it every mismatch is a failure.
+ */
+const NEWER_COMMITS = parseCommitList(process.env.PROOFMINER_NEWER_COMMITS);
 
 // Read through the DOM rather than a locator: a <meta> in <head> is never
 // visible, and a visibility-aware locator waits for it forever.
@@ -32,6 +41,18 @@ test.describe('production smoke', () => {
     console.log(`deployed commit: ${commit ?? '(absent)'}`);
     expect(commit, 'built page carries no proofminer-commit meta').toBeTruthy();
     expect(commit, 'build identity resolved to "unknown"').not.toBe('unknown');
+    const verdict = classifyDeployment({
+      served: commit,
+      expected: EXPECT_COMMIT,
+      newer: NEWER_COMMITS,
+    });
+    // Superseded is not a defect: two merges seconds apart fire the older
+    // deployment's event after the alias has moved on, and the commit that
+    // replaced it gets its own run. See ./deployment-identity.mjs.
+    test.skip(
+      verdict === 'superseded',
+      `superseded: the alias has moved on from ${EXPECT_COMMIT} to ${commit}`,
+    );
     if (EXPECT_COMMIT) {
       // A green smoke against the wrong commit is worse than a red one: it
       // reports that a change is live when the alias has not moved yet.

@@ -57,6 +57,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history. Telling "the alias moved past this deployment" from
+          # "the alias never moved" is an ancestry question, and the shallow
+          # clone cannot answer it.
+          fetch-depth: 0
+
+      # An alias serves one deployment at a time, so two merges landing seconds
+      # apart fire the older one's event after the alias has already moved on.
+      # That deployment was superseded, not broken, and the commit that replaced
+      # it gets its own smoke run. Without this list the smoke cannot tell that
+      # apart from a stale alias, and puts the default branch red for a
+      # non-defect — which is how a check stops being read.
+      #
+      # Failure here leaves the list empty, which is the strict direction: every
+      # mismatch then fails.
+      - name: Commits that could legitimately have replaced this deployment
+        if: github.event_name == 'deployment_status'
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -uo pipefail
+          git fetch --quiet origin "$DEFAULT_BRANCH" || true
+          newer=""
+          if git merge-base --is-ancestor "$PROOFMINER_EXPECT_COMMIT" FETCH_HEAD 2>/dev/null; then
+            newer="$(git rev-list "$PROOFMINER_EXPECT_COMMIT..FETCH_HEAD" | tr '\n' ' ')"
+          else
+            echo "$PROOFMINER_EXPECT_COMMIT is not on $DEFAULT_BRANCH; nothing may supersede it"
+          fi
+          echo "PROOFMINER_NEWER_COMMITS=$newer" >> "$GITHUB_ENV"
+          echo "newer than $PROOFMINER_EXPECT_COMMIT on $DEFAULT_BRANCH: ${newer:-none}"
 
       - name: Set up Node
         uses: actions/setup-node@v4

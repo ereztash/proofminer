@@ -4,6 +4,13 @@ Assessed at commit `f92ddeb`, branch `claude/product-feedback-jhbpcq`, PR #25,
 26 August 2026. Five commits ahead of `origin/main` (`b3e6c01`), no divergence,
 clean worktree.
 
+**Revised the same day, after PR #25 merged.** Production now serves `ce69ac1`
+and names it, and the smoke asserted that commit on a `deployment_status` event
+and passed 4/4 — the observation category 8 was waiting on. One of the two stop
+conditions is therefore met and the other is not. Category 8 moves 2 → 3 and the
+total 67 → 68; the before/after table further down is a frozen comparison at
+`f92ddeb` and is left as it stood.
+
 ## Verdict
 
 > **Engineering-ready, market thesis unvalidated.**
@@ -15,11 +22,13 @@ conditions are unmet and neither can be met from inside this repository:
    is no observation of the primary workflow beating a simpler alternative on
    any decision-relevant outcome, because there is no observation of the primary
    workflow at all.
-2. **Production is not serving a commit that can be verified.** The deployed
-   alias runs a build from before the build-identity stamp, so *"the exact
-   deployed commit passed its smoke test"* is still unverifiable — the machinery
-   to make it verifiable is in this branch and is not merged.
+2. ~~**Production is not serving a commit that can be verified.**~~ **Met.**
+   PR #25 merged at 16:12 UTC. Production serves `ce69ac1` and says so, and run
+   `32988670344` — a `deployment_status` event, `PROOFMINER_EXPECT_COMMIT` set —
+   read that commit off the alias and passed 4/4. *"The exact deployed commit
+   passed its smoke test"* is now a claim somebody other than me can check.
 
+So one stop condition remains, and it is the one that decides the verdict.
 Everything else on the list is met and is evidenced below.
 
 ---
@@ -39,9 +48,9 @@ exists.**
 | 5 | UX and accessibility | 10 | **9** |
 | 6 | Privacy and security | 10 | **9** |
 | 7 | Reliability and test quality | 10 | **7** |
-| 8 | Deployment and observability | 5 | **2** |
+| 8 | Deployment and observability | 5 | **3** |
 | 9 | Architecture and maintainability | 5 | **4** |
-| | **Total** | **100** | **67** |
+| | **Total** | **100** | **68** |
 
 ### 1 · Problem and ICP precision — 8/15
 
@@ -183,7 +192,7 @@ partly repaired by an external corpus and a property test, and only partly.
 
 **Raises it.** More externally-grounded fixtures; a mutation run.
 
-### 8 · Deployment and observability — 2/5
+### 8 · Deployment and observability — 3/5
 
 **Evidence.** A Vite plugin stamps `<meta name="proofminer-commit">` from
 `VERCEL_GIT_COMMIT_SHA`, `GITHUB_SHA` or git, emitting `unknown` rather than
@@ -191,15 +200,34 @@ guessing. CI fails if the stamp is missing or does not match `GITHUB_SHA`. The
 smoke prints the served commit on every run and asserts it on a
 `deployment_status` event.
 
-**Risk, and this is the category holding the verdict.** **Production currently
-serves a build with no stamp**, so the deployed commit remains unidentifiable
-from outside — confirmed by fetching the alias this session. There is no tested
-rollback runbook. There is no error reporting by design, which is coherent with
-the privacy posture and still means a broken deployment is invisible until
-somebody says so.
+**And the assertion has now run against production.** Run `32988670344`,
+26 August 16:29 UTC: `deployment_status`, `PROOFMINER_EXPECT_COMMIT` set to
+`ce69ac1`, `deployed commit: ce69ac1ae086dd1a9e3f989671d19993e197e7e6`, 4/4
+passed. That is the observation this category was waiting on, and it is what
+moved the score. Fetching the alias by hand returns the same commit.
 
-**Raises it.** Merging this branch, then one green `deployment_status` smoke run
-whose asserted commit matches.
+**What the first live firing actually found.** The assertion's *other* run that
+minute went red, and it was right to and wrong to at once. PR #26 merged seconds
+after #25, so when #25's deployment event fired the alias had already moved on
+to `ce69ac1` — the run reported that the alias was not serving the commit it was
+fired for, which was true, and called it a failure, which it was not. An alias
+serves one deployment at a time; a superseded deployment is not a broken one,
+and the commit that replaced it gets its own run. The rule now has three
+outcomes rather than two (`tests/e2e/deployment-identity.mjs`), the workflow
+computes the ancestry with `git rev-list`, and everything unproven still fails —
+an empty list, a truncated sha, a rollback to an older commit. Nine cases in
+`tests/harness/deployment-identity.test.js` hold that boundary, because a skip
+that widens by accident deletes the assertion silently.
+
+**Risk.** The superseded path is proven against the replayed event and against
+the real history, and **not yet in production** — it needs two merges landing
+close together to fire. There is still no tested rollback runbook, and still no
+error reporting by design, which is coherent with the privacy posture and still
+means a broken deployment is invisible until somebody says so.
+
+**Raises it.** A tested rollback: deploy a known-bad build, revert it, and show
+the alias back on the previous commit — verifiable now that the page names it,
+which it was not before.
 
 ### 9 · Architecture and maintainability — 4/5
 
@@ -239,6 +267,10 @@ than presented as a preregistered measurement.
 | 8 | Deployment and observability | 5 | 1 | **2** | +1 | The build can name its commit and CI enforces it. **Production still cannot be verified**, so the machinery earns one point and not two |
 | 9 | Architecture and maintainability | 5 | 4 | **4** | 0 | No architectural change. `scripts/` is additive and claims nothing |
 | | **Total** | **100** | **51** | **67** | **+16** | |
+
+This table is a frozen comparison at `f92ddeb` and is not updated: at that commit
+category 8 really did score 2, because production could not be verified. The
+live scorecard above reads 3 and 68 for the reason given at the top.
 
 **Where the movement actually came from.** Eight of the fourteen points are
 categories 3 and 5 — measurement validity and accessibility — and every point in
@@ -307,5 +339,8 @@ Every commercial claim downstream rests on it.
 theses that no amount of engineering can separate, it is the only instrument
 that can, and it has been fully specified since before this analysis began.
 
-Second, and cheap: **merge this branch**, so that the next `deployment_status`
-smoke asserts a commit and the eighth category stops holding the verdict.
+~~Second, and cheap: **merge this branch**, so that the next `deployment_status`
+smoke asserts a commit and the eighth category stops holding the verdict.~~
+**Done.** PR #25 merged, the smoke asserted `ce69ac1` against production and
+passed, and the eighth category no longer holds the verdict. E1 is now the only
+thing that does, which was the point of doing the cheap one first.
