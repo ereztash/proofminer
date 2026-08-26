@@ -111,7 +111,7 @@ const LEX = {
     // was scored as external validation and printed on the reveal screen as
     // "someone external vouches for you", over a line the user wrote themselves.
     thirdParty:
-      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b|\b(?:cited|mentioned|referenced|credited)\s+(?:me|us|my|our)\b/iu,
+      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b|\b(?:cited|mentioned|referenced|credited)\s+(?:me|us|my|our)\b/iu,
     outcome: /increas|grew|grow|doubl|tripl|reduc|cut|sav(?:ed|ing)|shorten|improv|optimi[sz]|clos(?:ed)|deliver|launch|built|led|raised|recover|solved|prevent|scal(?:ed)|design(?:ed)?|develop(?:ed)?|implement(?:ed)?|automat(?:ed)?|manage(?:d)?|train(?:ed)?/iu,
     contrast: /before|after|within|from\s+\S+\s+to\s+\S+|instead of|compared to|since|as a result|thanks to|despite|used to/iu,
     credential: /degree|bachelor|master|mba|phd|certifi|licens|accredit|graduat|gpa|thesis|diploma/iu,
@@ -269,6 +269,26 @@ const CAPITALISED_FUNCTION_WORDS = new Set([
   'later', 'first', 'second', 'third', 'finally', 'today', 'yesterday',
   'monday', 'friday', 'january', 'december', 'week', 'month', 'quarter',
   'year', 'years', 'people', 'everyone', 'nobody', 'something', 'nothing',
+  // Sentence-opening hedges and connectives. `All in all, the client wrote…`
+  // produced a proper noun called ***"All"***, and one false name lifted four
+  // dimensions at once — falsifiability 24 to 46, verification 62 to 74,
+  // specificity 24 to 36, narrative 58 to 64 — carrying the claim from `weak`
+  // across `BAND_USABLE` into `usable`. Three meaningless words upgraded the
+  // evidence beneath them, which is the one thing this scorer exists to refuse.
+  // Found by rewriting scored sentences in ways a reader would call identical;
+  // `tests/engine/score-stability.test.js` holds the measurement.
+  'all', 'any', 'few', 'several', 'much', 'such', 'so', 'yet', 'nor', 'or',
+  'if', 'unless', 'until', 'once', 'whether', 'either', 'neither', 'rather',
+  'besides', 'moreover', 'furthermore', 'meanwhile', 'nevertheless',
+  'nonetheless', 'otherwise', 'therefore', 'thus', 'hence', 'accordingly',
+  'consequently', 'ultimately', 'eventually', 'initially', 'originally',
+  'basically', 'essentially', 'effectively', 'generally', 'typically',
+  'usually', 'often', 'sometimes', 'always', 'never', 'again', 'already',
+  'perhaps', 'maybe', 'clearly', 'obviously', 'honestly', 'frankly',
+  'personally', 'importantly', 'notably', 'specifically', 'particularly',
+  'given', 'based', 'according', 'regarding', 'concerning', 'despite',
+  'beyond', 'between', 'among', 'against', 'toward', 'towards', 'upon',
+  'throughout', 'alongside', 'per', 'via', 'plus', 'minus', 'versus',
 ]);
 
 /**
@@ -532,6 +552,33 @@ const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
  * suffixes and stop at a letter boundary (`אמרתי` and `אמרנו` are the author
  * speaking, and earn nothing), and why English refuses a bare `I said`.
  */
+/**
+ * Somebody in a role, at a place with a name, saying something about the work.
+ *
+ * **Why this is gated on a named source.** An earlier version of this fired on
+ * the role word and the verb alone, which meant `The client told me the process
+ * changed their quarter` earned full `thirdParty` — the largest single term in
+ * `verification`, at +40 — for a sentence the author wrote about themselves.
+ * That is the same shape as the bug that used to count a link to your own CV as
+ * somebody vouching for you.
+ *
+ * The line drawn here is **named or anonymous**, not quoted or reported. A
+ * quotation is the strongest form and `QUOTE_AFTER_ATTRIBUTION` already pays
+ * for it; but *"the COO at Alpha Logistics confirmed…"* is checkable — there is
+ * a company to ask — and *"the client told me…"* is not, because there is
+ * nobody in it. The conjunction with `properNouns` is what makes the
+ * difference, and it is applied where the signals are assembled rather than
+ * inside this pattern, because a regex cannot see the rest of the sentence.
+ *
+ * **The comment two blocks down used to claim a stricter rule than this file
+ * keeps**: that attribution earns `thirdParty` only where the document marks
+ * the words. The Hebrew lexicon has never honoured that — `לקוח סיפר` is
+ * reported speech and has always paid — so the claim is corrected rather than
+ * the lexicons quietly diverging from it.
+ */
+const ATTRIBUTED_ROLE =
+  /(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b/iu;
+
 const QUOTE_AFTER_ATTRIBUTION =
   /(?:(?:אמר|כתב|סיפר|ציין|מסר|העיד|השיב|הוסיף|סיכם)(?:ה|ו)?(?![א-ת])|(?<!\bI )\b(?:said|says|wrote|writes|told|added|noted|confirmed|described)\b)[^"״“”]{0,32}["״“][^"״“”]{20,}["״”]/iu;
 
@@ -679,7 +726,13 @@ export function extractSignals(text) {
     // A quotation with a name attached is third-party validation even when the
     // sentence carries no cue word. An unquoted signature is not — see above.
     thirdParty:
-      any('thirdParty') || ATTRIBUTED_QUOTE.test(raw) || QUOTE_AFTER_ATTRIBUTION.test(raw),
+      any('thirdParty') ||
+      ATTRIBUTED_QUOTE.test(raw) ||
+      QUOTE_AFTER_ATTRIBUTION.test(raw) ||
+      // A role and a speech verb are not enough on their own: `the client told
+      // me` is the author's own sentence with nobody in it. With a name in the
+      // sentence there is somebody to ask, which is the whole difference.
+      (ATTRIBUTED_ROLE.test(raw) && properNouns.length > 0),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

@@ -405,6 +405,43 @@ describe('a link is not a witness', () => {
     expect(dim(testimony, 'verification')).toBeGreaterThan(dim(selfClaim, 'verification'));
   });
 
+  it('refuses third-party credit when the source has no name', () => {
+    // The role-and-verb pattern above was generative — ten role words times
+    // five speech verbs — and it swept in the author's own reports. `The client
+    // told me the process changed their quarter` is a sentence somebody wrote
+    // about themselves, and it was earning the largest single term in
+    // `verification`, at +40. The same shape as counting a link to your own CV
+    // as somebody vouching for you.
+    //
+    // The line is **named or anonymous**, not quoted or reported: `the COO at
+    // Alpha Logistics confirmed` is checkable because there is a company to
+    // ask, and `the client told me` is not, because there is nobody in it.
+    //
+    // Found by asking what an evidence lawyer would notice, and it turned up a
+    // second thing on the way: the doc comment in `signals.js` claimed
+    // attribution pays only where the document marks the words, which the
+    // Hebrew lexicon has never honoured — `לקוח סיפר` is reported speech and
+    // has always paid. The comment is corrected there rather than the two
+    // lexicons quietly diverging from it.
+    for (const anonymous of [
+      'The client told me the process I built changed their quarter.',
+      'My manager said the rollout went well.',
+      'A customer wrote that it was useful.',
+      'הלקוח אמר לי שהתהליך שבניתי שינה להם את הרבעון.',
+    ]) {
+      expect(extractSignals(anonymous).thirdParty).toBe(false);
+    }
+
+    // And it still pays where a name makes the claim checkable, in both the
+    // attributed-role form and the quoted form.
+    for (const named of [
+      'The COO at Alpha Logistics confirmed the process was the only one that survived a full year.',
+      'רונית לוי, מנהלת תפעול, כתבה: "התהליך שינה לנו את הרבעון".',
+    ]) {
+      expect(extractSignals(named).thirdParty).toBe(true);
+    }
+  });
+
   it('keeps paying verification when somebody else published it', () => {
     // The fix must not take the credit away from the case that deserves it.
     // A named outlet is not a URL — it is an assertion that an editor put
