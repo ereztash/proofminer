@@ -13,7 +13,14 @@ export const STORAGE_KEY = 'proofminer:state';
 /** Key written by the pre-rewrite MVP; migrated then left untouched. */
 export const LEGACY_STORAGE_KEY = 'proofminer-state';
 
-/** Which track the user is on. Changes vocabulary and the conversion funnel. */
+/**
+ * Which track the user is on.
+ *
+ * **In practice there is one.** Nothing in the interface writes `'job'` — see
+ * the note on `ARCHETYPE_WEIGHT` in `engine/gaps.js`. `oneOf` below still
+ * accepts it so an imported backup that carries it round-trips rather than
+ * being silently rewritten, which is the rule every other field here follows.
+ */
 export const TRACKS = /** @type {const} */ (['job', 'independent']);
 
 /** Proof kinds, each with its own decay half-life (see METHOD.md). */

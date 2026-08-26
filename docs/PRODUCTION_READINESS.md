@@ -32,7 +32,7 @@ exists.**
 
 | # | Category | Weight | Score |
 |---|---|---:|---:|
-| 1 | Problem and ICP precision | 15 | **6** |
+| 1 | Problem and ICP precision | 15 | **8** |
 | 2 | User value and workflow completion | 15 | **9** |
 | 3 | Evidence and measurement validity | 20 | **12** |
 | 4 | Differentiation and substitutability | 10 | **7** |
@@ -41,24 +41,32 @@ exists.**
 | 7 | Reliability and test quality | 10 | **7** |
 | 8 | Deployment and observability | 5 | **2** |
 | 9 | Architecture and maintainability | 5 | **4** |
-| | **Total** | **100** | **65** |
+| | **Total** | **100** | **67** |
 
-### 1 · Problem and ICP precision — 6/15
+### 1 · Problem and ICP precision — 8/15
 
 **Evidence.** Four falsifiable theses are written and **none is selected**
 (`docs/PRODUCT_THESIS.md`). The anti-anchor derivation, written before the house
 vocabulary was allowed back in, produced a divergence from the shipped framing
 that is unresolved: the trigger looks **episodic and dated**, not chronic, and
-those predict different products after the first screen. The ICP still carries
-two populations, and `docs/TELOS.md` states that `track: 'job'` has *no
-representation at all in anything observed so far*.
+those predict different products after the first screen.
+
+**And one thing that was unresolved is now settled, by measurement rather than
+by decision.** `README.md`, `docs/UX.md` and `docs/TELOS.md` described an ICP of
+two populations, and `docs/UX.md` tabulated four differences between the tracks.
+**One exists, and it is unreachable:** the only write to `profile.track` in the
+codebase is the literal `'independent'`, onboarding never asks, and neither
+language bundle holds a job-track string. The ICP cut was carried as an open
+owner decision across two documents; there was never anything shipped to cut.
+Four documents are corrected and `tests/engine/icp-reach.test.js` pins it.
 
 **Risk.** Building for a chronic reading when the pain is episodic produces a
 standing instrument for a visit that happens once — and this repository holds
 zero observations of a repeat visit.
 
-**Raises it.** E1 separates T1 from T3 with one preregistered coding rule. The
-ICP cut is a decision the owner has not taken.
+**Raises it.** E1 separates T1 from T3 with one preregistered coding rule —
+which is now the only ICP question left, the other having turned out to be a
+description error rather than a choice.
 
 ### 2 · User value and workflow completion — 9/15
 
@@ -221,7 +229,7 @@ than presented as a preregistered measurement.
 
 | # | Category | Weight | `1389f18` | `f92ddeb` | Δ | What earned it |
 |---|---|---:|---:|---:|---:|---|
-| 1 | Problem and ICP precision | 15 | 5 | **6** | +1 | A decision-relevant divergence made explicit and testable: the trigger looks episodic and dated, not chronic. Four theses, **none selected** — writing them down earns nothing on its own |
+| 1 | Problem and ICP precision | 15 | 5 | **8** | +3 | A decision-relevant divergence made explicit and testable (episodic, not chronic), and **a documented ICP that does not exist removed**: three of four track differences were never built and the fourth is unreachable. Four theses, **none selected** — writing them down earns nothing on its own |
 | 2 | User value and workflow completion | 15 | 7 | **9** | +2 | The workflow verified in a real browser at 1280/390/320 and 4/4 smoke on this build. Value still unobserved |
 | 3 | Evidence and measurement validity | 20 | 8 | **12** | +4 | A reproducible externally-grounded metric with a Wilson interval and a fabrication count; a stability property nobody had checked; **two demonstrated defects removed** |
 | 4 | Differentiation and substitutability | 10 | 6 | **7** | +1 | Dated external evidence that the failure mode the refusals defend against is real and consequential |
@@ -230,7 +238,7 @@ than presented as a preregistered measurement.
 | 7 | Reliability and test quality | 10 | 6 | **7** | +1 | A suite demonstrably blind to a twelve-point detector change is now partly repaired by an external corpus and a property test. Partly |
 | 8 | Deployment and observability | 5 | 1 | **2** | +1 | The build can name its commit and CI enforces it. **Production still cannot be verified**, so the machinery earns one point and not two |
 | 9 | Architecture and maintainability | 5 | 4 | **4** | 0 | No architectural change. `scripts/` is additive and claims nothing |
-| | **Total** | **100** | **51** | **65** | **+14** | |
+| | **Total** | **100** | **51** | **67** | **+16** | |
 
 **Where the movement actually came from.** Eight of the fourteen points are
 categories 3 and 5 — measurement validity and accessibility — and every point in

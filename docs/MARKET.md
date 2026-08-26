@@ -132,7 +132,18 @@ memory. Not conversion, not capture, not features.
 
 **But that directive is not yet a licence to build** — see the plan below.
 
-## The ICP cut
+## The ICP cut, which turned out not to be a cut
+
+**Corrected 26 August 2026.** This section was written as a recommendation to
+drop half a product. There is no half to drop: nothing in the interface writes
+`track: 'job'`, onboarding never asks, and of the four differences `docs/UX.md`
+tabulated between the tracks, one exists and is unreachable. Neither language
+bundle holds a job-track string. The three arguments below still stand as
+arguments — they are why the second population should not be *added* — but the
+decision they were pointing at is a documentation correction and not an
+amputation, and it has been made. `tests/engine/icp-reach.test.js` pins it.
+
+What the section originally said, unchanged:
 
 `TELOS.md` names two populations: people going independent, and people trying to
 get hired. Three independent results say the second should go.
@@ -171,7 +182,7 @@ Nothing here changes a line of application code.
 | # | Change | Where | Cost |
 |---|---|---|---|
 | 1 | Record the liability finding and the vouching frame | `TELOS.md` | An hour |
-| 2 | Put the ICP cut to the owner as a decision, with its three supports | `TELOS.md`, beside the existing open question about which gap this is | An hour |
+| 2 | ~~Put the ICP cut to the owner as a decision~~ — **done, and it was not a decision.** The second population was never built; the documents describing it are corrected | `TELOS.md`, `README.md`, `docs/UX.md` | Done |
 | 3 | Add *"what made you reach out?"* — free text, unprompted — to the intake of every future conversation | Practice, not repo | Zero |
 | 4 | Add the trigger-event question to the day-0 script: *what happens in the next thirty days that makes this matter?* | Trial protocol in `TELOS.md` | Zero |
 | 5 | Write the pre-registered coding rule, with a forced third bucket: definition-blocked / visibility-blocked / **neither** | Trial protocol in `TELOS.md` | An hour |

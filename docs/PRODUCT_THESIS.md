@@ -128,7 +128,8 @@ Each is falsifiable, and each implies different code. They are not averaged.
 
 ## T1 — The standing instrument *(preserves the current broad ICP)*
 
-**User** independents and jobseekers who feel under-recognised. **Buyer** the
+**User** independents and jobseekers who feel under-recognised. *(Corrected
+below: the second half was never implemented.)* **Buyer** the
 same person; free. **Trigger** chronic discomfort. **Transformation** what they
 already hold becomes measured, ranked and visible, one move at a time.
 **Substitute** posting more, or nothing. **Observable outcome** a grounded
@@ -145,6 +146,13 @@ artifact published within 14 days, unprompted.
 - **Cheapest test** the five-person trial already specified in `docs/TELOS.md`.
 - **Failure mode** a beautiful instrument for a visit that happens once. Nobody
   is harmed; the effort is wasted.
+- **Corrected 26 August 2026, by measurement rather than by a fourth argument.**
+  T1's ICP is not two under-served populations — **the second one is not
+  implemented.** Nothing in the codebase writes `track: 'job'`, onboarding never
+  asks, three of the four track differences `docs/UX.md` tabulated were never
+  built and the fourth is unreachable. The thesis is left as written, because a
+  thesis quietly edited once the evidence arrives cannot be shown to have been
+  wrong about anything.
 
 ## T2 — The intake instrument for a paid engagement *(commercial beachhead)*
 

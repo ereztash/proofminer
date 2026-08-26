@@ -11,6 +11,14 @@ with the same broken tools:
    900 loses, and that being *known for something* is now the shortest path to
    an interview.
 
+**The second population was never built for, and that was discovered rather
+than decided.** Nothing in the interface writes `track: 'job'`; onboarding never
+asks; of the four differences `docs/UX.md` tabulated between the two tracks, one
+exists and is unreachable. The audience below is therefore the first group and
+has always been. `tests/engine/icp-reach.test.js` holds the fact so it cannot
+drift back into prose, and the section on the ICP cut in `docs/MARKET.md` is
+corrected accordingly: there is nothing shipped to cut.
+
 Both are being sold the same thing: content tools. Post more. Post better.
 Use a hook library. The market's implicit theory is that **authority is a
 volume problem**.
@@ -749,6 +757,9 @@ instrument is built to falsify, and that is where its strength is.
 
 **Calibration (I2) and compounding (I1) are excluded.** Both assume repeat
 visits over time and there is not one observation of that anywhere. They are
-built, they work, and they are not part of what "done" means. The same goes for
-`track: 'job'` — half the stated ICP, no representation at all in anything
-observed so far.
+built, they work, and they are not part of what "done" means.
+
+`track: 'job'` is a different case and is no longer described as half an ICP.
+It is not out of scope for the definition of done — it is **not in the product**:
+unreachable from the interface, one weight table, no copy in either language.
+See the note above and `tests/engine/icp-reach.test.js`.
