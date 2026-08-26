@@ -1,7 +1,7 @@
 # PRODUCTION_READINESS
 
-Assessed at commit `dac7465`, branch `claude/product-feedback-jhbpcq`, PR #25,
-26 August 2026. Two commits ahead of `origin/main` (`b3e6c01`), no divergence,
+Assessed at commit `f92ddeb`, branch `claude/product-feedback-jhbpcq`, PR #25,
+26 August 2026. Five commits ahead of `origin/main` (`b3e6c01`), no divergence,
 clean worktree.
 
 ## Verdict
@@ -202,6 +202,47 @@ core, adapters. Published constants are held to the code by
 **Risk.** `signals.js` is long and lexicon-driven, and every Hebrew improvement
 makes it longer; the action table in `app.js` is a large switch. Neither has cost
 anything yet.
+
+---
+
+## Before and after
+
+**The "before" column is a reconstruction, and that is a real weakness of this
+table.** No baseline was scored under these nine categories before the work
+started; the scorecard was computed at the end. Each "before" is a retrospective
+reading of what the evidence at `1389f18` would have supported, applying the same
+rule — a score may rise only from observed behaviour, reproducible external
+evidence, verification against an explicit risk, exact production verification,
+or the removal of a demonstrated defect.
+
+A retrospective baseline is the weaker instrument for the ordinary reason: the
+person setting it already knows what changed. It is published this way rather
+than presented as a preregistered measurement.
+
+| # | Category | Weight | `1389f18` | `f92ddeb` | Δ | What earned it |
+|---|---|---:|---:|---:|---:|---|
+| 1 | Problem and ICP precision | 15 | 5 | **6** | +1 | A decision-relevant divergence made explicit and testable: the trigger looks episodic and dated, not chronic. Four theses, **none selected** — writing them down earns nothing on its own |
+| 2 | User value and workflow completion | 15 | 7 | **9** | +2 | The workflow verified in a real browser at 1280/390/320 and 4/4 smoke on this build. Value still unobserved |
+| 3 | Evidence and measurement validity | 20 | 8 | **12** | +4 | A reproducible externally-grounded metric with a Wilson interval and a fabrication count; a stability property nobody had checked; **two demonstrated defects removed** |
+| 4 | Differentiation and substitutability | 10 | 6 | **7** | +1 | Dated external evidence that the failure mode the refusals defend against is real and consequential |
+| 5 | UX and accessibility | 10 | 5 | **9** | +4 | A missing `main` landmark on the two first screens, and eight WCAG AA contrast failures, found by measurement and fixed; re-measured at zero |
+| 6 | Privacy and security | 10 | 9 | **9** | 0 | Verified unchanged. Nothing was done that the rule lets a score rise for |
+| 7 | Reliability and test quality | 10 | 6 | **7** | +1 | A suite demonstrably blind to a twelve-point detector change is now partly repaired by an external corpus and a property test. Partly |
+| 8 | Deployment and observability | 5 | 1 | **2** | +1 | The build can name its commit and CI enforces it. **Production still cannot be verified**, so the machinery earns one point and not two |
+| 9 | Architecture and maintainability | 5 | 4 | **4** | 0 | No architectural change. `scripts/` is additive and claims nothing |
+| | **Total** | **100** | **51** | **65** | **+14** | |
+
+**Where the movement actually came from.** Eight of the fourteen points are
+categories 3 and 5 — measurement validity and accessibility — and every point in
+both came from **removing a defect that measurement found**, not from adding a
+capability. The two categories that decide whether this product is worth
+building, 1 and 2, moved three points between them, and both are capped by the
+same absent thing.
+
+**What did not move, and would not have.** Categories 6 and 9 are unchanged
+because nothing happened that the scoring rule permits a rise for. Verifying that
+a property still holds is not the same as improving it, and the rule is worth
+more than the point.
 
 ---
 
