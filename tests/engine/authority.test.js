@@ -423,6 +423,14 @@ describe('gap engine', () => {
   });
 
   it('weights archetypes differently by track', () => {
+    // **This proves the table and nothing about the product.** It builds the
+    // state by hand, and no user can reach `track: 'job'` — nothing in the
+    // interface writes it and onboarding never asks. Kept, because an imported
+    // backup can still carry the value and the weights have to behave when it
+    // does; annotated, because for a long time this passing test was part of
+    // why three documents described a two-population product that was never
+    // built. `tests/engine/icp-reach.test.js` measures the reachability.
+
     const job = archetypeCoverage(stateWith({ profile: { ...stateWith().profile, track: 'job' } }), NOW);
     const independent = archetypeCoverage(stateWith(), NOW);
     const weightOf = (list, key) => list.find((c) => c.archetype === key).weight;

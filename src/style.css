@@ -11,7 +11,18 @@
 :root {
   --ink: #14202a;
   --ink-soft: #59646c;
-  --ink-faint: #838d93;
+  /* Darkened from #838d93 on 26 Aug 2026. Measured in Chromium at 1280px:
+     the old value gave 3.33:1 against `--surface` on `.proof-card__eyebrow`,
+     `.score__band` and the definition terms, and 3.03:1 on
+     `.expected__caveat` — all of them small text, all of them below the 4.5:1
+     that WCAG AA asks for, all of them on First Light, which is the screen
+     every first-time user sees. Twenty-five uses, one token.
+
+     Taken one step further than the first attempt: #6a747a cleared the bar on
+     `--surface` at 4.70 and still read 4.28 inside `.expected__cell`, whose
+     background is tinted. The token is set for the worst background it sits
+     on, not the commonest. */
+  --ink-faint: #646e74;
   --paper: #f5f2eb;
   --surface: #fffdf8;
   --line: #ddd6c9;
@@ -48,7 +59,9 @@
   :root {
     --ink: #eef1f2;
     --ink-soft: #a8b1b6;
-    --ink-faint: #7d878d;
+    /* Lightened from #7d878d for the same reason: 4.44:1 in dark mode, which
+     misses 4.5:1 by a margin too small to see and large enough to fail. */
+  --ink-faint: #848e94;
     --paper: #12171a;
     --surface: #1a2126;
     --line: #2d373d;
@@ -726,6 +739,21 @@ p {
   color: var(--ink-soft);
   margin-block-start: 0.75rem;
   font-size: 1.05rem;
+}
+
+/*
+ * What the number on this screen is, stated where the number is. Quieter than
+ * the body copy above it and louder than a footnote: somebody who skims past
+ * it has still had it in front of them at the moment the score appeared.
+ */
+.cold__note {
+  color: var(--ink-soft);
+  margin-block-start: 0.6rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 0.7rem;
+  opacity: 0.9;
 }
 
 .cold__step {

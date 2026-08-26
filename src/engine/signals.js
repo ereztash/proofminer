@@ -111,7 +111,7 @@ const LEX = {
     // was scored as external validation and printed on the reveal screen as
     // "someone external vouches for you", over a line the user wrote themselves.
     thirdParty:
-      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b|\b(?:cited|mentioned|referenced|credited)\s+(?:me|us|my|our)\b/iu,
+      /featured in|profiled in|quoted in|(?:was|were) quoted|cited in|interviewed by|was interviewed|wrote about (?:me|my)|covered by|recommended by|endorsed by|nominated for|testimonial|spoke at|speaker at|keynote|panell?ist|podcast|press coverage|award(?:ed)? to me|received the [\w\s]*award|\b(?:reference|referral)s?\s+from\b|\breferred (?:me|us)\b|\bvouched for\b|\brepeat (?:client|customer)s?\b|\b(?:cited|mentioned|referenced|credited)\s+(?:me|us|my|our)\b/iu,
     outcome: /increas|grew|grow|doubl|tripl|reduc|cut|sav(?:ed|ing)|shorten|improv|optimi[sz]|clos(?:ed)|deliver|launch|built|led|raised|recover|solved|prevent|scal(?:ed)|design(?:ed)?|develop(?:ed)?|implement(?:ed)?|automat(?:ed)?|manage(?:d)?|train(?:ed)?/iu,
     contrast: /before|after|within|from\s+\S+\s+to\s+\S+|instead of|compared to|since|as a result|thanks to|despite|used to/iu,
     credential: /degree|bachelor|master|mba|phd|certifi|licens|accredit|graduat|gpa|thesis|diploma/iu,
@@ -269,6 +269,26 @@ const CAPITALISED_FUNCTION_WORDS = new Set([
   'later', 'first', 'second', 'third', 'finally', 'today', 'yesterday',
   'monday', 'friday', 'january', 'december', 'week', 'month', 'quarter',
   'year', 'years', 'people', 'everyone', 'nobody', 'something', 'nothing',
+  // Sentence-opening hedges and connectives. `All in all, the client wrote…`
+  // produced a proper noun called ***"All"***, and one false name lifted four
+  // dimensions at once — falsifiability 24 to 46, verification 62 to 74,
+  // specificity 24 to 36, narrative 58 to 64 — carrying the claim from `weak`
+  // across `BAND_USABLE` into `usable`. Three meaningless words upgraded the
+  // evidence beneath them, which is the one thing this scorer exists to refuse.
+  // Found by rewriting scored sentences in ways a reader would call identical;
+  // `tests/engine/score-stability.test.js` holds the measurement.
+  'all', 'any', 'few', 'several', 'much', 'such', 'so', 'yet', 'nor', 'or',
+  'if', 'unless', 'until', 'once', 'whether', 'either', 'neither', 'rather',
+  'besides', 'moreover', 'furthermore', 'meanwhile', 'nevertheless',
+  'nonetheless', 'otherwise', 'therefore', 'thus', 'hence', 'accordingly',
+  'consequently', 'ultimately', 'eventually', 'initially', 'originally',
+  'basically', 'essentially', 'effectively', 'generally', 'typically',
+  'usually', 'often', 'sometimes', 'always', 'never', 'again', 'already',
+  'perhaps', 'maybe', 'clearly', 'obviously', 'honestly', 'frankly',
+  'personally', 'importantly', 'notably', 'specifically', 'particularly',
+  'given', 'based', 'according', 'regarding', 'concerning', 'despite',
+  'beyond', 'between', 'among', 'against', 'toward', 'towards', 'upon',
+  'throughout', 'alongside', 'per', 'via', 'plus', 'minus', 'versus',
 ]);
 
 /**
@@ -310,6 +330,14 @@ const HE_COMMON_NOUNS = new Set([
   'ארגונים', 'מנהל', 'מנהלת', 'מנהלים', 'עובד', 'עובדת', 'עובדים', 'ספק',
   'ספקים', 'מפעל', 'משרד', 'מחלקה', 'אגף', 'הנהלה', 'מעסיק', 'שותף',
   'פרויקט', 'תהליך', 'מערכת', 'עסק', 'מיזם', 'גורם', 'גוף',
+  // Things a person publishes or runs, which a trigger word will otherwise
+  // hand back as the name of a company: `פרסמתי ברשת מאמר` returned an
+  // organisation called ***"מאמר"***.
+  'מאמר', 'מאמרים', 'כתבה', 'כתבות', 'פוסט', 'פוסטים', 'ספר', 'ספרים',
+  'סרט', 'סרטון', 'סרטים', 'תוכנית', 'תוכניות', 'קורס', 'קורסים',
+  'הרצאה', 'הרצאות', 'סדנה', 'סדנאות', 'אתר', 'אתרים', 'בלוג', 'פודקאסט',
+  'ראיון', 'ראיונות', 'מחקר', 'מחקרים', 'דוח', 'דוחות', 'מצגת', 'קמפיין',
+  'אירוע', 'אירועים', 'כנס', 'כנסים', 'פרק', 'פרקים', 'טור', 'עמוד',
 ]);
 
 /**
@@ -333,9 +361,116 @@ const HE_DEPARTMENTS = new Set([
  * losing the half that makes the name a name. And neither token may open with
  * the definite article — without that guard `בחברת הביטוח` ("the insurance
  * company") came back to the user as a named organisation.
+ *
+ * **Two gaps here were measured, not guessed.** Against 427 organisations that
+ * Hebrew Wikipedia itself marks as organisations — its own links, its own
+ * entity infoboxes, none of it written by anyone on this project — this
+ * detector found 34%. Splitting the misses by what each would need:
+ *
+ * - **9%** were trigger words already on this list, written with a `ב` stuck
+ *   to the front: `בבית הספר`, `בבנק`. The lookbehind rejected them. A `ב` on
+ *   an arbitrary word is genuinely ambiguous — it is also the first letter of
+ *   `בניתי` — but a `ב` on a word from *this closed list* is not: `בבית הספר`
+ *   cannot be anything else. Those two cases were filed together as "needs
+ *   Hebrew morphology", and that was wrong.
+ * - **18%** were type words simply absent: `ערוץ`, `בית החולים`, `מכללה` in
+ *   its ה form, `מכון`, `סמינר`, `לשכת`.
+ *
+ * The remaining misses are a bare `ב` straight onto the name — `בניקלודיאון` —
+ * which this still does not read, and `docs/METHOD.md` says so.
  */
-const HE_ORG_RE =
-  /(?<![א-ת])(?:חברת|בחברת|מחברת|לחברת|ארגון|בארגון|עמותת|בעמותת|קבוצת|בקבוצת|אוניברסיטת|באוניברסיטת|מכללת|במכללת|בית הספר|סטארטאפ|בסטארטאפ|בנק|הבנק|רשת|ברשת|קרן|בקרן|משרד|במשרד|עיתון|בעיתון|מגזין|במגזין|קונצרן|תאגיד)(?![א-ת])\s+((?![הו])[א-ת\w'׳"״-]{2,}(?:\s+(?![הו])[א-ת\w'׳"״-]{2,})?)/gu;
+const HE_ORG_TYPE_TRIGGERS = [
+  // Construct-state markers. The word is *not* part of the name — nobody is
+  // called "חברת" — so only what follows is returned, and it may not open with
+  // the definite article: `בחברת הביטוח` is "the insurance company", not a
+  // company called `הביטוח`.
+  'חברת', 'בחברת', 'מחברת', 'לחברת',
+  'ארגון', 'בארגון', 'מארגון', 'לארגון',
+  'עמותת', 'בעמותת', 'מעמותת',
+  'קבוצת', 'בקבוצת', 'מקבוצת',
+  'אוניברסיטת', 'באוניברסיטת', 'מאוניברסיטת', 'לאוניברסיטת',
+  'מכללת', 'במכללת', 'ממכללת',
+  'סטארטאפ', 'בסטארטאפ', 'קונצרן', 'בקונצרן', 'תאגיד', 'בתאגיד',
+  'לשכת', 'בלשכת', 'אגודת', 'באגודת', 'מועצת', 'במועצת',
+  'סוכנות', 'בסוכנות', 'הוצאת', 'בהוצאת',
+  'התאחדות', 'בהתאחדות', 'איגוד', 'באיגוד',
+];
+
+const HE_ORG_NAME_TRIGGERS = [
+  // Type words that are *part* of the name: `בנק הפועלים`, `ערוץ הראשון`,
+  // `סמינר הקיבוצים`, `בית החולים הכללי`. Returning only what follows both
+  // loses half the name and hits the definite-article guard, because Hebrew
+  // organisation names carry ה constantly. These return trigger + name, so
+  // the ה sits inside the name where it belongs rather than opening it.
+  'בית הספר', 'בית החולים', 'בנק', 'רשת', 'קרן', 'משרד', 'עיתון', 'מגזין',
+  'ערוץ', 'מכון', 'מכללה', 'סמינר', 'שידורי', 'תיאטרון', 'מוזיאון', 'סטודיו',
+];
+
+// A `ב` on an arbitrary word is ambiguous — it is also the first letter of
+// `בניתי`. A `ב` on a word from a closed list is not: `בבית הספר` cannot be
+// anything else. Those two cases were filed together as "needs Hebrew
+// morphology" and that was wrong; only the first one does.
+const HE_NAME_TRIGGER_ALTS = HE_ORG_NAME_TRIGGERS.flatMap((w) => [
+  w, `ב${w}`, `מ${w}`, `ל${w}`, `ה${w}`,
+]);
+
+const HE_ORG_TRIGGERS = [...HE_ORG_TYPE_TRIGGERS, ...HE_NAME_TRIGGER_ALTS];
+
+const HE_NAME_TOKEN = `[א-ת\\w'׳"״-]{2,}`;
+
+/** `בחברת אלפא לוגיסטיקה` -> `אלפא לוגיסטיקה`. Never opens with ה or ו. */
+const HE_ORG_TYPE_RE = new RegExp(
+  `(?<![א-ת])(?:${HE_ORG_TYPE_TRIGGERS.join('|')})(?![א-ת])` +
+    `\\s+((?![הו])${HE_NAME_TOKEN}(?:\\s+(?![הו])${HE_NAME_TOKEN})?)`,
+  'gu',
+);
+
+/** `בערוץ הראשון` -> `ערוץ הראשון`. The trigger is kept, minus its prefix. */
+const HE_ORG_NAME_RE = new RegExp(
+  `(?<![א-ת])(?:[במלה])?(${HE_ORG_NAME_TRIGGERS.join('|')})(?![א-ת])` +
+    `\\s+(${HE_NAME_TOKEN}(?:\\s+${HE_NAME_TOKEN})?)`,
+  'gu',
+);
+
+/**
+ * Words that end a captured name without being part of it.
+ *
+ * `באוניברסיטת בוסטון את התנועה` came back as an organisation called
+ * ***"בוסטון את"***. The second token is there to keep two-word names whole;
+ * it must not swallow the particle that follows a one-word name.
+ */
+const HE_NAME_TAIL_STOP = new Set([
+  // Temporal and framing words that sit right after a one-word name:
+  // `בערוץ 10 בשנת 2011` came back as ***"10 בשנת"***.
+  'בשנת', 'בשנים', 'בשנה', 'במהלך', 'במסגרת', 'בתחום', 'בתפקיד', 'בזמן',
+  'לתקופה', 'למשך', 'החל', 'בתור', 'כאחד', 'כחלק',
+  'את', 'של', 'עם', 'על', 'אל', 'או', 'גם', 'כי', 'אך', 'אם', 'לא', 'כל',
+  'זה', 'זו', 'הוא', 'היא', 'הם', 'הן', 'היה', 'היו', 'אשר', 'כדי', 'שבו',
+  'שבה', 'בו', 'בה', 'בהם', 'שם', 'אחרי', 'לפני', 'בין', 'מול', 'לפי',
+  'כאשר', 'בעת', 'תוך', 'לאחר', 'עד', 'מאז', 'יחד', 'כמו', 'רק', 'עוד',
+  'אז', 'שם', 'כך', 'לכן', 'אבל', 'ואת', 'ועל', 'ובו',
+]);
+
+/**
+ * Drop a trailing token the two-token capture picked up that is not part of
+ * the name — a particle, a date frame, or the next trigger word along
+ * (`בבית הספר לרפואה באוניברסיטת הרווארד` returned *"לרפואה באוניברסיטת"*).
+ */
+const HE_TRIGGER_SET = new Set(HE_ORG_TRIGGERS);
+function isTail(word) {
+  return (
+    HE_NAME_TAIL_STOP.has(word) ||
+    HE_TRIGGER_SET.has(word) ||
+    HE_COMMON_NOUNS.has(word) ||
+    // `עבדתי בבנק הפועלים חמש שנים` returned a bank called *"בנק הפועלים חמש"*.
+    Object.prototype.hasOwnProperty.call(ALL_NUMBER_WORDS, word)
+  );
+}
+function trimNameTail(name) {
+  const parts = name.trim().split(/\s+/u);
+  while (parts.length > 1 && isTail(parts[parts.length - 1])) parts.pop();
+  return parts.join(' ');
+}
 
 /**
  * `אצל X`, `עבור X`, `מול X` — a workplace named without a trigger word.
@@ -417,6 +552,33 @@ const ATTRIBUTED_QUOTE = /["״”][^"״”]{20,}["״”]\s*[-–—,]\s*\S/u;
  * suffixes and stop at a letter boundary (`אמרתי` and `אמרנו` are the author
  * speaking, and earn nothing), and why English refuses a bare `I said`.
  */
+/**
+ * Somebody in a role, at a place with a name, saying something about the work.
+ *
+ * **Why this is gated on a named source.** An earlier version of this fired on
+ * the role word and the verb alone, which meant `The client told me the process
+ * changed their quarter` earned full `thirdParty` — the largest single term in
+ * `verification`, at +40 — for a sentence the author wrote about themselves.
+ * That is the same shape as the bug that used to count a link to your own CV as
+ * somebody vouching for you.
+ *
+ * The line drawn here is **named or anonymous**, not quoted or reported. A
+ * quotation is the strongest form and `QUOTE_AFTER_ATTRIBUTION` already pays
+ * for it; but *"the COO at Alpha Logistics confirmed…"* is checkable — there is
+ * a company to ask — and *"the client told me…"* is not, because there is
+ * nobody in it. The conjunction with `properNouns` is what makes the
+ * difference, and it is applied where the signals are assembled rather than
+ * inside this pattern, because a regex cannot see the rest of the sentence.
+ *
+ * **The comment two blocks down used to claim a stricter rule than this file
+ * keeps**: that attribution earns `thirdParty` only where the document marks
+ * the words. The Hebrew lexicon has never honoured that — `לקוח סיפר` is
+ * reported speech and has always paid — so the claim is corrected rather than
+ * the lexicons quietly diverging from it.
+ */
+const ATTRIBUTED_ROLE =
+  /(?:client|customer|CEO|CTO|COO|CFO|VP|head of \w+|director|founder|owner|manager)[^.!?]{0,80}?\b(?:said|told|wrote|confirmed|reported)\b/iu;
+
 const QUOTE_AFTER_ATTRIBUTION =
   /(?:(?:אמר|כתב|סיפר|ציין|מסר|העיד|השיב|הוסיף|סיכם)(?:ה|ו)?(?![א-ת])|(?<!\bI )\b(?:said|says|wrote|writes|told|added|noted|confirmed|described)\b)[^"״“”]{0,32}["״“][^"״“”]{20,}["״”]/iu;
 
@@ -500,10 +662,32 @@ export function extractSignals(text) {
           !CAPITALISED_FUNCTION_WORDS.has(name.toLowerCase()) &&
           !GENERIC_ACRONYMS.has(name.toUpperCase()),
       ),
-    ...[...raw.matchAll(HE_ORG_RE)].map((m) => m[1]),
+    ...[...raw.matchAll(HE_ORG_TYPE_RE)]
+      .map((m) => trimNameTail(m[1]))
+      .filter((name) => {
+        const first = name.split(/\s+/u)[0];
+        return !HE_NAME_TAIL_STOP.has(first) && !HE_COMMON_NOUNS.has(first);
+      }),
+    ...[...raw.matchAll(HE_ORG_NAME_RE)]
+      // The name half still may not be a bare common noun: `בערוץ המים` is
+      // not a broadcaster. The definite article is stripped before the check
+      // because `הביטוח` and `ביטוח` are the same word to this question, and
+      // the trigger is excluded from it because `בית הספר` is itself two
+      // words — checking the second token of the whole span rejected every
+      // school in the corpus.
+      .filter((m) => {
+        const first = m[2].trim().split(/\s+/u)[0];
+        // `הסעתי את הילדים לבית הספר כל בוקר` returned a school called
+        // ***"בית הספר כל בוקר"***. A name does not open with a function
+        // word, and trimming only the tail could not see it.
+        if (HE_NAME_TAIL_STOP.has(first)) return false;
+        return !HE_COMMON_NOUNS.has(first.replace(/^ה/u, ''));
+      })
+      .map((m) => trimNameTail(`${m[1]} ${m[2]}`))
+      .filter((name) => name.split(/\s+/u).length > (name.startsWith('בית ') ? 2 : 1)),
     ...[...raw.matchAll(HE_ORG_PREP_RE)]
       .filter((m) => !HE_COMMON_NOUNS.has(m[1]))
-      .map((m) => `${m[1]} ${m[2]}`),
+      .map((m) => trimNameTail(`${m[1]} ${m[2]}`)),
     ...[...raw.matchAll(HE_KNOWN_RE)].map((m) => m[1]),
     // A department word is not the start of somebody's name.
     ...HE_PERSON_RES.flatMap((re) =>
@@ -542,7 +726,13 @@ export function extractSignals(text) {
     // A quotation with a name attached is third-party validation even when the
     // sentence carries no cue word. An unquoted signature is not — see above.
     thirdParty:
-      any('thirdParty') || ATTRIBUTED_QUOTE.test(raw) || QUOTE_AFTER_ATTRIBUTION.test(raw),
+      any('thirdParty') ||
+      ATTRIBUTED_QUOTE.test(raw) ||
+      QUOTE_AFTER_ATTRIBUTION.test(raw) ||
+      // A role and a speech verb are not enough on their own: `the client told
+      // me` is the author's own sentence with nobody in it. With a name in the
+      // sentence there is somebody to ask, which is the whole difference.
+      (ATTRIBUTED_ROLE.test(raw) && properNouns.length > 0),
     outcome: any('outcome'),
     contrast: any('contrast') || hasRangeShift(raw),
     credential: any('credential'),

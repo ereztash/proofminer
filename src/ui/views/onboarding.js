@@ -292,6 +292,14 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
         ${demo ? t('firstLight.demoTitle', proofs.length) : t('firstLight.title', proofs.length)}
       </h1>
       <p class="cold__body">${demo ? t('firstLight.demoSubtitle') : t('firstLight.subtitle')}</p>
+      <!--
+        This screen is the first place a number and an allowed action level are
+        put in front of somebody, and a measurement shown without saying what it
+        measured reads as a ruling on whether the thing is true. Screen 0 does
+        say the product takes your input as given, but it says it before there
+        is any result to mistake for a verdict.
+      -->
+      <p class="cold__note" role="note">${t('firstLight.scoreScope')}</p>
 
       <h2 class="cold__step">
         ${thin ? t('firstLight.thinTitle') : t('firstLight.threeTitle')}

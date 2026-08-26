@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "check": "npm run lint && npm run test && npm run build",
-    "smoke:prod": "npx -p @playwright/test@1.54.2 playwright test tests/e2e/prod-smoke.spec.mjs --reporter=line"
+    "smoke:prod": "npx -p @playwright/test@1.54.2 playwright test tests/e2e/prod-smoke.spec.mjs --reporter=line",
+    "corpus:hebrew-orgs": "node scripts/hebrew-org-corpus.mjs",
+    "measure:hebrew-orgs": "node scripts/hebrew-org-corpus.mjs --verify && node scripts/measure-hebrew-orgs.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

@@ -17,6 +17,29 @@ import { realProofs } from './mine.js';
 import { extractSignals } from './signals.js';
 
 /**
+ * How much each archetype matters, by track.
+ *
+ * **`job` is unreachable from the interface, and has been from the start.**
+ * The only write to `profile.track` in this codebase is the literal
+ * `'independent'` in `applyColdProfile`; the schema default is `'independent'`;
+ * onboarding never asks. A state carrying `track: 'job'` can only arrive by
+ * hand-editing an export and importing it, which `oneOf` in `schema.js` will
+ * accept.
+ *
+ * That is worth saying next to the table because three documents described a
+ * two-population product for a long time — `README.md`, `docs/UX.md` and
+ * `docs/TELOS.md` — and `docs/UX.md` listed four things the track changes, of
+ * which this weight table is the only one that exists. There is no
+ * track-dependent conversion vocabulary, no track-dependent surface, and the
+ * urgency register reads the same field for both. Neither i18n bundle holds a
+ * single job-track string.
+ *
+ * `tests/engine/authority.test.js` exercises this table by constructing the
+ * state directly, so it passes and proves nothing about what a user can reach.
+ * `tests/engine/icp-reach.test.js` pins the reachability itself.
+ *
+ * Left in place rather than deleted: it is inert, an imported backup can still
+ * carry it, and removing it is the ICP decision, which is the owner's.
  * How much each archetype matters, by track. A job seeker and an independent
  * consultant need genuinely different evidence: peer recognition converts
  * clients, demonstrated method converts hiring managers.

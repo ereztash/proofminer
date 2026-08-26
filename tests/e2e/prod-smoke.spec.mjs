@@ -1,14 +1,44 @@
-/* global process */
+/* global process, console */
 
 import { expect, test } from '@playwright/test';
 
 const BASE_URL = process.env.PROOFMINER_BASE_URL;
+
+/**
+ * Which commit this run expects to be looking at.
+ *
+ * The smoke reads a public alias, not the immutable per-deployment URL, so
+ * "the deployed app passed" was never the same claim as "this commit passed":
+ * the alias can still be pointing at the previous deployment, or at a newer
+ * one. Set by the workflow on a deployment_status event, left unset for a
+ * manual run against an arbitrary URL.
+ */
+const EXPECT_COMMIT = process.env.PROOFMINER_EXPECT_COMMIT?.trim();
+
+// Read through the DOM rather than a locator: a <meta> in <head> is never
+// visible, and a visibility-aware locator waits for it forever.
+const deployedCommit = (page) =>
+  page.evaluate(
+    () => globalThis.document.querySelector('meta[name="proofminer-commit"]')?.content ?? null,
+  );
 
 const chooseSituation = async (page, name) => {
   await page.locator('label.choice__opt', { hasText: name }).click();
 };
 
 test.describe('production smoke', () => {
+  test('the deployment names the commit it was built from', async ({ page }) => {
+    const commit = await deployedCommit(page);
+    console.log(`deployed commit: ${commit ?? '(absent)'}`);
+    expect(commit, 'built page carries no proofminer-commit meta').toBeTruthy();
+    expect(commit, 'build identity resolved to "unknown"').not.toBe('unknown');
+    if (EXPECT_COMMIT) {
+      // A green smoke against the wrong commit is worse than a red one: it
+      // reports that a change is live when the alias has not moved yet.
+      expect(commit, `alias is serving ${commit}, not ${EXPECT_COMMIT}`).toBe(EXPECT_COMMIT);
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     test.skip(!BASE_URL, 'Set PROOFMINER_BASE_URL to a Vercel preview or production URL.');
     await page.goto(BASE_URL, { waitUntil: 'networkidle' });

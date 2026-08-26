@@ -275,20 +275,33 @@ Layers L3–L6 stay visibly **locked, not failed**. A locked layer says
 *"unlocks when you publish your first grounded artifact"* — it never says `0`.
 Absence of data is never rendered as poor performance.
 
-## Two tracks, because the ICP is two populations
+## One track, and the second one that was only ever written down
 
-At onboarding the user picks a track. It changes vocabulary, the conversion
-funnel, and the recommended plays:
+**This section described two populations and four differences between them. The
+product has one population and one difference, and has from the start.**
 
-| | `job` — מחפש עבודה | `independent` — בונה עצמאות |
-|---|---|---|
-| Conversion events | reply, screening call, interview, offer | DM, discovery call, proposal, deal |
-| Winning archetypes | OUTCOME, METHOD, CREDENTIAL | OUTCOME, VALIDATION, PEER |
-| Recommended surface | profile headline, About, targeted posts | posts, comments, case studies |
-| Urgency framing | weeks since last interview | pipeline conversations open |
+The only write to `profile.track` in the codebase is the literal
+`'independent'`, in `applyColdProfile`. Onboarding never asks. Of the four rows
+below, the archetype weights are the only one that exists: there is no
+track-dependent conversion vocabulary, no track-dependent surface, and the
+urgency register reads the same `weeksInMotion` for both. Neither i18n bundle
+holds a single job-track string. The table is kept, struck through where it was
+fiction, because a design document that quietly deletes its own claims teaches
+nobody anything.
+
+`tests/engine/icp-reach.test.js` pins this so it cannot drift back into prose.
+
+At onboarding the user does **not** pick a track. What was written here was:
+
+| | `job` — מחפש עבודה | `independent` — בונה עצמאות | Built? |
+|---|---|---|---|
+| ~~Conversion events~~ | ~~reply, screening call, interview, offer~~ | ~~DM, discovery call, proposal, deal~~ | **no** |
+| Winning archetypes | OUTCOME, METHOD, CREDENTIAL | OUTCOME, VALIDATION, PEER | **yes** — `ARCHETYPE_WEIGHT`, unreachable |
+| ~~Recommended surface~~ | ~~profile headline, About, targeted posts~~ | ~~posts, comments, case studies~~ | **no** |
+| ~~Urgency framing~~ | ~~weeks since last interview~~ | ~~pipeline conversations open~~ | **no** — one field, read identically |
 
 A second field — **how long has this been bothering you** — sets the urgency
-register. Deliberately phrased about the pain rather than about the activity:
+register. That one is real, and it is not track-dependent. Deliberately phrased about the pain rather than about the activity:
 "how long have you been at this" measures effort, and someone can be six months
 into a search while only recently feeling it, or feeling it acutely without
 having started. The awareness clock is the one that should set the tone, and

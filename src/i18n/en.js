@@ -117,6 +117,12 @@ export default {
     title: (n) => `We found ${n} pieces of evidence in what you pasted.`,
     subtitle:
       'These are not content ideas. These are things that already happened, that you hold and nobody sees.',
+    // See the Hebrew note: a number shown without saying what it measured
+    // reads as a verdict on whether the thing is true.
+    scoreScope:
+      'What is measured here is how checkable the lines you pasted are — who, ' +
+      'when, what changed, who confirmed it from outside. Not whether they are ' +
+      'true. That is not something this tool can check, and it does not claim to.',
     demoTitle: (n) => `Our sample holds ${n} pieces of evidence.`,
     demoSubtitle:
       'This is a sample we brought, not anything of yours. It is here only to show how the ' +

@@ -48,6 +48,11 @@ jobs:
       # immutable per-deployment URL, which SSO protects even for production.
       # The public alias is the only address a headless browser can read.
       PROOFMINER_BASE_URL: ${{ github.event.inputs.base_url || vars.PROOFMINER_BASE_URL || 'https://proofminer-gamma.vercel.app' }}
+      # Asserted only on a deployment_status event, where the commit that was
+      # deployed is known. A push fires before Vercel has finished building, and
+      # a manual run points at an arbitrary URL, so on both the smoke reports
+      # the served commit without asserting it.
+      PROOFMINER_EXPECT_COMMIT: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || '' }}
 
     steps:
       - name: Checkout

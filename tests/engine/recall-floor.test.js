@@ -26,11 +26,24 @@
  * is — carries no `hasProperNoun`, and that alone holds two of the remaining
  * Hebrew misses under their bar even where every other signal fires. Reading it
  * was tried and reverted: `ב` is also the first letter of `בניתי` and `ביקשתי`,
- * and the attempt reported a company called *"ניתי תהליך"* to the user. Every
- * heuristic that would separate the two breaks on the same rock, and doing it
- * properly needs Hebrew morphology this product does not carry and should not
- * add for it. So the miss stays, named, rather than being traded for a
+ * and the attempt reported a company called *"ניתי תהליך"* to the user. Doing
+ * it properly needs Hebrew morphology this product does not carry and should
+ * not add for it. So the miss stays, named, rather than being traded for a
  * fabrication. See the comment on `HE_ORG_PREP_RE`.
+ *
+ * **What that sentence got wrong, and what it cost.** It said *every* heuristic
+ * separating the two breaks on the same rock. That is true only for a `ב` on an
+ * arbitrary word. A `ב` on a word from a closed list — `בבית הספר`, `בבנק` —
+ * cannot be anything else, and filing the two together hid a fix worth 12
+ * points of recall against an external corpus. `tests/engine/hebrew-orgs.test.js`
+ * holds that measurement and the forms it added.
+ *
+ * **These floors did not move when it landed, and that is the point.** Every
+ * Hebrew item below writes its workplace as `באלפא לוגיסטיקה` — the one form
+ * whoever wrote them already knew was broken — so this file was blind to a real
+ * improvement in the thing it exists to measure. A floor pinned against
+ * material written inside the project cannot tell a detector that works from a
+ * detector that matches its author's expectations.
  *
  * Every item is written for this test, to `METHOD.md`'s stated recipe, with no
  * magnitude anywhere. None of it is anybody's real words — the rule that
