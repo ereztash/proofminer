@@ -435,13 +435,23 @@ archetype's own bar (pinned in `tests/engine/gaps.test.js`):
 | | bar | without a magnitude | what carries it |
 |---|---|---|---|
 | `OUTCOME` | 45 | 54 | a stated before → after, in words |
-| `PEER` | 45 | 53 | name, role, place |
+| `PEER` | 45 | 53 | **the peer relation stated**, then name, role, place |
 | `VALIDATION` | 45 | 51 | an attributed quotation |
 | `FAILURE` | 42 | 47 | date and named party |
 | `METHOD` | 40 | 40 | dated, attributed, linked |
 | `ORIGIN` | 30 | 31 | year, place, what you saw |
 | `CREDENTIAL` | 38 | 39 | never required one; a year is a date |
 | `SCALE` | 45 | **none** | `hasScaleUnit` needs a digit beside the unit |
+
+`PEER`'s last cell used to read *"name, role, place"*, and that recipe cannot
+produce `PEER`. A named senior person at a named company is evidence, but
+nothing in the sentence says whether they are a peer or a client, and the
+product will not decide that for the user — `inferArchetypes` reaches `PEER`
+only through an explicit relation word. The reference sentence that scores 53
+opens with `עמית בתחום`; strip it and the archetype disappears. The recipe now
+says what actually carries it. This is the clearest case of what the note below
+warns about: one sentence per archetype, and the sentence carrying something
+the recipe forgot to mention.
 
 Two of those numbers moved when `verification` stopped paying for a bare URL.
 `METHOD`'s reference evidence carries a link, so it fell 43 to 40 and now sits

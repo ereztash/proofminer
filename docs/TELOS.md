@@ -518,6 +518,10 @@ For each of the five, all four:
 | 3 | One grounded artifact is **public within 14 days**, with no reminder from you | Verified in public, day 14 |
 | 4 | Asked *why you* at the end, answers with **a piece of evidence rather than an explanation** | Heard, day 14 |
 
+Criterion 3 carries one follow-up that is not itself a criterion: **whose words
+were published.** It costs one question and it is what tells the falsifier's
+second state from its third — see below.
+
 Criterion 2 is the one that cannot be traded away. It is the entire promise —
 *you already had this* — and if nobody says it, the product is a re-sorter of
 things people already knew about themselves, however well the arithmetic works.
@@ -592,6 +596,58 @@ definition-blocked, what counts as visibility-blocked, and what counts as
 neither, decided in advance and in writing. Deciding it after five
 conversations is not analysis, it is choosing the reading that is comfortable.
 
+#### A third bucket, because the fork has three tines
+
+The falsifier above is written as a two-way question — definition or visibility
+— and a two-way instrument cannot see a third answer. There is one, and it was
+measured after the rest of this section was written.
+
+Across 520 real self-written pitches from solo professionals selling their
+expertise, **78% carried a magnitude and 3% carried anything anybody else had
+said.** Whatever else those people were blocked by, it was not an inability to
+name a number about their own work. The scarce thing was somebody else's word
+for it — and the commercially successful businesses in this neighbourhood all
+sell exactly that, the collection of third-party testimony, not the ranking of
+your own account.
+
+*(One caveat, kept in view: that is a population adjacent to this one — software
+freelancers writing in English — not the actor above. It is a reason to be able
+to see the answer, not a reason to expect it.)*
+
+So the coding rule has three states, not two:
+
+| State | What was observed |
+|---|---|
+| **Definition-blocked** | Cannot say what they did |
+| **Visibility-blocked** | Said it, holds evidence for it, has not shown it |
+| **Attestation-blocked** | Said it, holds their own account of it, holds nothing anybody else said |
+| *Neither* | Blocked by something else, or not blocked |
+
+And one question is added at day 14, for whoever published: **whose words were
+they — your claim, or something somebody else said about you?** That single
+answer separates the second state from the third after the fact, which no
+amount of re-reading a day-0 transcript can.
+
+**What it changes if the third state wins.** Not "fix the app" either. The
+product's mechanism would be aimed at the ranking problem while the actor's
+problem is the acquisition of testimony — the errand, not the inventory — and
+the recall route stops being a fallback and becomes the spine. **That is a
+hypothesis with a price, and it is not to be acted on before the trial**, which
+is precisely why the trial has to be able to see it.
+
+#### What the recall route does, observed rather than assumed
+
+The route out of an empty or thin First Light asks somebody to go and get a
+document that does not exist yet, from a person they name. It is the only part
+of this product that produces attestation rather than ranking, and it was built
+late, as a way out of a dead end.
+
+Two things are worth watching for each participant, and both cost nothing
+because the conversation is happening anyway: **did they take it**, and — if a
+retrieval came back — **was it what came back that moved them**, rather than
+anything the miner had already found. If the answer to the second is yes more
+than once, that is the third state confirming itself from inside the trial.
+
 ### The protocol
 
 **Recruitment.** Five Hebrew-speaking people from the ICP, qualified by the
@@ -611,14 +667,50 @@ stuck, that is what I need to see.* The silence is the instrument, and every
 question they ask that you do not answer is a finding. Ten minutes afterwards
 for criterion 2.
 
+**A second question, after those eight minutes and still before they touch
+anything:** *what happens in the next thirty days that makes this matter?* It
+goes second because the first eight have to stay unguided — that recording is
+what the falsifier is coded from — and it goes before the tool because
+afterwards they will answer it in the tool's vocabulary. What it tests is
+whether this pain has a date on it. Pain with no date is chronic, and chronic
+pain is unbudgeted; that is a fact about the price of everything downstream and
+it costs one question to learn.
+
+**Two more things are recorded without being asked.** Which track they chose on
+screen 0, `job` or `independent` — if the two populations fail differently that
+is the ICP decision answering itself, and nothing transmits it to us afterwards.
+And **whether they corrected the extraction unprompted**: *no, it was twenty-one
+days, not nineteen.* A correction is a far stronger signal than agreement — this
+product's own negative test set exists because agreement is not confirmation —
+since somebody who corrects a number has taken ownership of the evidence under
+it.
+
 This is the answer to the flaw that runs through every prior observation
 behind this product: they all came out of guided conversations with an expert
 in the room, and this product is a person alone in a tab. Here you are in the
 room but not in the conversation, and they have been told so.
 
 **Day 14 — 20 minutes.** Do not tell them in advance that it is about whether
-they published; criterion 3 is checked in public, not from memory. One question
-for criterion 4, then anything they want to say.
+they published; criterion 3 is checked in public, not from memory. Three
+questions, and **the order is load-bearing**:
+
+| | Question | Why in this position |
+|---|---|---|
+| 1 | *Have you said any of this out loud to anyone since?* | Every later question in this conversation primes it, and a primed answer measures nothing |
+| 2 | *Why you?* — criterion 4 | Wants a piece of evidence rather than an explanation; asking 3 first plants evidence in the frame |
+| 3 | For whoever published: *whose words were they — your claim, or something somebody else said about you?* | Separates visibility-blocked from attestation-blocked, which no amount of re-reading a day-0 transcript can |
+
+Then anything they want to say.
+
+**The first of the three is the disciplined form of the one product directive
+the market work produced.** What convinces somebody that a person is an expert
+is a colleague repeating something about them — from which the tempting move is
+to go and engineer the gap number for quotability. This settles it for the price
+of a question instead: if two or more of the five repeated a number to somebody
+without being asked to, the directive is live *and the trial has already
+collected what they quoted.* If nobody did, it is dead and no code was written
+for it. `MARKET.md` holds the rest of that plan; this is the part of it that
+happens at day 14 or not at all.
 
 **Sequencing: two, then five.** The first two test the *protocol* — that the
 contract is clear, the timings work, the questions land — and can be anyone
@@ -634,8 +726,8 @@ a scarce sample proving the same thing.
    and serve a login page; a participant who gets one concludes the tool is
    broken, and you will never hear why.
 3. The recruiting message, the day-0 contract script, an observation sheet with
-   the four criteria and timestamps, the pre-registered coding rule, the day-14
-   script.
+   the four criteria, the two day-0 codings and timestamps, the pre-registered
+   coding rule, the day-14 script with its three questions in order.
 4. **Build nothing.** If you want their proof units, a screenshot of First
    Light. The JSON export exists but contains the client mail they pasted — do
    not ask for it.

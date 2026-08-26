@@ -11,12 +11,26 @@
  * **This is a floor on a known deficiency, not a target that has been met.**
  * The numbers below are the measured miss rates, pinned so they cannot quietly
  * get worse while something else is being improved. They are meant to come
- * down. Two of the three known causes are still open: Hebrew proper-noun
- * detection does not see a company name at all (`properNouns: []` where English
- * returns the entity), and the Hebrew `outcome` lexicon enumerates verb forms
- * so it misses idiom while English matches loosely enough to catch things by
- * accident. When either is fixed, these thresholds should be tightened in the
- * same commit.
+ * down, and were: Hebrew organisation detection has since been fixed for the
+ * forms that can be read safely, which moved the overall rate to 0.40 and the
+ * Hebrew rate to 0.50.
+ *
+ * `PEER` has since been settled, and not by fixing a detector: its published
+ * recipe was wrong. "Name, role, place" cannot produce `PEER`, because nothing
+ * in `VP Operations at Beta Industries` says whether that person is a peer or a
+ * client, and the product will not decide that for the user. The recipe now
+ * says the relation has to be stated, and the items here state it.
+ *
+ * **What still blocks Hebrew is one thing, and it is deliberate.** A workplace
+ * named with a bare `ב` prefix — `באלפא לוגיסטיקה`, the commonest form there
+ * is — carries no `hasProperNoun`, and that alone holds two of the remaining
+ * Hebrew misses under their bar even where every other signal fires. Reading it
+ * was tried and reverted: `ב` is also the first letter of `בניתי` and `ביקשתי`,
+ * and the attempt reported a company called *"ניתי תהליך"* to the user. Every
+ * heuristic that would separate the two breaks on the same rock, and doing it
+ * properly needs Hebrew morphology this product does not carry and should not
+ * add for it. So the miss stays, named, rather than being traded for a
+ * fabrication. See the comment on `HE_ORG_PREP_RE`.
  *
  * Every item is written for this test, to `METHOD.md`'s stated recipe, with no
  * magnitude anywhere. None of it is anybody's real words — the rule that
@@ -43,14 +57,18 @@ const POSITIVES = {
       'The warehouse at Beta Industries used to shut down under load. Since the change I led, it no longer does.',
     ],
   },
-  PEER: { // "name, role, place"
+  PEER: { // "the peer relation stated, then name, role, place"
+    // These items used to omit the relation word, because METHOD.md's recipe
+    // omitted it. They were testing something the product cannot do and should
+    // not do: infer from "VP Operations at Beta Industries" whether that person
+    // is a peer or a client. The recipe is corrected; so are they.
     he: [
-      'דוד לוי, סמנכ"ל תפעול בבטא תעשיות, הזכיר את העבודה שלי בכנס הלוגיסטיקה.',
-      'מיכל ברק, מנהלת הרכש בגמא קמעונאות, הפנתה אלי שתי חברות מהתחום.',
+      'עמית בתחום, דוד לוי, סמנכ"ל תפעול בבטא תעשיות, הזכיר את העבודה שלי בכנס הלוגיסטיקה.',
+      'מיכל ברק, עמיתה בתחום ומנהלת הרכש בגמא קמעונאות, הפנתה אלי שתי חברות.',
     ],
     en: [
-      'David Levi, VP Operations at Beta Industries, cited my work at the logistics conference.',
-      'Michal Barak, head of procurement at Gamma Retail, referred me to two companies in her sector.',
+      'A colleague in my field, David Levi, VP Operations at Beta Industries, cited my work at the logistics conference.',
+      'Michal Barak, a peer in my field and head of procurement at Gamma Retail, referred me to two companies.',
     ],
   },
   VALIDATION: { // "an attributed quotation"
@@ -99,14 +117,17 @@ function misses() {
 describe('evidence the detectors cannot see', () => {
   it('does not miss more than it does today, overall', () => {
     const { all } = misses();
-    // Measured 2026-08-25. Lower this when a detector improves; never raise it.
-    expect(all.m / all.n).toBeLessThanOrEqual(0.5);
+    // Measured 2026-08-25 at 0.40, tightened from 0.45 when Hebrew
+    // organisation detection improved. Lower this when a detector improves;
+    // never raise it.
+    expect(all.m / all.n).toBeLessThanOrEqual(0.37);
   });
 
   it('does not miss more Hebrew than it does today', () => {
     const { he } = misses();
-    // The product is Hebrew-first and this is its worse half. Measured 2026-08-25.
-    expect(he.m / he.n).toBeLessThanOrEqual(0.65);
+    // The product is Hebrew-first and this is its worse half. Measured
+    // 2026-08-25 at 0.50, down from 0.60 with the organisation fix.
+    expect(he.m / he.n).toBeLessThanOrEqual(0.52);
   });
 
   it('is still worse in Hebrew than in English, which is the finding', () => {

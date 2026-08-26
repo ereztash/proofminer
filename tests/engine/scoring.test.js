@@ -464,3 +464,104 @@ describe('somebody else said it', () => {
     expect(extractSignals('רונית לוי, מנהלת התפעול של אלפא לוגיסטיקה.').thirdParty).toBe(false);
   });
 });
+
+/**
+ * Hebrew has no capital letters, so a name has to be found by what surrounds it.
+ *
+ * Measured against evidence written to `METHOD.md`'s own recipes, the detectors
+ * missed close to six in ten pieces in Hebrew against three in ten in English —
+ * the wrong way round for a product whose first language is Hebrew. A large
+ * part of it was here: an organisation named without a trigger word was
+ * invisible, a trigger word captured only the first of two tokens, and
+ * `בחברת הביטוח` — "the insurance company" — came back as a named organisation.
+ *
+ * The negative cases below matter more than the positive ones. Reporting a
+ * company somebody never named is the anti-goal running backwards, and the
+ * first attempt at this fix did exactly that: reading a bare `ב` prefix as a
+ * workplace turned `בניתי תהליך` into a company called *"ניתי תהליך"*.
+ */
+describe('finding a name in a language without capitals', () => {
+  const nouns = (text) => extractSignals(text).properNouns;
+
+  it('reads an organisation named without a trigger word', () => {
+    expect(nouns('עבדתי אצל אלפא לוגיסטיקה שנתיים.')).toContain('אלפא לוגיסטיקה');
+    expect(nouns('בניתי תהליך עבור גמא קמעונאות.')).toContain('גמא קמעונאות');
+  });
+
+  it('keeps both halves of a two-word name after a trigger word', () => {
+    // This used to yield "אלפא" alone, losing the half that makes it a name.
+    expect(nouns('בחברת אלפא לוגיסטיקה בניתי תהליך.')).toContain('אלפא לוגיסטיקה');
+  });
+
+  it('never invents a company out of a common noun', () => {
+    for (const line of [
+      'עבדתי אצל הלקוח שנתיים.',
+      'בחברת הביטוח שבה עבדתי.',
+      'בניתי תהליך עבור הצוות שלי.',
+      'עבדתי מול לקוח גדול חודשיים.',
+    ]) {
+      expect(nouns(line), line).toEqual([]);
+    }
+  });
+
+  it('never reads a verb opening with ב as a workplace', () => {
+    // The failure mode of the first attempt, pinned so it cannot come back.
+    for (const line of [
+      'בניתי תהליך חדש לגמרי.',
+      'ביקשתי מהצוות לבדוק את הנתונים.',
+      'בדקתי את התהליך פעמיים.',
+    ]) {
+      expect(nouns(line), line).toEqual([]);
+    }
+  });
+
+  it('does not read a department as somebody’s name', () => {
+    // `סמנכ״ל תפעול בבטא תעשיות` was reported as a person called "תפעול בבטא".
+    const found = nouns('דוד לוי, סמנכ"ל תפעול בבטא תעשיות, הזכיר את העבודה.');
+    expect(found).toContain('דוד לוי');
+    expect(found.some((n) => n.startsWith('תפעול'))).toBe(false);
+  });
+
+  it('leaves a real name intact', () => {
+    // Stripping a leading one-letter prefix was tried and reverted: in Hebrew
+    // those letters are also how names begin, and it turned מיכל ברק into
+    // "יכל רק".
+    expect(nouns('מיכל ברק, מנהלת הרכש בגמא קמעונאות, הפנתה אלי.')).toContain('מיכל ברק');
+  });
+});
+
+/**
+ * Citation, in the direction that matters.
+ *
+ * `en.thirdParty` carried `cited in` and nothing for `cited my work`, so a
+ * colleague naming you at a conference — evidence — scored as a self-claim. The
+ * added forms are all directional: somebody citing *me*, never me citing them.
+ */
+describe('being cited is not the same as citing', () => {
+  it('reads somebody naming your work as third-party evidence', () => {
+    for (const line of [
+      'David Levi cited my work at the logistics conference.',
+      'She mentioned our process in her talk.',
+      'The report credited me with the redesign.',
+    ]) {
+      expect(extractSignals(line).thirdParty, line).toBe(true);
+    }
+  });
+
+  it('does not read you citing other people as evidence about you', () => {
+    for (const line of [
+      'I cited three sources in the write-up.',
+      'We referenced the standard throughout.',
+      'I credited the team in the summary.',
+    ]) {
+      expect(extractSignals(line).thirdParty, line).toBe(false);
+    }
+  });
+
+  it('reads a peer relation stated in the feminine', () => {
+    // `עמית` was in the lexicon and `עמיתה` was not, so half the ways this is
+    // written reached no archetype at all.
+    expect(extractSignals('מיכל ברק, עמיתה בתחום ומנהלת הרכש, הפנתה אלי.').peer).toBe(true);
+    expect(extractSignals('רונית לוי, שותפה שלי בפרויקט, הזכירה את העבודה.').peer).toBe(true);
+  });
+});
