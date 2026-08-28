@@ -80,6 +80,11 @@ export default {
     analyze: 'Find my evidence',
     orSample: 'Show me on a sample first',
     nothingToPaste: 'And if you genuinely have no document to paste?',
+    routeNote:
+      'Nothing to paste? "Start from a case" does the same work from one project you remember.',
+    optionalTitle: 'Already have answers? They sharpen the comparison',
+    optionalLead:
+      'None of these is required and skipping them costs nothing. They do not change what is found in the material — they only let us show you afterwards how what we found differs from what you expected.',
     orRecall: 'Start from recall',
   },
 

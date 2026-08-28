@@ -555,10 +555,29 @@ describe('the first screen finally has a third answer', () => {
   const t = translator('he');
   const state = emptyState();
 
-  it('offers the recall route to someone with nothing to paste', () => {
+  it('offers the recall route as a peer, not as an escape hatch', () => {
     const markup = toString_(onboardingView(state, t, { situation: 'consultant' }));
     expect(markup).toContain('data-act="coldRecall"');
-    expect(markup).toContain(t('onboarding.nothingToPaste'));
+    expect(markup).toContain(t('onboarding.routeNote'));
+
+    // The point of the route is lost if it is offered in the styling reserved
+    // for the thing nobody is meant to click. It used to be a ghost link inside
+    // a paragraph below three wizard steps; it is now a bordered button beside
+    // the primary one, and `secondary` is what carries that.
+    const recall = markup.slice(markup.indexOf('data-act="coldRecall"') - 200, markup.indexOf('data-act="coldRecall"'));
+    expect(recall).toContain('btn--secondary');
+    expect(recall).not.toContain('btn--ghost');
+  });
+
+  it('puts the material above the questions it used to sit below', () => {
+    const markup = toString_(onboardingView(state, t, { situation: 'consultant' }));
+    const paste = markup.indexOf('id="cold-paste"');
+    // Every one of these is optional and always was. What changed is that a
+    // person holding material no longer scrolls past a self-rating and two
+    // boxes asking for the output this product exists to produce.
+    for (const later of ['id="fit-confidence"', 'id="fit-claim"', 'id="fit-evidence"', 'name="weeks"']) {
+      expect(markup.indexOf(later), `${later} should come after the paste box`).toBeGreaterThan(paste);
+    }
   });
 
   it('still puts no action on the exit page', () => {
