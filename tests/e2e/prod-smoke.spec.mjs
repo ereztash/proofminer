@@ -31,6 +31,19 @@ const deployedCommit = (page) =>
     () => globalThis.document.querySelector('meta[name="proofminer-commit"]')?.content ?? null,
   );
 
+/**
+ * Open the optional questions.
+ *
+ * They live behind a closed disclosure now, so a spec that types into them has
+ * to open it first. Selected by the field it contains rather than by class:
+ * two `details.pledge` elements sit on that screen and only one of them is
+ * this.
+ */
+const openOptionalQuestions = async (page) => {
+  await page.locator('details:has(#fit-claim) summary').click();
+  await expect(page.locator('#fit-claim')).toBeVisible();
+};
+
 const chooseSituation = async (page, name) => {
   await page.locator('label.choice__opt', { hasText: name }).click();
 };
@@ -100,8 +113,9 @@ test.describe('production smoke', () => {
 
   test('weak material cannot jump straight to a draft action', async ({ page }) => {
     await chooseSituation(page, /יועץ|Consultant/i);
-    await page.locator('#fit-claim').fill('אני יועץ טוב יותר מאלטרנטיבות');
-    await page.locator('#fit-evidence').fill('אין לי ראיה אחת ברורה עדיין');
+    // No claim: this material is blocked by its own score, and typing a claim
+    // to reach that conclusion would test a path the product no longer asks
+    // anybody to walk.
     await page.locator('#cold-paste').fill('אני יועץ מנוסה, יצירתי, רציני ובעל יכולות גבוהות.');
     await page.getByRole('button', { name: /מצא לי את הראיות|Find my evidence/i }).click();
 
@@ -110,6 +124,10 @@ test.describe('production smoke', () => {
 
   test('concrete but mismatched evidence remains strengthening-only', async ({ page }) => {
     await chooseSituation(page, /יועץ|Consultant/i);
+    // Here the claim is the whole premise — concrete evidence that does not
+    // match it must stay strengthening-only — so this one opens the disclosure
+    // rather than dropping the field.
+    await openOptionalQuestions(page);
     await page.locator('#fit-claim').fill('אני יודע לבנות תהליכי מכירה שמביאים פניות חמות');
     await page.locator('#fit-evidence').fill('ראיה שמראה שפניות חמות הגיעו מתוכן או הפניות');
     await page.locator('#cold-paste').fill(
