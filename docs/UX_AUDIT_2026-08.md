@@ -119,3 +119,38 @@ reference — a guard in `tests/ui/html.test.js` asserting the copy never promis
 a risk/opportunity comparison. All four are left in place: deleting them widens
 a patch that was scoped to the UI, and the standing refusal they relate to is
 recorded where it belongs, in `core/schema.js`.
+
+
+---
+
+## Patch 2 pre-finding — the strongest proof renders twice
+
+Verified before changing anything, and by measurement rather than by reading:
+
+    PRIMARY (score 62) appears : 2 times
+    SECOND  (score 55) appears : 1 time
+    reveal list items          : 2
+
+`firstLightView` computes
+
+```js
+const strong  = top3.filter((p) => p.score >= BAND_USABLE);
+const shown   = demo ? top3 : strong;
+const primary = top3.find((p) => p.score >= BAND_USABLE) || …;
+```
+
+then renders `proofLoopCard(primary, …)` **and** `shown.map(revealCard)`. Since
+`primary` is selected from `top3` by the same threshold that builds `strong`,
+the strongest proof is in both. Whenever anything clears the band — the ordinary
+case — the first result a person sees is printed once as the proof loop and
+again as item 1 of the list beneath it.
+
+**Why this matters beyond tidiness.** The screen exists to produce *"I didn't
+know that counted."* Saying the same sentence twice, in two different framings,
+within one viewport, spends the one moment the product has on making the reader
+wonder whether they missed a difference between the two cards. It also inflates
+the apparent yield: a paste that produced two usable units presents as three
+cards.
+
+Not changed here. Recorded so that Patch 2 begins from a measured defect rather
+than from a redesign impulse.
