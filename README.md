@@ -198,6 +198,10 @@ npm run check    # lint + tests + production build
 
 ## Documentation
 
+**[`docs/README.md`](docs/README.md) maps all of it** — what each file is, which
+are load-bearing, and which are a record of how the work was done rather than
+documentation of the product. Start there. The five that matter most:
+
 - [`docs/TELOS.md`](docs/TELOS.md) — why this exists, who it is for, definition of done
 - [`docs/METHOD.md`](docs/METHOD.md) — the full measurement specification
 - [`docs/MARKET.md`](docs/MARKET.md) — what the outside says, and the plan it does or does not justify

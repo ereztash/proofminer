@@ -1,7 +1,7 @@
 /**
  * Rebuild the Hebrew organisation corpus from Wikipedia, byte for byte.
  *
- * `docs/MEASUREMENT.md` publishes a recall figure for the Hebrew organisation
+ * `docs/MEASUREMENT_HEBREW_ORGS.md` publishes a recall figure for the Hebrew organisation
  * detector. A published figure that nobody else can recompute is an assertion,
  * so this script exists to make it a measurement: it reconstructs the exact
  * text the figure was computed over.
