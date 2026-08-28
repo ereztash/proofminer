@@ -49,11 +49,13 @@ export default {
     },
     modeConsultantOffer: 'Consulting / change support',
     modeExpertOffer: 'Expertise / diagnosis',
-    fitQuestion: 'From 1 to 10, how clear is it why someone should choose you over an alternative?',
+    // Kept although nothing renders it: `tests/ui/html.test.js` asserts this
+    // string carries no risk/opportunity framing. The slider it belonged to is
+    // gone, but the refusal that shaped its wording is on the record and the
+    // guard is the record. The three keys that stood beside it —
+    // fitQuestion, fitLow, fitHigh — had no consumer at all and were removed.
     fitNote:
       'This is not a score, and it will not be compared against any other number. It is a starting point — so we know where you are coming in.',
-    fitLow: 'I do not know what to show',
-    fitHigh: 'I know exactly',
     claimQuestion: 'What sentence do you want the client to believe?',
     claimHint:
       'Not a slogan, and it does not have to come out right. If you have no wording for it, skip it. ' +
