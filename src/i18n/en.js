@@ -210,6 +210,7 @@ export default {
   },
 
   dashboard: {
+    fullPicture: 'The full picture — the diagnosis and all six layers',
     urgency: {
       months: 'You have been at this a few months. The move below is chosen to shift something this week, not to build a year-long plan.',
       long: 'You have been at this long enough that the general advice has run out. What follows is the one concrete thing worth doing now.',

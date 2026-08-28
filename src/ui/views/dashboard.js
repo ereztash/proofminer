@@ -1,10 +1,26 @@
 /**
  * The dashboard.
  *
- * Order is the argument: the Visibility Gap first (the user's own conscious
- * pain, quantified), then the single Next Move, then the diagnosis, and only
- * then the six layers. The composite index is present but subordinate — it is
- * a summary, and a summary is not what gets someone to act at 2am.
+ * Order is the argument, and the argument changed. It used to open on the
+ * Visibility Gap — the user's own conscious pain, quantified — on the reasoning
+ * that a number naming the pain is what gets someone to act at 2am.
+ *
+ * What that produced was a screen whose first move is asking the reader to
+ * interpret the product: a figure, a delta, two sub-scores and an index, before
+ * anything they wrote and before anything to do. A metric in the first position
+ * is also read as the goal, which is the one thing this metric is not — it
+ * explains a state, and `docs/TELOS.md` refuses the version of this product
+ * where somebody optimises the number instead of the thing it measures.
+ *
+ * So: **their evidence, then the one move, then the number as its explanation,
+ * then everything else behind a disclosure.** Nothing is deleted and no formula
+ * changed. The Gap keeps its number, its sentence and its three stats; the
+ * diagnosis and all six layers stay reachable in one click.
+ *
+ * **One thing may never be folded.** A gated or HOLLOW state is not an
+ * explanation, it is a boundary on what the product will let the user do, and a
+ * boundary the reader has to go looking for is not a boundary. It renders above
+ * the move it constrains, outside the disclosure, with `role="alert"`.
  */
 
 import { bidi, html } from '../html.js';
@@ -25,19 +41,28 @@ export function dashboardView(state, t, { authority, move, held = [] }) {
   // register of one line — quietly, without a countdown or a guilt mechanic.
   const urgency = state.profile.weeksInMotion >= 40 ? 'long' : state.profile.weeksInMotion >= 12 ? 'months' : '';
 
+  // Publishing has outrun the evidence base. Not a score to read — a limit on
+  // what the next action is allowed to be, which is why it is computed here and
+  // rendered before the move rather than inside the diagnosis it used to live in.
+  const stopped = gated || diagnosis === 'HOLLOW';
+
   return html`<div class="stack">
     ${urgency ? html`<p class="urgency">${t(['dashboard', 'urgency', urgency])}</p>` : ''}
-    ${gapCard(gap, foundation, built, index, lowConfidence, t)}
     ${bridgeCard(held, authority.demo, t)}
+    ${stopped ? notice('stop', t(['diagnosis', 'HOLLOW', 'body'])) : ''}
     ${moveCard(move, t)}
-    ${diagnosisCard(diagnosis, gated, t)}
-    ${section(
-      t('nav.dashboard'),
-      '',
-      html`<div class="layers">
-        ${LAYER_KEYS.map((key) => layerCard(key, authority.layers[key], t))}
-      </div>`,
-    )}
+    ${gapCard(gap, foundation, built, index, lowConfidence, t)}
+    <details class="fullpicture">
+      <summary class="fullpicture__title">${t('dashboard.fullPicture')}</summary>
+      ${diagnosisCard(diagnosis, t)}
+      ${section(
+        t('nav.dashboard'),
+        '',
+        html`<div class="layers">
+          ${LAYER_KEYS.map((key) => layerCard(key, authority.layers[key], t))}
+        </div>`,
+      )}
+    </details>
   </div>`;
 }
 
@@ -149,11 +174,19 @@ function moveCard(move, t) {
   </section>`;
 }
 
-function diagnosisCard(diagnosis, gated, t) {
+/**
+ * The reading of the state, in prose.
+ *
+ * It no longer carries the gated stop. That notice was rendered here, and Patch
+ * 3 folds this card into a disclosure — which would have put a limit on what the
+ * user may do behind a summary they have to think to open. The stop moved up to
+ * the always-visible region; this card kept the explanation, which is what a
+ * disclosure is for.
+ */
+function diagnosisCard(diagnosis, t) {
   return section(
     t(`diagnosis.${diagnosis}.title`),
     '',
-    html`<p class="prose">${t(`diagnosis.${diagnosis}.body`)}</p>
-      ${gated ? notice('stop', t('gap.explainNegative')) : ''}`,
+    html`<p class="prose">${t(`diagnosis.${diagnosis}.body`)}</p>`,
   );
 }

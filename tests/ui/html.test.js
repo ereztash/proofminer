@@ -743,8 +743,14 @@ describe('the return bridge', () => {
     expect(markup).toContain(claim);
     // Credit before critique: their words come before the thing to go and do.
     expect(markup.indexOf('class="bridge"')).toBeLessThan(markup.indexOf('class="move"'));
-    // And after the headline number, which docs/UX.md puts first.
-    expect(markup.indexOf('class="hero')).toBeLessThan(markup.indexOf('class="bridge"'));
+    // This used to assert the opposite of the line below — that the headline
+    // number came first, on the authority of a sentence in docs/UX.md. Patch 3
+    // reversed that: a metric in the first position is read as the goal, and
+    // this one explains a state rather than naming a target. The bridge now
+    // leads. `tests/ui/dashboard-hierarchy.test.js` owns the full ordering
+    // argument; this line is kept pointing the right way so the two files
+    // cannot drift apart silently.
+    expect(markup.indexOf('class="bridge"')).toBeLessThan(markup.indexOf('class="hero'));
   });
 
   it('renders nothing at all when there is nothing of theirs to show', () => {
