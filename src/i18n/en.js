@@ -132,7 +132,7 @@ export default {
     demoSubtitle:
       'This is a sample we brought, not anything of yours. It is here only to show how the ' +
       'ranking works — the moment you paste your own material it drops out of the calculation.',
-    threeTitle: 'Three you would never have published yourself',
+    restTitle: 'Also in what you pasted',
     thinTitle: 'Too little here to tell you anything definite',
     thinBody:
       'This too is the expected result of the stage, not a verdict on your work. ' +
@@ -317,6 +317,9 @@ export default {
     readyVerdict: 'This evidence can be worked from, but only as a draft you approve.',
     weakVerdict: 'There is a trace here, but not yet evidence worth drafting from.',
     traceLabel: 'What actually happened',
+    howTitle: 'How we got here',
+    sourceLabel: 'Source:',
+    scoreLabel: 'Score',
     mechanismLabel: 'What this likely proves',
     supportLabel: 'What claim this can support',
     confidenceLabel: 'Certainty right now',

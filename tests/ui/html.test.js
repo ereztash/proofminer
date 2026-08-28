@@ -339,7 +339,11 @@ describe('the reveal does not promise more than it found', () => {
       firstLightView({ ...emptyState(), proofs }, t, { proofs, top3: proofs, demo: false }),
     );
     expect(markup).toContain(t('firstLight.thinTitle'));
-    expect(markup).not.toContain(t('firstLight.threeTitle'));
+    // The heading this used to check moved when the hero took the top of the
+    // screen. What it was really guarding is that a thin result is not dressed
+    // as a strong one, and that lives in the card now.
+    expect(markup).toContain(t('proofCard.titleWeak'));
+    expect(markup).not.toContain(t('proofCard.readyVerdict'));
   });
 
   it('still makes the promise when the evidence carries it', () => {
@@ -347,7 +351,8 @@ describe('the reveal does not promise more than it found', () => {
     const markup = toString_(
       firstLightView({ ...emptyState(), proofs }, t, { proofs, top3: proofs, demo: false }),
     );
-    expect(markup).toContain(t('firstLight.threeTitle'));
+    expect(markup).not.toContain(t('firstLight.thinTitle'));
+    expect(markup).toContain(t('proofCard.title'));
   });
 });
 
