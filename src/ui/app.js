@@ -250,14 +250,12 @@ export function mountApp(root) {
     // yet. The product's own thesis is that the material tells you the
     // sentence, not the other way round.
     const claim = val('fit-claim').trim();
-    const confidence = Number.parseInt(val('fit-confidence') || '5', 10);
     const weeks = Number.parseInt(
       root.querySelector('input[name="weeks"]:checked')?.value ?? '0',
       10,
     );
     return {
       practiceMode: situation === 'expert' ? 'expert' : 'consultant',
-      fitConfidence: Number.isFinite(confidence) ? confidence : 5,
       expectedEvidence: val('fit-evidence').trim(),
       weeksInMotion: Number.isFinite(weeks) ? weeks : 0,
       claim,
@@ -267,7 +265,6 @@ export function mountApp(root) {
   function applyColdProfile(draft, profile) {
     draft.profile.track = 'independent';
     draft.profile.practiceMode = profile.practiceMode;
-    draft.profile.fitConfidence = profile.fitConfidence;
     draft.profile.expectedEvidence = profile.expectedEvidence;
     draft.profile.weeksInMotion = profile.weeksInMotion;
     draft.profile.onboarded = true;
@@ -1122,8 +1119,6 @@ export function mountApp(root) {
     } else if (el.name === 'weeks') {
       ui.weeks = Number.parseInt(el.value, 10);
       render();
-    } else if (el.id === 'fit-confidence') {
-      render();
     } else if (el.id === 'inv-filter') {
       ui.filter = el.value;
       render();
@@ -1176,10 +1171,6 @@ export function mountApp(root) {
   let draftTimer = null;
   root.addEventListener('input', (event) => {
     if (event.target.id) ui.formCache[event.target.id] = event.target.value;
-    if (event.target.id === 'fit-confidence') {
-      render();
-      return;
-    }
     if (event.target.id !== 'studio-body') return;
     ui.draftBody = event.target.value;
     if (draftTimer !== null) clearTimeout(draftTimer);

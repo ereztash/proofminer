@@ -100,7 +100,7 @@ costs up 15–30% year on year since 2024.
 
 > **This changes the price of one open decision.** The Hebrew organisation
 > detector reaches 46% and a Hebrew NER model reaches 85% at the same position
-> (`docs/MEASUREMENT.md`). Running that model in the browser would not break
+> (`docs/MEASUREMENT_HEBREW_ORGS.md`). Running that model in the browser would not break
 > the no-transmission refusal — nothing leaves the device — only the
 > lightweight one. The category moving this way is a reason the option stays
 > open, not a reason to take it before the trial in `docs/TELOS.md` has run.
@@ -117,7 +117,7 @@ can check is positioning rather than engineering.
 | A generated draft cannot acquire a number | `validateGrounding` blocks on any digit or number word absent from the cited proof, model rewriter included | **High** — enforced, tested |
 | Nothing is transmitted | Zero outbound requests; both model features off by default, each behind its own consent, the larger nested inside the smaller | **High** — verified in the browser, no network calls on the core flow |
 | Time to first value | Paste → ranked result on one screen | **High** — smoke walks it in under 7s |
-| Hebrew-first | Every string, RTL, and a Hebrew organisation detector measured against an external corpus | **Medium** — measured at 46% recall, which is not good; see `docs/MEASUREMENT.md` |
+| Hebrew-first | Every string, RTL, and a Hebrew organisation detector measured against an external corpus | **Medium** — measured at 46% recall, which is not good; see `docs/MEASUREMENT_HEBREW_ORGS.md` |
 
 ## Where it is behind, and the honest reason
 

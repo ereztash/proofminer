@@ -80,12 +80,15 @@ test.describe('production smoke', () => {
     await expect(opening).not.toContainText(/ראיה|evidence/i);
 
     await chooseSituation(page, /מומחה|Expert/i);
-    await expect(page.locator('#fit-confidence')).toBeVisible();
-    await expect(page.locator('#fit-claim')).toBeVisible();
-    await expect(page.locator('#fit-evidence')).toBeVisible();
 
-    await page.locator('#fit-claim').fill('אני יודע להפוך צוות מבולגן לתהליך עבודה שאפשר לנהל');
-    await page.locator('#fit-evidence').fill('סיכום פרויקט שבו זמני אספקה ירדו מ-19 יום ל-7 ימים');
+    // The material is the first thing after the fit question, and the optional
+    // questions are folded behind a closed disclosure. This used to fill a
+    // claim and an expected-evidence box on the way past; they were never
+    // required, and a smoke that types into them proves a path no longer taken.
+    await expect(page.locator('#cold-paste')).toBeVisible();
+    await expect(page.locator('#fit-claim')).not.toBeVisible();
+    await expect(page.locator('#fit-confidence')).toHaveCount(0);
+
     await page.locator('#cold-paste').fill(
       'ב-2025 ניהלתי צוות תפעול של שמונה אנשים. בנינו תהליך עבודה חדש, וזמן האספקה ירד מ-19 יום ל-7 ימים בתוך חודשיים.',
     );

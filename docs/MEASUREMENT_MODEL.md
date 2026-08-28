@@ -164,7 +164,7 @@ computed against ground truth nobody here authored, over a corpus anybody can
 rebuild byte for byte.
 
 - **Definition, numerator, denominator, ground truth, uncertainty, and the
-  command:** `docs/MEASUREMENT.md`.
+  command:** `docs/MEASUREMENT_HEBREW_ORGS.md`.
 - **Why it exists:** every fixture in this repository was written by somebody
   who already knew what the detector looks for, and
   `tests/engine/recall-floor.test.js` read 0.50 in Hebrew both before and after
