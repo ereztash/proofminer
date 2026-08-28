@@ -163,7 +163,9 @@ export default {
     demoSubtitle:
       'זו דוגמה שהבאנו, לא משהו שלך. היא כאן רק כדי להראות איך הדירוג עובד — ' +
       'ברגע שתדביק חומר משלך היא יוצאת מהחישוב.',
-    threeTitle: 'שלוש שלא היית מפרסם לבד',
+    // The heading for what is left after the strongest line was pulled out
+    // and given the top of the screen. It cannot promise a count.
+    restTitle: 'עוד מהחומר שהדבקת',
     thinTitle: 'מצאנו מעט מדי כדי להגיד לך משהו ודאי',
     // Both this and `emptyBody` used to be verdicts on what the user brought —
     // "what you pasted is mostly a description of roles". They are now the
@@ -362,6 +364,8 @@ export default {
     readyVerdict: 'זו ראיה שאפשר לעבוד ממנה, אבל עדיין רק דרך טיוטה שאתה מאשר.',
     weakVerdict: 'יש כאן עקבה, אבל עדיין לא ראיה שמומלץ לשלוח ממנה טיוטה.',
     traceLabel: 'מה קרה בפועל',
+    howTitle: 'איך הגענו לזה',
+    scoreLabel: 'ניקוד',
     mechanismLabel: 'מה זה כנראה מוכיח',
     supportLabel: 'לאיזו טענה זה יכול לתמוך',
     confidenceLabel: 'רמת ודאות עכשיו',

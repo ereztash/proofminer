@@ -120,7 +120,7 @@ describe('someone whose material yielded nothing', () => {
     // rows as evidence used to cancel this: `mine` saw proofs already on file,
     // decided the reveal had been had, and dropped them on the inventory.
     expect(root.innerHTML).toContain('cold--reveal');
-    expect(root.innerHTML).toContain(heBundle.firstLight.threeTitle);
+    expect(root.querySelector('.proof-card__source'), 'the walk should land on the reveal').not.toBeNull();
     expect(root.innerHTML).not.toContain(heBundle.firstLight.thinTitle);
   });
 });

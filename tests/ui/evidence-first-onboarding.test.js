@@ -22,7 +22,6 @@
 
 import { describe, expect, it } from 'vitest';
 import { mountApp } from '../../src/ui/app.js';
-import heBundle from '../../src/i18n/he.js';
 import { check, click, set } from './mount.js';
 
 /** Concrete enough to clear the bar, so the walk reaches the reveal branch. */
@@ -66,7 +65,7 @@ describe('material first, questions later', () => {
     click(root, 'coldStart');
 
     // First Light, with no claim and no expected evidence ever entered.
-    expect(root.innerHTML).toContain(heBundle.firstLight.threeTitle);
+    expect(root.querySelector('.proof-card__source'), 'the walk should land on the reveal').not.toBeNull();
 
     // The comparison card is what expected-evidence feeds. Skipping the
     // question costs that card and nothing else — it must not appear empty,

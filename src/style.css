@@ -1086,6 +1086,56 @@ p {
   font-weight: 650;
 }
 
+/*
+  SOURCE. The person's own sentence, and the largest thing on this screen. It
+  is set as a quotation because that is what it is — characters taken out of a
+  document they supplied, not a finding phrased by this product.
+*/
+.proof-card__source {
+  margin: var(--step) 0 0;
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--ink);
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* MEANING. One sentence, plainly subordinate to the quotation above it. */
+.proof-card__meaning {
+  margin-block-start: 0.75rem;
+  color: var(--ink-soft);
+}
+
+/*
+  The apparatus. Closed by default and styled to read as a question rather than
+  a section that was hidden from you — the intelligence did not go anywhere.
+*/
+.proof-card__how {
+  margin-block-start: var(--step);
+  border-block-start: 1px solid var(--line-soft);
+  padding-block-start: 0.75rem;
+}
+
+.proof-card__how-title {
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.proof-card__how-title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.proof-card__scope {
+  margin-block-start: 0.75rem;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+}
+
 .proof-card__actions {
   display: flex;
   flex-wrap: wrap;

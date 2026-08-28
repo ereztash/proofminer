@@ -60,18 +60,35 @@ describe('the screens before the app', () => {
 
     // Precondition — this walk really did land on the reveal and not on one of
     // the two dead ends, which carry no score for the note to be about.
-    expect(root.innerHTML).toContain(heBundle.firstLight.threeTitle);
+    expect(root.querySelector('.proof-card__source'), 'the walk should land on the reveal').not.toBeNull();
 
-    // The scope of the number, on the screen that first shows one.
-    const note = root.querySelector('.cold__note');
+    // The scope of the number, beside the number.
+    //
+    // This used to require the opposite — the note in front of the count, never
+    // filed under a disclosure nobody opens — and that was right while a score
+    // was on screen. The reveal no longer shows one out here; the score, the
+    // band, the action level and the transfer limit are all inside "how we got
+    // here". A pre-emptive explanation of a number the reader cannot see is
+    // answering a question nobody asked, so the note moved in with it. The
+    // guarantee is unchanged and is now asserted as a pair: **wherever the
+    // score is, the scope is there too, and neither is out here.**
+    const note = root.querySelector('.proof-card__scope');
     expect(note).not.toBeNull();
     expect(note.getAttribute('role')).toBe('note');
     expect(note.textContent.trim()).toBe(heBundle.firstLight.scoreScope);
 
-    // It has to be in front of the count, not filed under a disclosure nobody
-    // opens: a `<details>` here would satisfy the letter of this and none of
-    // the point.
-    expect(note.closest('details')).toBeNull();
+    const how = note.closest('details');
+    expect(how, 'the scope should sit inside the disclosure').not.toBeNull();
+    expect(how.hasAttribute('open'), 'and that disclosure is closed').toBe(false);
+
+    // The half that makes the move honest rather than a hiding place: no score
+    // anywhere outside it. If one ever reappears out here without its scope,
+    // this fails.
+    const outside = root.querySelector('.proof-card');
+    const scoresOutside = [...outside.querySelectorAll('.score-chip, [class*="score"]')].filter(
+      (el) => !el.closest('details') && !el.classList.contains('proof-card__scope'),
+    );
+    expect(scoresOutside, 'no score may sit outside the disclosure').toHaveLength(0);
   });
 
   it('says it in both languages, or the English user is told less', () => {

@@ -209,6 +209,9 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
   const strong = top3.filter((p) => p.score >= BAND_USABLE);
   const shown = demo ? top3 : strong;
   const primary = top3.find((p) => p.score >= BAND_USABLE) || proofs.find((p) => p.score >= BAND_USABLE) || top3[0] || proofs[0];
+  // Everything else that cleared the bar, with the headline removed. See the
+  // comment beside the list below for what this is repairing.
+  const rest = shown.filter((p) => p.id !== primary?.id);
   const thin = !demo && (!primary || primary.score < BAND_USABLE);
   if (!proofs.length) {
     return html`<div class="cold">
@@ -230,24 +233,27 @@ export function firstLightView(state, t, { proofs, top3, demo = false }) {
         ${demo ? t('firstLight.demoTitle', proofs.length) : t('firstLight.title', proofs.length)}
       </h1>
       <p class="cold__body">${demo ? t('firstLight.demoSubtitle') : t('firstLight.subtitle')}</p>
-      <!--
-        This screen is the first place a number and an allowed action level are
-        put in front of somebody, and a measurement shown without saying what it
-        measured reads as a ruling on whether the thing is true. Screen 0 does
-        say the product takes your input as given, but it says it before there
-        is any result to mistake for a verdict.
-      -->
-      <p class="cold__note" role="note">${t('firstLight.scoreScope')}</p>
 
-      <h2 class="cold__step">
-        ${thin ? t('firstLight.thinTitle') : t('firstLight.threeTitle')}
-      </h2>
+      ${thin ? html`<h2 class="cold__step">${t('firstLight.thinTitle')}</h2>` : ''}
       ${thin ? html`<p class="cold__body">${t('firstLight.thinBody')}</p>` : ''}
+
       ${primary ? proofLoopCard(primary, t, proofs, signalCache, state, { thin }) : ''}
 
-      <ol class="reveal">
-        ${shown.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
-      </ol>
+      <!--
+        The strongest line used to be printed twice: once as the card above and
+        again as item 1 of this list, because primary is chosen out of top3
+        by the same threshold that builds shown. Measured at two proofs, the
+        stronger appeared twice and the weaker once. This screen exists to
+        produce "I didn't know that counted"; it cannot spend that moment on
+        the reader checking whether they missed a difference between two cards
+        carrying one sentence.
+      -->
+      ${rest.length
+        ? html`<h2 class="cold__step">${t('firstLight.restTitle')}</h2>
+            <ol class="reveal">
+              ${rest.map((proof, index) => revealCard(proof, index + 1, t, proofs, signalCache))}
+            </ol>`
+        : ''}
 
       ${demo ? '' : expectedCard(state, primary, t)}
       ${thin ? noDocsBridge(t) : ''}
@@ -344,43 +350,33 @@ function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false }
   const actionLevel = blocked ? 'R4' : 'R3';
 
   return html`<section class="proof-card" aria-labelledby="proof-card-title">
-    <p class="proof-card__eyebrow">${t('proofCard.eyebrow')}</p>
     <h3 class="proof-card__title" id="proof-card-title">
       ${blocked ? t('proofCard.titleWeak') : t('proofCard.title')}
     </h3>
-    <p class="proof-card__verdict">
-      ${blocked ? t('proofCard.weakVerdict') : t('proofCard.readyVerdict')}
-    </p>
-    <p class="proof-card__authority">
-      <b>${t('proofCard.actionLevelLabel')}</b> ${t(['proofCard', 'actionLevels', actionLevel])}
-    </p>
 
-    <dl class="proof-card__grid">
-      <div class="proof-card__cell proof-card__cell--wide">
-        <dt>${t('proofCard.traceLabel')}</dt>
-        <dd class="proof-card__claim">${proof.claim}</dd>
-      </div>
-      <div class="proof-card__cell">
-        <dt>${t('proofCard.mechanismLabel')}</dt>
-        <dd>${reason ? t(reason.id.split('.'), reason.vars) : t(['proofCard', 'mechanisms', archetype])}</dd>
-      </div>
-      <div class="proof-card__cell">
-        <dt>${t('proofCard.supportLabel')}</dt>
-        <dd>
-          ${claim && claimMatches
-            ? t('proofCard.supportsSpecific', claim)
-            : t(['proofCard', 'supports', archetype])}
-        </dd>
-      </div>
-      <div class="proof-card__cell">
-        <dt>${t('proofCard.confidenceLabel')}</dt>
-        <dd>${t(['bands', proof.score >= 70 ? 'strong' : proof.score >= BAND_USABLE ? 'usable' : 'weak'])} · ${t(['dimensions', dimension])}</dd>
-      </div>
-      <div class="proof-card__cell">
-        <dt>${t('proofCard.limitLabel')}</dt>
-        <dd>${t(['proofCard', 'limits', limit])}</dd>
-      </div>
-    </dl>
+    <!--
+      SOURCE. The person's own sentence, and the largest thing on the screen.
+      It used to sit fourth, inside a five-cell grid, under the label "what
+      actually happened" and after an eyebrow, a verdict and an action level —
+      so the first thing a visitor read about their own material was a ruling
+      on it. The order is now the argument: what you wrote, what it can carry,
+      what to do. How it was scored is a question, not a preamble.
+    -->
+    <blockquote class="proof-card__source">${proof.claim}</blockquote>
+
+    <!--
+      MEANING. One bounded sentence, and deliberately the *support* line rather
+      than the mechanism: the brief lists both for the disclosure, but the
+      target hierarchy needs an interpretation directly under the source, and
+      this is the only copy in the bundle that is one. It is therefore not
+      repeated inside the disclosure — the defect being repaired here is a
+      sentence appearing twice.
+    -->
+    <p class="proof-card__meaning">
+      ${claim && claimMatches
+        ? t('proofCard.supportsSpecific', claim)
+        : t(['proofCard', 'supports', archetype])}
+    </p>
 
     <div class="proof-card__actions">
       ${blocked
@@ -388,6 +384,50 @@ function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false }
         : button('draft', t('proofCard.draft'), { variant: 'primary', payload: { id: proof.id } })}
       ${button('firstLightDone', t('proofCard.fullPicture'), { variant: 'ghost' })}
     </div>
+
+    <!--
+      Everything that judges rather than shows. Closed, because none of it
+      changes what the person does next and all of it competes with the
+      sentence above for the one moment this screen has.
+
+      scoreScope comes in with it. It was added in front of the count for a
+      good reason — a measurement shown without saying what it measured reads
+      as a ruling on whether the thing is true — and that reason is a statement
+      about a visible score. No score is visible out here any more, so a
+      pre-emptive explanation of one would be answering a question nobody was
+      asked. It sits beside the number it is about.
+    -->
+    <details class="proof-card__how">
+      <summary class="proof-card__how-title">${t('proofCard.howTitle')}</summary>
+
+      <p class="proof-card__verdict">
+        ${blocked ? t('proofCard.weakVerdict') : t('proofCard.readyVerdict')}
+      </p>
+      <p class="proof-card__authority">
+        <b>${t('proofCard.actionLevelLabel')}</b> ${t(['proofCard', 'actionLevels', actionLevel])}
+      </p>
+
+      <dl class="proof-card__grid">
+        <div class="proof-card__cell">
+          <dt>${t('proofCard.mechanismLabel')}</dt>
+          <dd>${reason ? t(reason.id.split('.'), reason.vars) : t(['proofCard', 'mechanisms', archetype])}</dd>
+        </div>
+        <div class="proof-card__cell">
+          <dt>${t('proofCard.confidenceLabel')}</dt>
+          <dd>${t(['bands', proof.score >= 70 ? 'strong' : proof.score >= BAND_USABLE ? 'usable' : 'weak'])} · ${t(['dimensions', dimension])}</dd>
+        </div>
+        <div class="proof-card__cell">
+          <dt>${t('proofCard.limitLabel')}</dt>
+          <dd>${t(['proofCard', 'limits', limit])}</dd>
+        </div>
+        <div class="proof-card__cell">
+          <dt>${t('proofCard.scoreLabel')}</dt>
+          <dd>${scoreChip(proof.score, t, { size: 'sm' })}</dd>
+        </div>
+      </dl>
+
+      <p class="proof-card__scope" role="note">${t('firstLight.scoreScope')}</p>
+    </details>
   </section>`;
 }
 
