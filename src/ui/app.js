@@ -1018,6 +1018,15 @@ export function mountApp(root) {
     const activeAct = active?.dataset?.act;
     const activeKey = active?.dataset?.id ?? active?.dataset?.view ?? '';
     const selectionStart = active?.selectionStart;
+    // The radios are the only controls in the app carrying neither an id nor a
+    // data-act: they are identified by name and value inside a wrapping label.
+    // Both lookups above therefore missed them, the fallback returns null on
+    // its own first line when there is nothing to match on, and focus fell
+    // through to the document — on the *first* keyboard interaction anyone has
+    // with this product, on the screen the whole product hangs on. Found in a
+    // browser, not here, because this suite never asked where focus went.
+    const activeName = active?.tagName === 'INPUT' ? active.getAttribute('name') : null;
+    const activeValue = active?.getAttribute?.('value');
 
     renderInto(root, chrome(body()));
     restoreFormValues();
@@ -1029,6 +1038,14 @@ export function mountApp(root) {
       restored = [...root.querySelectorAll(`[data-act="${CSS.escape(activeAct)}"]`)].find(
         (el) => (el.dataset.id ?? el.dataset.view ?? '') === activeKey,
       );
+    } else if (activeName) {
+      // Name *and* value: the group is not the control. Landing a keyboard user
+      // on the first radio of the group after they chose the third is a quieter
+      // version of the same defect, and it would have looked fixed.
+      restored =
+        [...root.querySelectorAll(`input[name="${CSS.escape(activeName)}"]`)].find(
+          (el) => el.getAttribute('value') === activeValue,
+        ) ?? null;
     }
     liveRegion.textContent = ui.toast;
 
@@ -1038,7 +1055,12 @@ export function mountApp(root) {
     // and a keyboard user is thrown to the top of the page mid-task. When the
     // element itself is gone, keep the user where they were working.
     const fallback = () => {
-      if (!activeAct && !activeId) return null;
+      // `activeName` is in this guard for the same reason the branch above
+      // exists: a radio whose whole group is gone from the next screen should
+      // still leave the user at the top of the content, not at the top of the
+      // document. It reaches `#main` below, because there is no `data-act` to
+      // match on.
+      if (!activeAct && !activeId && !activeName) return null;
       return (
         root.querySelector(`[data-act="${CSS.escape(activeAct ?? '')}"]`) ??
         root.querySelector('#main') ??
