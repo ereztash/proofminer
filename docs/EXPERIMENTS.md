@@ -215,6 +215,62 @@ each is unrecoverable the day after.
 
 ---
 
+## JF1 · Journey friction observation — added 28 August 2026
+
+**Status** specified, not run. Written in full in `docs/JOURNEY_FRICTION.md`;
+this is the registration.
+
+**It is not an experiment.** There is no prediction, no threshold and no
+decision rule, because it makes no comparison — it is an observation layer over
+sessions that are happening anyway. It is registered here so that it has an
+identifier, a date, and a recorded boundary against the preregistration above.
+
+**The boundary, which is the reason this section exists.** E1's prediction,
+thresholds, exclusions, coding rule, failure conditions and decision rule are
+**unchanged, and no journey-friction outcome has been added to any of them.**
+Nothing above this line was edited when this was written. That is the same rule
+`docs/SLP_KNOWLEDGE_TRANSFER.md` states for anything arriving after E1: a new
+identifier and a date, never a rewrite.
+
+**Question.** Between first exposure and a useful external action, which human
+effort is necessary, which can safely disappear, and what is the
+lowest-complexity intervention that removes an unnecessary cost without
+weakening truth, trust, privacy, eligibility or evidence quality?
+
+| | |
+|---|---|
+| **Unit** | one micro-behaviour, not a screen, a route or a feature |
+| **Population** | the same sessions as E1, plus the two protocol runs before them |
+| **Denominator** | five. `3 of 5`, never `60%` |
+| **Instrument** | the observer, in two layers — behaviour during the silent run, interpretation only afterwards — plus the timestamps the app already writes to the participant's own device |
+| **New product instrumentation** | **none.** The audit's per-candidate reasoning is in `docs/JOURNEY_FRICTION.md`; the short version is that at n≈5 a silent observer already in the room outresolves an event ledger and can answer *why*, which the ledger structurally cannot |
+
+**It may run alongside E1 only while it changes neither participant behaviour
+nor observer behaviour.** No question during the silent run, no prompt, no
+screen, no instruction. The debrief happens after E1's own material is
+collected, and its answers are stored as `SELF_REPORT`.
+
+**Exposure is `SELF_REPORT`, never attribution.** *"מה גרם לך לפתוח את
+ProofMiner עכשיו?"* is the same instrument as E3's intake question and carries
+the same label wherever it is written down or spoken about.
+
+**External action has four states and none is inferred from an earlier one:**
+PREPARED · INITIATED · COMPLETED · RESPONSE. `artifacts[].status = 'published'`
+is a claim the participant typed, not an observation — the state was reached in
+a walk of the real app with nothing leaving the device. Criterion 3 of E1 is
+still verified in public at day 14, and JF1 does not soften that.
+
+**What it may not be used for.** Any statement about E1's coding. Any causal
+claim. Any product change that cannot carry the six-step change license in
+`docs/JOURNEY_FRICTION.md`. Any percentage.
+
+**Failure condition.** If after five participants no friction candidate can be
+written with a mechanism, an alternative explanation and a falsifier, JF1 has
+produced a list of complaints rather than a diagnosis, and the correct response
+is to say so — not to ship the three most plausible fixes.
+
+---
+
 ## What is deliberately not being run
 
 - **Any A/B test in the product.** It has no users, no server and no assignment

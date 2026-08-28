@@ -60,6 +60,7 @@ several record things that turned out to be wrong.
 |---|---|
 | [`PRODUCTION_READINESS.md`](PRODUCTION_READINESS.md) | The scorecard. Currently **engineering-ready, market thesis unvalidated** — 68/100. Every score carries its evidence, the risk holding it down, and the observation that would raise it. |
 | [`EXPERIMENTS.md`](EXPERIMENTS.md) | Preregistrations. Prediction, exclusions and decision rule written **before** exposure. E1, the five-person trial, is the outstanding one. |
+| [`JOURNEY_FRICTION.md`](JOURNEY_FRICTION.md) | JF1, the observation layer over the same sessions as E1 — the journey reconstructed from the implementation rather than from a brief, a micro-behaviour map, the observability audit and its verdict (**no new product instrumentation**, reasoned per candidate), the observer protocol and the friction register. **E1 is not modified by it**, and no product code changed. |
 | [`RESEARCH_LEDGER.md`](RESEARCH_LEDGER.md) | Sources, what was taken from each, and the fields that were absent from the frame. |
 | [`PROMPT_EVOLUTION.md`](PROMPT_EVOLUTION.md) | Adversarial critique of the instructions the work ran under, including the concession that the metric most improved was chosen for being measurable rather than decisive. |
 
