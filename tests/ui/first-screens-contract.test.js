@@ -82,11 +82,16 @@ describe('the screens before the app', () => {
     expect(how.hasAttribute('open'), 'and that disclosure is closed').toBe(false);
 
     // The half that makes the move honest rather than a hiding place: no score
-    // anywhere outside it. If one ever reappears out here without its scope,
-    // this fails.
-    const outside = root.querySelector('.proof-card');
-    const scoresOutside = [...outside.querySelectorAll('.score-chip, [class*="score"]')].filter(
-      (el) => !el.closest('details') && !el.classList.contains('proof-card__scope'),
+    // anywhere outside it.
+    //
+    // The first version of this searched inside `.proof-card`, and the list of
+    // secondary findings is a **sibling** of that element — so it could not
+    // have failed, and it did not, while every secondary finding carried a
+    // visible score chip and the explanation of what that number measures sat
+    // folded away above them. A test written to pass. It scans the whole
+    // screen now.
+    const scoresOutside = [...root.querySelectorAll('[class~="score"]')].filter(
+      (el) => !el.closest('details'),
     );
     expect(scoresOutside, 'no score may sit outside the disclosure').toHaveLength(0);
   });

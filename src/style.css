@@ -1010,13 +1010,6 @@ p {
   margin-block-start: 0.4rem;
 }
 
-.reveal__score {
-  display: inline-block;
-  font-size: 1.1rem;
-  font-weight: 800;
-  margin-block-start: 0.4rem;
-}
-
 .proof-card {
   margin-block-start: var(--step);
   border: 1px solid var(--line);
@@ -1035,8 +1028,18 @@ p {
   text-transform: uppercase;
 }
 
+/*
+  The card's own heading is a label, not the finding. It was 1.35rem against a
+  1.2rem quotation, so the generic words "the first evidence card" won the
+  screen over the sentence the person actually wrote — while a comment two
+  files away claimed the opposite. The heading shrinks rather than the
+  quotation growing: the fix for a source that does not dominate is less
+  competition, not more drama.
+*/
 .proof-card__title {
-  font-size: 1.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink-soft);
   margin-block-start: 0.15rem;
 }
 
@@ -1092,14 +1095,22 @@ p {
   document they supplied, not a finding phrased by this product.
 */
 .proof-card__source {
-  margin: var(--step) 0 0;
+  margin: 0.5rem 0 0;
   padding-inline-start: 0.9rem;
   border-inline-start: 3px solid var(--accent);
   color: var(--ink);
-  font-size: 1.2rem;
+  font-size: 1.45rem;
   font-weight: 650;
-  line-height: 1.5;
+  line-height: 1.45;
   overflow-wrap: anywhere;
+}
+
+/* Where the sentence came from. Short, secondary, and only when the model has it. */
+.proof-card__provenance {
+  margin-block-start: 0.4rem;
+  padding-inline-start: 0.9rem;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
 }
 
 /* MEANING. One sentence, plainly subordinate to the quotation above it. */

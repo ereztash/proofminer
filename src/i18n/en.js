@@ -318,6 +318,7 @@ export default {
     weakVerdict: 'There is a trace here, but not yet evidence worth drafting from.',
     traceLabel: 'What actually happened',
     howTitle: 'How we got here',
+    sourceLabel: 'Source:',
     scoreLabel: 'Score',
     mechanismLabel: 'What this likely proves',
     supportLabel: 'What claim this can support',

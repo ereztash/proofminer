@@ -365,6 +365,7 @@ export default {
     weakVerdict: 'יש כאן עקבה, אבל עדיין לא ראיה שמומלץ לשלוח ממנה טיוטה.',
     traceLabel: 'מה קרה בפועל',
     howTitle: 'איך הגענו לזה',
+    sourceLabel: 'מקור:',
     scoreLabel: 'ניקוד',
     mechanismLabel: 'מה זה כנראה מוכיח',
     supportLabel: 'לאיזו טענה זה יכול לתמוך',

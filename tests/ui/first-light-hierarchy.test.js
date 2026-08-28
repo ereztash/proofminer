@@ -97,6 +97,41 @@ describe('the reveal puts the source first and the apparatus last', () => {
     }
   });
 
+  it('shows no score outside the disclosure, with several findings on screen', () => {
+    // The regression this exists for: `revealCard` printed a chip for every
+    // secondary finding, so a screen with two or more results showed numbers
+    // while the note explaining what the number measures was folded into the
+    // primary card's disclosure. That combination is the worst of both — a
+    // score with no scope — and it invalidated the reason the note was moved.
+    //
+    // Two strong findings, because one leaves the list empty and proves nothing.
+    const markup = render([unit('AAA', 71), unit('BBB', 64)]);
+    expect(markup).toContain('SENTENCE_BBB');
+
+    const closed = markup.slice(0, markup.indexOf('<details class="proof-card__how"'));
+    const afterDisclosure = markup.slice(markup.lastIndexOf('</details>'));
+    const outside = closed + afterDisclosure;
+    expect(outside, 'no score chip may render outside the disclosure').not.toMatch(
+      /class="[^"]*\bscore\b/,
+    );
+
+    // And the primary's score is still there, inside it.
+    const inside = markup.slice(
+      markup.indexOf('<details class="proof-card__how"'),
+      markup.lastIndexOf('</details>'),
+    );
+    expect(inside).toMatch(/class="[^"]*\bscore\b/);
+    expect(inside).toContain(t('proofCard.scoreLabel'));
+  });
+
+  it('names where the sentence came from, when the model knows', () => {
+    const markup = render([unit('AAA', 62)]);
+    expect(markup).toContain(t('proofCard.sourceLabel'));
+    expect(markup).toContain('מקור');
+    const source = markup.indexOf('proof-card__source');
+    expect(markup.indexOf('proof-card__provenance')).toBeGreaterThan(source);
+  });
+
   it('does not let weak evidence pick up a stronger action than it had', () => {
     // The redesign moves the action level out of sight. That must not change
     // which action is offered — a promotion here would be the redesign quietly

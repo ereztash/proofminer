@@ -363,6 +363,9 @@ function proofLoopCard(proof, t, inventory, signalCache, state, { thin = false }
       what to do. How it was scored is a question, not a preamble.
     -->
     <blockquote class="proof-card__source">${proof.claim}</blockquote>
+    ${proof.sourceName
+      ? html`<p class="proof-card__provenance">${t('proofCard.sourceLabel')} ${proof.sourceName}</p>`
+      : ''}
 
     <!--
       MEANING. One bounded sentence, and deliberately the *support* line rather
@@ -463,6 +466,20 @@ function transferLimit(proof) {
   return 'scope';
 }
 
+/**
+ * A secondary finding: the sentence, and why this one.
+ *
+ * No score. It used to carry one, and that made the disclosure above it a lie —
+ * the whole justification for folding `scoreScope` in beside the number was
+ * that no number was visible out here, and with two or more findings that was
+ * false. The screen either shows scores with their scope attached or shows
+ * neither, and this product's rule is that a score explains a decision rather
+ * than being one. It is in the disclosure, next to what it means.
+ *
+ * The test that was supposed to catch this searched inside `.proof-card` for
+ * scores, and this list is a sibling of that element, so it could not have
+ * failed. It now scans the whole screen.
+ */
 function revealCard(proof, rank, t, inventory, signalCache) {
   // A reason derived from the signals actually present in this claim, and where
   // possible from how it compares to the rest of the inventory. The previous
@@ -479,7 +496,6 @@ function revealCard(proof, rank, t, inventory, signalCache) {
         <b>${t('firstLight.why')}:</b>
         ${reason ? t(reason.id.split('.'), reason.vars) : t('reasons.none')}
       </p>
-      <span class="reveal__score">${scoreChip(proof.score, t, { size: 'sm' })}</span>
     </div>
   </li>`;
 }
