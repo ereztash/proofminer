@@ -67,11 +67,13 @@ export default {
     },
     modeConsultantOffer: 'ייעוץ / ליווי שינוי',
     modeExpertOffer: 'מומחיות / אבחון',
-    fitQuestion: 'מ־1 עד 10, עד כמה ברור לך למה לבחור בך מול אלטרנטיבה?',
+    // Kept although nothing renders it: `tests/ui/html.test.js` asserts this
+    // string carries no risk/opportunity framing. The slider it belonged to is
+    // gone, but the refusal that shaped its wording is on the record and the
+    // guard is the record. The three keys that stood beside it —
+    // fitQuestion, fitLow, fitHigh — had no consumer at all and were removed.
     fitNote:
       'זה לא ציון, ולא נשווה אותו לשום מספר אחר. זו נקודת פתיחה — כדי שנדע באיזו נקודה אתה נכנס.',
-    fitLow: 'לא ברור לי מה להראות',
-    fitHigh: 'ברור לי בדיוק',
     claimQuestion: 'מה המשפט שאתה רוצה שהלקוח יאמין בו?',
     claimHint:
       'לא סיסמה, ולא חייב לצאת מדויק. אם אין לך ניסוח — דלג. זה בדיוק מה שהחומר ' +
