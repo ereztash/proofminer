@@ -154,3 +154,88 @@ cards.
 
 Not changed here. Recorded so that Patch 2 begins from a measured defect rather
 than from a redesign impulse.
+
+---
+
+# Outcomes — appended 28 August 2026, nothing above rewritten
+
+This file is the **baseline**. Everything above it is what was true on 27–28
+August before any patch, and it stays that way on purpose: a baseline edited to
+match the outcome cannot be used to check the outcome. What follows is what
+happened to each finding, and where to look.
+
+| Finding above | Outcome | Where |
+|---|---|---|
+| The pre-analysis questions are a wall, not a gate | **Fixed.** Material first; the four optional inputs moved into a closed disclosure below it, unchanged, still written to the same fields | Patch 1, PR #28 |
+| `fitConfidence` is written and read by nothing | **Removed from the UI only.** `core/schema.js` keeps the field so old saves load; the question is not asked | Patch 1, PR #28 |
+| The recall route already exists and was a ghost escape hatch | **Promoted** to a bordered peer button beside the primary | Patch 1, PR #28 |
+| The strongest proof prints **twice** — measured at 2 usable units presenting as 3 cards | **Fixed.** `rest = shown.filter(p => p.id !== primary?.id)` | Patch 2, PR #29 |
+| The verdict and the allowed action level are met **before** the person's own sentence | **Fixed.** `SOURCE → MEANING → one ACTION`, apparatus inside a closed disclosure | Patch 2, PR #29 |
+| The situation radio does two jobs — qualification and `practiceMode` segmentation | **Not fixed, and deliberately.** See below | — |
+
+## Three things this audit did not predict, found while doing the work
+
+**A score with no scope.** `scoreScope` was moved into the disclosure on the
+stated grounds that no score was visible outside it. That was untrue the moment
+a second finding rendered: `revealCard` printed a chip for every secondary
+proof. The worst available combination — a number with its scope removed —
+arrived by way of a change whose whole argument was that scores are subordinate.
+Fixed in PR #29; the chip is gone from the secondary list.
+
+**A regression test written to pass.** The test that should have caught the
+above searched inside `.proof-card`; the reveal list is a *sibling* of that
+element, so it could not have failed and did not, while the defect sat in front
+of it. **A test that scopes its query to the wrong subtree cannot fail.** The
+rule taken from it: prove a new guard red against the broken version before
+trusting it — done by restoring the chip and watching it go red.
+
+**The same stale-selector defect, three times in one file, caught twice.** Two
+production smoke tests were still typing into `#fit-claim` / `#fit-evidence`
+after Patch 1 folded them behind a closed disclosure — the same defect Patch 1
+had already fixed once in that file. The rule: **when a UI change hides or moves
+a field, grep the whole file for every id it touches, not only the occurrence
+visible in the diff.**
+
+## Registered debt — the fit gate
+
+`consultant / expert / not-me` is one control doing two jobs: qualification, and
+segmentation into `practiceMode`. Only the first is needed before First Light.
+
+It is **not** being split. The third branch is the honest exit, and moving the
+control without a replacement deletes that trust boundary — the product would
+lose the one place it tells someone this is not for them. `BLOCKED_BY_UNTESTED_ALTERNATIVE`:
+the next evidence that should move it is user behaviour in `docs/EXPERIMENTS.md`
+E1, not another implementation guess.
+
+## Patch 3 — the dashboard, audited the same way
+
+The order was `urgency → Visibility Gap → bridge → Next Move → diagnosis → six
+layers`, with the file's own comment stating the reasoning. The defect is the
+same shape as First Light's: the screen opened by asking the reader to interpret
+the product — a figure, a delta, two sub-scores and an index before anything
+they wrote and before anything to do.
+
+Fixed in PR #30: `bridge → stop-if-gated → move → gap → closed disclosure`.
+Measured in a real browser at `bridge 102 · move 258 · hero 460 · disclosure
+715`. The Gap is demoted, not deleted; no formula moved.
+
+## Patch 4 — the epistemic surfaces: `ALREADY_DISCHARGED`
+
+The plan reserved a patch for making the interface distinguish `SOURCE` from
+`INFERENCE` from `MISSING` from `ACTION`. Audited by measuring the rendered
+styles in a browser rather than by reading the code:
+
+| Surface | SOURCE | INFERENCE / MISSING |
+|---|---|---|
+| First Light | quotation **23.2px / 650**, full ink, 3px accent border; provenance beneath it | meaning **16px / 400**, soft ink, no border |
+| Inventory | claim **16px / 600**, full ink | `חזק:` and `מה יחזק:` at 13.28px / 400, soft ink, each behind a **bold label** |
+| Dashboard | bridge line 16px, full ink, under the note *"your words, exactly as you pasted them, not a summary and not a rephrasing"* | the move's reasoning inside the accent card; the hero sentence at 18.4px / 600 |
+| Studio | the cited proof | grounding stop/warn notices, authorship share, `via model` tag |
+| Gaps | — | covered / not-covered per archetype, the play, its cost |
+
+Every SOURCE rendering is in full ink and is either the largest element on its
+card, the heaviest weight in it, or explicitly labelled as verbatim. Every
+inference is soft ink, smaller, or label-prefixed. **No user-visible ambiguity
+was found, so no code was written.** Adding a badge row to satisfy the name
+"Patch 4" would be badge proliferation against a problem that is already solved
+by typography.

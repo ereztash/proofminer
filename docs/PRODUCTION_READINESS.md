@@ -157,10 +157,36 @@ token has to be set for the worst background it sits on.** Now **0 failures in
 both schemes on both screens**, with `tests/ui/contrast.test.js` as the tripwire
 and the browser as the instrument.
 
-**Risk.** No screen-reader walkthrough. No `prefers-reduced-motion` check.
-Keyboard *reachability* was sampled; end-to-end keyboard task completion was not.
+**Risk.** No screen-reader walkthrough. **This is the whole of the remaining
+risk in this category, and it is why the score does not move below.**
 
-**Raises it.** A screen-reader pass — doable here, not done.
+**Keyboard task completion, run 28 August 2026 and no longer a risk.** An
+end-to-end keyboard-only walk in Chromium against a local preview —
+onboarding → material → First Light → dashboard → the full-picture disclosure —
+now passes **24/24**: RTL direction, every stop reachable by Tab with a visible
+focus ring, Space selecting a situation *and keeping focus*, the paste box
+holding its caret mid-typing, both disclosures focusable and opening on Enter,
+all six layers present once opened, exactly one primary action, and no focus
+trap anywhere on the path.
+
+**It found one real defect, now fixed.** The situation and weeks radios are the
+only controls in the application carrying neither an `id` nor a `data-act` —
+they are identified by `name` and `value` inside a wrapping label — so the
+focus-restoration block in `render()` could match neither, and focus fell
+through to `<body>` on the *first* keyboard interaction anyone has with this
+product. `tests/ui/focus-across-render.test.js` pins it, and was checked red
+against the unfixed `app.js` before being trusted.
+
+**`prefers-reduced-motion`: this risk was stated in error and is withdrawn.**
+The guard has been in `src/style.css` all along — a `prefers-reduced-motion:
+reduce` media query plus a `.reduce-motion` class for the in-app setting — and
+the audit that should have preceded the claim finds the product contains
+**exactly one** transition of any kind: a 160ms opacity fade on the toast.
+Counted in the browser: one element with a non-trivial transition duration on
+the whole walk. There is nothing here to reduce.
+
+**Raises it.** A screen-reader pass — doable here, still not done. Nothing else
+in this category is outstanding.
 
 ### 6 · Privacy and security — 9/10
 
@@ -181,8 +207,11 @@ people's evidence on a server. The trade is documented, not hidden.
 
 ### 7 · Reliability and test quality — 7/10
 
-**Evidence.** 470 tests across 21 files, lint clean, production build green, CI
-runs all three and now fails if the build cannot name its own commit.
+**Evidence.** 522 tests across 28 files, lint clean, production build green, CI
+runs all three and now fails if the build cannot name its own commit. *(Count
+refreshed 28 August 2026 after Patches 1–3 and the focus fix; the score is
+unchanged, because more tests are not the observation this category says it is
+waiting for.)*
 
 **Risk, and it is self-inflicted and demonstrated.** This suite was **blind to a
 twelve-point detector improvement** — `recall-floor.test.js` read 0.50 in Hebrew
@@ -191,6 +220,16 @@ was written by somebody who already knew what the code looks for. That is now
 partly repaired by an external corpus and a property test, and only partly.
 
 **Raises it.** More externally-grounded fixtures; a mutation run.
+
+**Why a mutation framework is still not being adopted.** The question a mutation
+run has to answer here is *which user-facing invariant would it protect that
+targeted mutation has not already challenged?* — and this repository keeps
+answering it with a cheaper instrument. Three times now the defect was found by
+making the old implementation fail on purpose: restoring the score chip to watch
+a new guard go red, reverting `app.js` to `main` to watch the focus test go red,
+and replaying two real `deployment_status` events through the classifier. Each
+took minutes and each caught something a coverage number would have rated
+green. Deferred, not refused.
 
 ### 8 · Deployment and observability — 3/5
 
@@ -219,11 +258,24 @@ an empty list, a truncated sha, a rollback to an older commit. Nine cases in
 `tests/harness/deployment-identity.test.js` hold that boundary, because a skip
 that widens by accident deletes the assertion silently.
 
-**Risk.** The superseded path is proven against the replayed event and against
-the real history, and **not yet in production** — it needs two merges landing
-close together to fire. There is still no tested rollback runbook, and still no
-error reporting by design, which is coherent with the privacy posture and still
-means a broken deployment is invisible until somebody says so.
+**The three-outcome rule has since run in production, and took the ordinary
+path.** Run `33150437104`, 28 August 07:09 UTC, on the `#27` merge commit: the
+ancestry step executed, the classifier returned `match`, the log reads
+`deployed commit: e66608d08718c7f0901fb5a92873829b2cfc914e`, 4/4 passed. The
+mechanism works end to end on the path it will take almost every time. **The
+score does not move for this** — this category says a tested rollback is what
+raises it, and that has not happened.
+
+**Risk.** The **superseded** path is proven against the replayed event and
+against the real history, and **not yet in production** — it needs two merges
+landing close together to fire, which has not recurred. There is still no
+*tested* rollback runbook, and still no error reporting by design, which is
+coherent with the privacy posture and still means a broken deployment is
+invisible until somebody says so.
+
+**A written, untested rollback procedure now exists** in `docs/DEPLOYMENT.md`.
+Writing it down is not testing it and does not move this score; it exists so
+that the drill, when it is authorised, is a drill rather than an improvisation.
 
 **Raises it.** A tested rollback: deploy a known-bad build, revert it, and show
 the alias back on the previous commit — verifiable now that the page names it,

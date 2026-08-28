@@ -67,10 +67,10 @@ several record things that turned out to be wrong.
 
 | File | What it is |
 |---|---|
-| [`UX_AUDIT_2026-08.md`](UX_AUDIT_2026-08.md) | Baseline audit of the onboarding path, read before any change. Records three places where the brief describing this codebase did not match it — most importantly that the pre-analysis questions were never a gate, only a wall, and that the recall route the brief asks for is already built and merely de-ranked. |
+| [`UX_AUDIT_2026-08.md`](UX_AUDIT_2026-08.md) | Baseline audit of the onboarding path, read before any change. Records three places where the brief describing this codebase did not match it — most importantly that the pre-analysis questions were never a gate, only a wall, and that the recall route the brief asks for is already built and merely de-ranked. **The baseline above the rule is never edited**; outcomes for each finding, the registered fit-gate debt, and the audit that closed Patch 4 as already-discharged are appended below it. |
 
 ## Unintegrated
 
 | File | Status |
 |---|---|
-| [`SLP_KNOWLEDGE_TRANSFER.md`](SLP_KNOWLEDGE_TRANSFER.md) | 346 lines applying an evidence-transfer protocol from speech-language, literacy and memory research. Arrived via PR #26. **Nothing in the codebase or the other documents references it**, and no change has been made on its basis. It is either a backlog worth acting on or a document to retire; that is an owner decision, not a tidying one. |
+| [`SLP_KNOWLEDGE_TRANSFER.md`](SLP_KNOWLEDGE_TRANSFER.md) | Applies an evidence-transfer protocol from speech-language, literacy and memory research. Arrived via PR #26. **Still deliberately unintegrated** — no change has been made on its basis. Its five proposals are now classified at the end of the file: four are trial instrumentation and wait on E1; `HE-NER-1`, a fixed Hebrew organisation benchmark, is the only one that needs no users. Nothing from it has been added to E1, which is preregistered. |

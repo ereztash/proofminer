@@ -212,12 +212,28 @@ they came to escape.
    `profile.expectedEvidence` was just repaired for.
 
 2. **Screen 1 — First Light.** After the first mine, a dedicated reveal state
-   — *not* the dashboard. `"מצאנו 14 הוכחות במה שהדבקת."` Then the three they
-   would never have published themselves, with the reason each one is stronger
-   than they think. **This is the product's entire hook and it must land inside
-   3 minutes of arrival.**
+   — *not* the dashboard. `"מצאנו 14 הוכחות במה שהדבקת."` **This is the
+   product's entire hook and it must land inside 3 minutes of arrival.**
 
-   **After the three, and only after them: what you expected.** Onboarding asks
+   **The order on the card is the argument, and it is one unit, not three.**
+   `SOURCE` — the person's own sentence, the largest element on the screen,
+   printed exactly once — then `MEANING`, one bounded line saying what it can
+   carry, then **one** action. Everything that judges rather than shows —
+   verdict, allowed action level, mechanism, confidence, transfer limit, the
+   score and its scope — sits inside a closed *"איך הגענו לזה"*. Whatever else
+   cleared the bar follows underneath with the headline removed and **no score
+   chip**: a number without the sentence explaining what it measures is the one
+   combination worse than either alone.
+
+   *This paragraph used to read "then the three they would never have published
+   themselves". It described the version measured in `docs/UX_AUDIT_2026-08.md`,
+   where the strongest line printed **twice** — once as the card and again as
+   item 1 of the list beneath it, because the primary is chosen out of the same
+   `top3` the list is built from. At two proofs the stronger appeared twice and
+   the weaker once: two usable units presented as three cards. Corrected in the
+   Patch 2 merge.*
+
+   **Last on the screen, after everything above: what you expected.** Onboarding asks
    which single piece of evidence the user thinks holds their claim. First
    Light shows that answer beside the unit that actually scored highest. A
    match is reported as confirmation — that is credit, not a test they passed.
@@ -226,7 +242,9 @@ they came to escape.
    that missed the line. It renders nothing when the question went unanswered.
 
    **The version deliberately not built** is the neighbouring one: setting the
-   self-reported `fitConfidence` against L1's measured band. "You said 8, your
+   self-reported `fitConfidence` against L1's measured band. *Since Patch 1 the
+   question is no longer asked either — the field was removed from the screen
+   while `core/schema.js` keeps it so old saves still load. Nothing reads it.* "You said 8, your
    evidence says 31" reverses the product's emotional direction — the gap
    exists to say the world undervalues you, not that you overvalue yourself —
    and pairs two scales that are nowhere defined against each other. The
@@ -258,18 +276,35 @@ they came to escape.
 
 3. **Screen 2+ — the dashboard**, unlocked only once L1 exists.
 
-## The dashboard opens on the gap, then on the user's own words
+## The dashboard opens on the user's own words, and the number explains them
 
-Order: the Visibility Gap, then the **return bridge**, then the single Next
-Move. The bridge is up to three of the user's own unpublished sentences,
-verbatim — the gap in their handwriting, sitting directly above the thing they
-are being told to do about it. Reading a person's own words back to them is the
-single move that opens this conversation up most reliably, and the dashboard had
-nothing of theirs anywhere on it.
+Order: the **return bridge**, then the single Next Move, then the Visibility
+Gap, then everything else behind one closed disclosure. The bridge is up to
+three of the user's own unpublished sentences, verbatim — the gap in their
+handwriting, sitting directly above the thing they are being told to do about
+it. Reading a person's own words back to them is the single move that opens this
+conversation up most reliably.
 
 It carries **no clock** — see `docs/TELOS.md`, "it does not measure your
 absence" — and renders nothing on bundled fixtures, because "what you already
 wrote" over eight sample sentences is the lie First Light was repaired for.
+
+**The Gap is now third, and that is a reversal of what this section used to
+say.** It read *"the dashboard opens on the gap"*, and the file itself opened
+with the reasoning: a number naming the pain is what gets someone to act at 2am.
+What that produced was a screen whose first move is asking the reader to
+interpret the product — a figure, a delta, two sub-scores and an index before
+anything they wrote and before anything to do. A metric in the first position is
+also read as the goal, and this one explains a state; `docs/TELOS.md` refuses the
+version of this product where somebody optimises the number instead of the thing
+it measures. The metric is **demoted, not deleted**: same formula, same number,
+same sentence, same three stats, same negative styling.
+
+**One thing is never folded.** A `gated` or `HOLLOW` state is not an
+explanation — it is a limit on what the product will let the user do next. It
+renders above the move it constrains, outside the disclosure, with
+`role="alert"`. Progressive disclosure is for explanation; a boundary the reader
+has to go looking for is not a boundary.
 
 Layers L3–L6 stay visibly **locked, not failed**. A locked layer says
 *"unlocks when you publish your first grounded artifact"* — it never says `0`.
