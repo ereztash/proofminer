@@ -94,3 +94,28 @@ action — Patch 2.
 
 None found on this path. `cold-paste` is rendered from `ui.formCache`, so
 answering the question above it does not empty it — a bug already fixed here.
+
+
+---
+
+## Debt, recorded rather than paid
+
+**One control does two jobs.** The consultant / expert / not-me radio is both the
+**fit gate** — its third branch is the honest exit, and nothing else offers one —
+and a **segmentation field**, writing `profile.practiceMode`. Only the first is
+needed before First Light: `practiceMode` sets a label string on
+`positioning.offer` and is passed as `mode` to `extractClaims`, which runs later,
+on the Sources screen, behind an explicit confirmation.
+
+Splitting them is deferred deliberately. Moving the question would delete the
+exit; keeping it means a person who has material still answers a segmentation
+question first. **Do not resolve this before an alternative has been tested** —
+the exit is a product decision with its own history and is not worth trading for
+one fewer click on an untested guess.
+
+**Orphaned copy.** Removing the confidence slider left `onboarding.fitQuestion`,
+`fitLow` and `fitHigh` with no consumer in either bundle. `fitNote` keeps one
+reference — a guard in `tests/ui/html.test.js` asserting the copy never promises
+a risk/opportunity comparison. All four are left in place: deleting them widens
+a patch that was scoped to the UI, and the standing refusal they relate to is
+recorded where it belongs, in `core/schema.js`.

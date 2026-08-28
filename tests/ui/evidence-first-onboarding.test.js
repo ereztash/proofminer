@@ -45,7 +45,14 @@ describe('material first, questions later', () => {
     expect(folded, 'the optional questions should live inside a disclosure').not.toBeNull();
     expect(folded.hasAttribute('open')).toBe(false);
     expect(folded.querySelector('#fit-evidence')).not.toBeNull();
-    expect(folded.querySelector('#fit-confidence')).not.toBeNull();
+
+    // The self-rating is gone from the screen entirely, not folded. It was
+    // written to `profile.fitConfidence` and read by nothing: the use it was
+    // collected for — setting a self-report against L1's measured band — is
+    // refused on the record in `core/schema.js`, because it reverses the
+    // product's emotional direction. The schema field stays so old saves load;
+    // asking for the number does not.
+    expect(root.querySelector('#fit-confidence'), 'the dead self-rating should not be on screen').toBeNull();
 
     // And the paste box is not inside it.
     expect(root.querySelector('#cold-paste').closest('details')).toBeNull();

@@ -85,7 +85,6 @@ function notForYou(t) {
 }
 
 function coldStartBody(t, weeks, ui, situation) {
-  const confidence = ui.formCache?.['fit-confidence'] ?? '5';
   const modeRead = t(['onboarding', 'modeRead', situation]);
 
   return html`<div class="cold__step-block">
@@ -120,27 +119,6 @@ function coldStartBody(t, weeks, ui, situation) {
     <details class="pledge">
       <summary class="pledge__title">${t('onboarding.optionalTitle')}</summary>
       <p class="pledge__lead">${t('onboarding.optionalLead')}</p>
-
-      <fieldset class="choice">
-        <legend>${t('onboarding.fitQuestion')}</legend>
-        <p class="choice__note">${t('onboarding.fitNote')}</p>
-        <input
-          class="input input--range"
-          id="fit-confidence"
-          name="fit-confidence"
-          type="range"
-          min="1"
-          max="10"
-          step="1"
-          value="${confidence}"
-          aria-describedby="fit-confidence-scale"
-        />
-        <div class="range-scale" id="fit-confidence-scale">
-          <span>${t('onboarding.fitLow')}</span>
-          <b>${confidence}</b>
-          <span>${t('onboarding.fitHigh')}</span>
-        </div>
-      </fieldset>
 
       ${field(
         'fit-claim',

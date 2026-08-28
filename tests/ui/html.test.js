@@ -168,13 +168,18 @@ describe('the first screen qualifies rather than educates', () => {
     expect(markup).not.toContain('data-act="coldStart"');
   });
 
-  it('starts with evidence choice, not only a pain category', () => {
+  it('starts with the material, and still offers the optional questions', () => {
     const markup = toString_(onboardingView(state, t, { situation: 'expert' }));
 
-    expect(markup).toContain(t('onboarding.fitQuestion'));
+    expect(markup).toContain('id="cold-paste"');
     expect(markup).toContain('id="fit-claim"');
     expect(markup).toContain('id="fit-evidence"');
     expect(markup).toContain(t(['onboarding', 'modeRead', 'expert']));
+
+    // The self-rating is not among them. It wrote `profile.fitConfidence`,
+    // which nothing read, and the use it was collected for is refused on the
+    // record in `core/schema.js`.
+    expect(markup).not.toContain('id="fit-confidence"');
   });
 
   it('does not empty the paste box when the visitor answers the question above it', () => {
@@ -575,7 +580,7 @@ describe('the first screen finally has a third answer', () => {
     // Every one of these is optional and always was. What changed is that a
     // person holding material no longer scrolls past a self-rating and two
     // boxes asking for the output this product exists to produce.
-    for (const later of ['id="fit-confidence"', 'id="fit-claim"', 'id="fit-evidence"', 'name="weeks"']) {
+    for (const later of ['id="fit-claim"', 'id="fit-evidence"', 'name="weeks"']) {
       expect(markup.indexOf(later), `${later} should come after the paste box`).toBeGreaterThan(paste);
     }
   });
