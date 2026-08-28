@@ -63,6 +63,12 @@ several record things that turned out to be wrong.
 | [`RESEARCH_LEDGER.md`](RESEARCH_LEDGER.md) | Sources, what was taken from each, and the fields that were absent from the frame. |
 | [`PROMPT_EVOLUTION.md`](PROMPT_EVOLUTION.md) | Adversarial critique of the instructions the work ran under, including the concession that the metric most improved was chosen for being measurable rather than decisive. |
 
+## Design work in flight
+
+| File | What it is |
+|---|---|
+| [`UX_AUDIT_2026-08.md`](UX_AUDIT_2026-08.md) | Baseline audit of the onboarding path, read before any change. Records three places where the brief describing this codebase did not match it — most importantly that the pre-analysis questions were never a gate, only a wall, and that the recall route the brief asks for is already built and merely de-ranked. |
+
 ## Unintegrated
 
 | File | Status |
