@@ -1786,3 +1786,35 @@ p {
 .plays-more .stack {
   margin-block-start: var(--step);
 }
+
+/*
+  The full picture: the diagnosis and the six layers, one click away.
+
+  Styled as the gaps screen's secondary plays are, deliberately — this product
+  has one pattern for "the rest of it is here, it is not the point", and a
+  second visual language for the same idea would only make the reader learn
+  twice. The summary is a real control: pointer cursor, and the browser's own
+  focus ring is left alone so the keyboard walk lands on it visibly.
+*/
+.fullpicture {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem var(--step);
+  background: var(--surface);
+}
+
+.fullpicture__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+/* The cards inside carry their own frame; a second one around them reads as a
+   nesting level the content does not have. */
+.fullpicture[open] > .card {
+  margin-block-start: var(--step);
+  border: 0;
+  padding-inline: 0;
+  background: transparent;
+}

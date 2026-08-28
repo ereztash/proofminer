@@ -257,6 +257,11 @@ export default {
   },
 
   dashboard: {
+    // The label on the disclosure holding the diagnosis and the six layers.
+    // Named for what is inside it rather than for the act of opening it: a
+    // summary that says "more" is a bigger version of the same screen, and this
+    // one is the product's whole reading of the person.
+    fullPicture: 'התמונה המלאה — האבחנה ושש השכבות',
     urgency: {
       months: 'אתה בזה כמה חודשים. הצעד למטה נבחר כדי להזיז משהו השבוע, לא כדי לבנות תוכנית לשנה.',
       long: 'אתה בזה מספיק זמן כדי שהעצות הכלליות ייגמרו. מה שלמטה הוא הדבר הקונקרטי היחיד שכדאי לעשות עכשיו.',
