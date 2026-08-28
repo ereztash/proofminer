@@ -59,6 +59,86 @@ instrument, and a broken one is not a data point.
 **What it may not be used for.** Ranking acquisition mechanisms; any statement
 about conversion; any causal claim at all.
 
+### Operator checklist — added 28 August 2026
+
+Every element below already existed, in `docs/TELOS.md` and in the
+preregistration above. **Nothing here is new and no threshold, prediction,
+exclusion or coding category has been altered** — this is the same protocol in
+the order it is executed, because the next external action should be runnable
+without re-reading forty thousand words to reconstruct it. Where the two differ,
+the sections above and `docs/TELOS.md` govern.
+
+**Before anybody is contacted**
+
+- [ ] Production serves the commit being reasoned about. `curl -s
+      https://proofminer-gamma.vercel.app/ | grep proofminer-commit` and check it
+      against `main`. A trial run against an older build measures an older app.
+- [ ] **Send the production URL only.** Preview deployments sit behind Vercel SSO
+      and serve a login page; a participant who receives one concludes the tool
+      is broken and you never hear why.
+- [ ] Recruit **five**, Hebrew-speaking, from the ICP. Cleanest source: booked a
+      discovery call, did not buy.
+- [ ] Exclusions applied: past clients, close friends, anyone who has seen the
+      method.
+- [ ] **Two first, then the five.** The first two test the protocol and can be
+      anyone adjacent. Not in parallel — if the first two hit the same wall at
+      minute three, stop and fix it rather than spending a scarce sample proving
+      it twice.
+- [ ] Prepared: recruiting message · day-0 contract script · observation sheet
+      with the four criteria · the preregistered coding rule · the day-14 script
+      with its three questions in order.
+- [ ] **Build nothing during the trial.** If you want their proof units, take a
+      screenshot of First Light. The JSON export exists and contains the client
+      mail they pasted — do not ask for it.
+
+**Day 0 — 45 minutes, watched, silent**
+
+- [ ] 8 minutes, unguided, recorded: *what is bothering you most about work right
+      now?* This recording is what the falsifier is coded from. Nothing before it.
+- [ ] Then, still before they touch the tool: *what happens in the next thirty
+      days that makes this matter?* Second because the first eight must stay
+      unguided; before the tool because afterwards they answer in its vocabulary.
+- [ ] State the contract out loud: *I will not answer questions while you use it;
+      if you get stuck, that is what I need to see.* **The silence is the
+      instrument.** Every unanswered question is a finding. An observer who
+      answers one has broken the instrument, and that session is not a data point.
+- [ ] Watch. Record without asking: **which track they chose on screen 0**, and
+      **whether they corrected the extraction unprompted** — *"no, it was
+      twenty-one days, not nineteen."* A correction is a far stronger signal than
+      agreement.
+- [ ] 10 minutes afterwards for criterion 2 — a version of ***"I forgot about
+      that."***
+- [ ] Code into exactly one of four states **before** day 14:
+      definition-blocked · visibility-blocked · attestation-blocked · neither.
+      The fourth exists because the temptation at coding time is to score an
+      ambiguous transcript as visibility-blocked, which is the reading that
+      confirms the product.
+
+**Day 14 — 20 minutes. Do not say in advance that it is about publishing.**
+Criterion 3 is checked in public, not from memory. **The order is load-bearing:**
+
+- [ ] 1 · *Have you said any of this out loud to anyone since?* — every later
+      question primes it.
+- [ ] 2 · *Why you?* — criterion 4; wants evidence, not an explanation.
+- [ ] 3 · For whoever published: *whose words were they — your claim, or
+      something somebody else said about you?* — separates visibility-blocked
+      from attestation-blocked.
+- [ ] Then anything they want to say.
+
+**Reading it — thresholds unchanged, restated for the sheet**
+
+| | Denominator **five**, always stated |
+|---|---|
+| ≥3 attestation-blocked | T3 over T1 |
+| ≤1 returns unprompted in 14 days | as predicted; if wrong, T1's dependency is not the problem it looks like |
+| ≥3 name a dated trigger | the pain has a date |
+| **3 of 5 definition-blocked** | **the product measures the wrong thing and building stops** |
+| **nobody says a version of "I forgot about that"** | **the reveal does not fire; the product is a re-sorter of things people already knew** |
+| ≥2 repeated a number to somebody unprompted | the quotability directive is live, and the trial already collected what they quoted |
+
+Three of five is **not a 60% success rate.** It is the absence of a wall, which
+is a much smaller claim.
+
 ---
 
 ## E2 · Three discovery calls with the tool as intake — tests T2

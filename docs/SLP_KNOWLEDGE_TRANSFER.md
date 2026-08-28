@@ -344,3 +344,45 @@ The highest-leverage transfer is therefore not a feature. It is a stricter chain
 - Wheeler, R. L. & Gabbert, F. (2017). *Using Self-Generated Cues to Facilitate Recall: A Narrative Review*. Frontiers in Psychology 8:1830. Used only for the retrieval-cue mechanism.
 - Bareket, D. & Tsarfaty, R. (2021). *Neural Modeling for Named Entities and Morphology (NEMO²)*. Transactions of the Association for Computational Linguistics 9:909–928. Used only to test the Hebrew morphology/NER mechanism.
 - NEMO Corpus / NEMO code repositories (OnlpLab). Used as candidate benchmark infrastructure, not as production dependencies.
+
+---
+
+# Integration status — 28 August 2026
+
+This file is a **research transfer, and it is deliberately not integrated.**
+Nothing in it has become a feature and nothing should, quietly. The question
+applied to each proposal below is the only one that matters at this stage:
+
+> **Does it change a decision available *before* external users exist?**
+
+| | Proposal | Changes a decision now? | Status |
+|---|---|---|---|
+| RT-1 | Recall cue A/B — current prompts vs context reinstatement | **No.** It compares two cue sets by what people retrieve, and nobody has used either | `BLOCKED_EXTERNAL` — trial instrumentation |
+| EC-1 | Evidence ecology — source class × proof/archetype yield | **No.** Needs a spread of real source classes; the repo has fixtures and one external corpus | `BLOCKED_EXTERNAL` |
+| FL-1 | First Light discovery coding — already-counted / forgotten / disputed / miner miss | **No**, and it is the most valuable of the four. It is the instrument that would tell whether the reveal fires | `BLOCKED_EXTERNAL` |
+| DX-1 | Low-L1 differential — ABSENT / UNSAMPLED / UNRESOLVED | **No.** Distinguishing them requires asking a person which one they are in | `BLOCKED_EXTERNAL` |
+| HE-NER-1 | Fixed Hebrew organisation/clitic evaluation slice | **Yes** — it is a benchmark, not a behaviour. It needs no users | `READY_NOW`, not started |
+
+**HE-NER-1 is the only one that does not wait on people**, and it is genuinely
+available: `docs/MEASUREMENT_HEBREW_ORGS.md` already measures the current
+detector at 46% recall against an external corpus, and the transfer supplies a
+better benchmark and a mechanism for the miss. It is not being started in this
+sweep because it is an engine change with its own measurement design, and this
+sweep's licence is UX hierarchy and repository-internal debt. It belongs in its
+own piece of work with its own before/after number.
+
+## The E1 boundary, stated because it is the easy mistake
+
+**E1 is preregistered.** Four of the five proposals above are trial
+instrumentation, which makes it tempting to fold them into the day-0 and day-14
+scripts now that they have been read. **That is exactly the move a
+preregistration exists to prevent** — a prediction edited after exposure to
+later reasoning resolves to whatever the later reasoning expected.
+
+If an SLP-derived measure is worth adding to the trial, it gets a **dated
+amendment or a new experiment identifier** (E5, E6…), recorded as arriving after
+E1 was written and after this transfer was read. The original predictions,
+exclusions, denominators and failure conditions in `docs/EXPERIMENTS.md` are not
+to be rewritten as though they had been there from the start.
+
+Nothing in this file has been added to E1.

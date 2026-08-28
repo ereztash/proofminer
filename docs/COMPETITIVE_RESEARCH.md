@@ -138,3 +138,45 @@ can check is positioning rather than engineering.
   competing vendors.** They agree with each other across sources with opposing
   commercial interests, which is why they are reported; a single vendor's
   characterisation of a rival is not evidence and none is cited alone.
+
+---
+
+# Addendum — 28 August 2026: directional priors with no citations
+
+**Source: the owner's own external review, relayed 28 August 2026. No URLs, no
+publication dates and no study identifiers were supplied with it.**
+
+That is recorded first because it decides how these may be used. Everything
+above this line carries a source and the date it was read; the five items below
+do not, and they are therefore **not findings and may not be cited as external
+evidence.** They are directional priors — worth writing down because each one
+already has a matching decision in this repository, and a prior that agrees with
+a decision you already made is exactly the kind that needs its tier stated
+plainly rather than quietly upgraded.
+
+**Two of the five are already covered above, with sources, and are not repeated
+here:** *AI genericness / LinkedIn hostility to generated content* (see the
+Pangram Labs and LinkedIn policing entry) and *repository upkeep becoming the
+user's work* (see the time-to-first-value entry). Only the three genuinely new
+ones are listed.
+
+| Prior | Evidence tier | The decision it matches | What would raise the tier |
+|---|---|---|---|
+| **Score chasing.** Users of adjacent scoring tools optimise the number rather than the outcome it stands for | **Low** — unsourced, and the mechanism is plausible enough to be believed too easily | *Score subordinate.* Enforced and tested: no score renders outside its explanation on First Light, and Patch 3 demoted the Visibility Gap below the evidence and the action | A named tool, a dated source, and ideally a measured behaviour rather than a reviewer's impression |
+| **Attestation friction.** Testimonial tools are valued when *giving* evidence is trivially easy, and resented when *collecting* it becomes account and setup work | **Low** — unsourced. Directionally consistent with the time-to-value complaints above, which are sourced | *Evidence acquisition from another person must be easier than evidence management.* The recall route already produces addressed errands rather than a collection workflow | A source, and a distinction between the giver's friction and the asker's — they are different products |
+| **Platform dependence.** Professional profile and portfolio destinations disappear or pivot, taking hosted work with them | **Low** — unsourced as relayed, though the underlying class of event is well known | *Launchpad, not destination.* The product holds no audience, no feed and no profile; JSON export/import/reset already exist in settings | A named shutdown with a date, and evidence about what users actually lost |
+
+## What this addendum must not be used for
+
+- **It may not be cited as external validation of any of the three decisions.**
+  Each decision was made on this repository's own reasoning, recorded in
+  `docs/TELOS.md`; a prior arriving afterwards that agrees with it is not
+  evidence for it. Writing an unsourced agreement down next to a decision is
+  how a house view starts to look externally confirmed.
+- **It may not license a feature.** In particular, "platform dependence" is not
+  an argument for building a human-readable export. The JSON snapshot already
+  makes the state portable, and whether that fails a real user job is a question
+  for the trial in `docs/EXPERIMENTS.md`, not for this table.
+- **It should be deleted or promoted, not left.** If the sources arrive, these
+  move up into the body of this document with their citations. If they do not,
+  this section stays exactly where it is, at the tier it was given.
