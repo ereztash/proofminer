@@ -1,5 +1,8 @@
 # ProofMiner
 
+
+> **Public release status:** source is publicly visible; an open-source license has not yet been verified. See [`docs/PUBLIC_RELEASE_READINESS.md`](docs/PUBLIC_RELEASE_READINESS.md) for the publication boundary and stranger path.
+
 **אתה יודע שאתה טוב. אף אחד אחר לא יודע.**
 
 ProofMiner לוקח אדם שמנסה להתבסס כעצמאי, ומחזיק לו את היד עד
